@@ -65,6 +65,14 @@ void init_galaxy(int p, int halonr)
   Gal[p].MetalsEjectedMass = 0.0;
   Gal[p].MetalsICS = 0.0;
   
+  for(j=0; j<30; j++)
+  {
+	Gal[p].DiscGas[j] = 0.0;
+	Gal[p].DiscStars[j] = 0.0;
+	Gal[p].DiscGasMetals[j] = 0.0;
+	Gal[p].DiscStarsMetals[j] = 0.0;
+  }
+
   for(step = 0; step < STEPS; step++)
   {
     Gal[p].SfrDisk[step] = 0.0;

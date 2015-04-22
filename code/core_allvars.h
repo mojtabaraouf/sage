@@ -71,6 +71,8 @@ struct GALAXY_OUTPUT
   float EjectedMass;
   float BlackHoleMass;
   float ICS;
+  float DiscGas[30];
+  float DiscStars[30];
 
   // metals
   float MetalsColdGas;
@@ -80,6 +82,8 @@ struct GALAXY_OUTPUT
   float MetalsHotGas;
   float MetalsEjectedMass;
   float MetalsICS;
+  float DiscGasMetals[30];
+  float DiscStarsMetals[30];
 
   // to calculate magnitudes
   float SfrDisk;
@@ -136,6 +140,8 @@ struct GALAXY
   float EjectedMass;
   float BlackHoleMass;
   float ICS;
+  float DiscGas[30];
+  float DiscStars[30];
 
   // metals
   float MetalsColdGas;
@@ -145,6 +151,8 @@ struct GALAXY
   float MetalsHotGas;
   float MetalsEjectedMass;
   float MetalsICS;
+  float DiscGasMetals[30];
+  float DiscStarsMetals[30];
 
   // to calculate magnitudes
   float SfrDisk[STEPS];
@@ -269,6 +277,9 @@ extern double Age[MAXSNAPS];
 extern int    Snaplistlen;
 
 extern gsl_rng *random_generator;
+
+double DiscBinEdge[31];
+
 
 #ifdef MINIMIZE_IO
 extern char *ptr_treedata, *ptr_galaxydata, *ptr_galsnapdata[NOUT];

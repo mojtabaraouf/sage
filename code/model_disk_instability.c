@@ -11,8 +11,9 @@
 
 void check_disk_instability(int p, int centralgal, int halonr, double time, double dt, int step)
 {
-  double Mcrit, gas_fraction, unstable_gas, unstable_gas_fraction, unstable_stars, diskmass, metallicity;
-  double star_fraction;
+  double Mcrit, gas_fraction, unstable_gas, unstable_gas_fraction[30], unstable_stars, diskmass, metallicity;
+  double star_fraction, ring_fraction;
+  int j;
 
   // Here we calculate the stability of the stellar and gaseous disk as discussed in Mo, Mao & White (1998).
   // For unstable stars and gas, we transfer the required ammount to the bulge to make the disk stable again
@@ -36,10 +37,18 @@ void check_disk_instability(int p, int centralgal, int halonr, double time, doub
     if(unstable_stars > 0.0)
     {
       // Use disk metallicity here !
-      metallicity = get_metallicity(Gal[p].StellarMass - (Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass), Gal[p].MetalsStellarMass - (Gal[p].ClassicalMetalsBulgeMass + Gal[p].SecularMetalsBulgeMass));
+      //metallicity = get_metallicity(Gal[p].StellarMass - (Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass), Gal[p].MetalsStellarMass - (Gal[p].ClassicalMetalsBulgeMass + Gal[p].SecularMetalsBulgeMass));
 
-      Gal[p].SecularBulgeMass += unstable_stars;
-      Gal[p].SecularMetalsBulgeMass += metallicity * unstable_stars;
+    for(j=0; j<30; j++)
+	  {
+		metallicity = get_metallicity(Gal[p].DiscStars[j], Gal[p].DiscStarsMetals[j]);
+	    ring_fraction = Gal[p].DiscStars[j] / (star_fraction*diskmass);
+		Gal[p].DiscStars[j] -= unstable_stars * ring_fraction;
+		Gal[p].DiscStarsMetals[j] -= metallicity * unstable_stars * ring_fraction;
+		Gal[p].SecularBulgeMass += unstable_stars * ring_fraction;
+	    Gal[p].SecularMetalsBulgeMass += metallicity * unstable_stars * ring_fraction;
+	  }
+    }  
       
       // Need to fix this. Excluded for now.
       // Gal[p].mergeType = 3;  // mark as disk instability partial mass transfer
@@ -50,7 +59,6 @@ void check_disk_instability(int p, int centralgal, int halonr, double time, doub
         printf("Instability: Mbulge > Mtot (stars or metals)\t%e\t%e\t%e\t%e\t%e\n", (Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass), Gal[p].StellarMass, (Gal[p].ClassicalMetalsBulgeMass + Gal[p].SecularMetalsBulgeMass), Gal[p].MetalsStellarMass, unstable_stars);
         // ABORT(96);
       }
-    }
 
     // burst excess gas and feed black hole (really need a dedicated model for bursts and BH growth here)
     if(unstable_gas > 0.0)
@@ -61,11 +69,16 @@ void check_disk_instability(int p, int centralgal, int halonr, double time, doub
         // ABORT(97);
       }
 
-      unstable_gas_fraction = unstable_gas / Gal[p].ColdGas;
+
+      for(j=0; j<30; j++)
+		if(Gal[p].DiscGas[j]>0.0 && unstable_gas > 0.0)
+	      unstable_gas_fraction[j] = unstable_gas / Gal[p].DiscGas[j];
+	    else
+		  unstable_gas_fraction[j] = 0.0;
       if(AGNrecipeOn > 0)
-        grow_black_hole(p, unstable_gas_fraction);
+        grow_black_hole(p, unstable_gas/Gal[p].ColdGas);
     
-      collisional_starburst_recipe(unstable_gas_fraction, p, centralgal, time, dt, halonr, 1, step);
+      collisional_starburst_recipe(unstable_gas_fraction, p, centralgal, time, dt, halonr, 1, step, unstable_gas/Gal[p].ColdGas);
     }
 
   }

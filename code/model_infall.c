@@ -170,6 +170,12 @@ void add_infall_to_hot(int gal, double infallingGas)
 {
   float metallicity;
 
+  if(Gal[gal].HotGas != Gal[gal].HotGas || Gal[gal].HotGas < 0)
+  {
+    printf("HotGas initial add_infall_to_hot...%e\n", Gal[gal].HotGas);
+    ABORT(1);
+  }
+
   // if the halo has lost mass, subtract baryons from the ejected mass first, then the hot gas
   if(infallingGas < 0.0 && Gal[gal].EjectedMass > 0.0)
   {  
@@ -202,6 +208,12 @@ void add_infall_to_hot(int gal, double infallingGas)
   // add (subtract) the ambient (enriched) infalling gas to the central galaxy hot component 
   Gal[gal].HotGas += infallingGas;
   if(Gal[gal].HotGas < 0.0) Gal[gal].HotGas = Gal[gal].MetalsHotGas = 0.0;
+
+  if(Gal[gal].HotGas != Gal[gal].HotGas || Gal[gal].HotGas < 0)
+  {
+    printf("HotGas final add_infall_to_hot...%e\n", Gal[gal].HotGas);
+    ABORT(1);
+  }
 
 }
 

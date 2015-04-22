@@ -56,7 +56,7 @@ void bye()
 
 int main(int argc, char **argv)
 {
-  int filenr, tree, halonr;
+  int filenr, tree, halonr, i;
   struct sigaction current_XCPU;
 
   struct stat filestatus;
@@ -91,6 +91,11 @@ int main(int argc, char **argv)
 
   read_parameter_file(argv[1]);
   init();
+
+  // Define the specific-angular-momentum bins used to collect disc mass
+  DiscBinEdge[0] = 0.0;
+  for(i=1; i<31; i++)
+	DiscBinEdge[i] = 5e-4*2e7*(CM_PER_MPC/UnitLength_in_cm)/UnitVelocity_in_cm_per_s *pow(1.2, i);
 
   /* a small delay so that processors dont use the same file */
   time(&start);

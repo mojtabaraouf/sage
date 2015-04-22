@@ -11,126 +11,198 @@
 
 void starformation_and_feedback(int p, int centralgal, double time, double dt, int halonr, int step)
 {
-  double reff, tdyn, strdot, stars, reheated_mass, ejected_mass, fac, metallicity;
-  double cold_crit;
-  double FracZleaveDiskVal;
-  
+  double strdot, stars, reheated_mass, ejected_mass, fac, metallicity, stars_sum, area, SFE_H2, f_H2, f_H2_const, Sigma_0gas;
+  int i;
+
+  f_H2_const = 1.306e-3 * pow((CM_PER_MPC*CM_PER_MPC/1e12 / SOLAR_MASS) * (UnitMass_in_g / UnitLength_in_cm / UnitLength_in_cm), 2.0*0.92);
+  SFE_H2 = 7.75e-4 * UnitTime_in_s / SEC_PER_MEGAYEAR;
+
+  if(Gal[p].HotGas != Gal[p].HotGas || Gal[p].HotGas < 0)
+  {
+    printf("HotGas initial starformation_and_feedback...%e\n", Gal[p].HotGas);
+    ABORT(1);
+  }
   // Initialise variables
   strdot = 0.0;
+  stars_sum = 0.0;
 
-  // star formation recipes 
-  if(SFprescription == 1)
-  {
-    // from Krumholz & Dekel 2011
-    strdot = metallicity_dependent_star_formation(p);
-  }
-  else
-  {
-    // we take the typical star forming region as 3.0*r_s using the Milky Way as a guide
-    reff = 3.0 * Gal[p].DiskScaleRadius;
-    tdyn = reff / Gal[p].Vvir;
-
-    // from Kauffmann (1996) eq7 x piR^2, (Vvir in km/s, reff in Mpc/h) in units of 10^10Msun/h 
-    cold_crit = 0.19 * Gal[p].Vvir * reff;
-		if(Gal[p].ColdGas > cold_crit && tdyn > 0.0)
-			strdot = SfrEfficiency * (Gal[p].ColdGas - cold_crit) / tdyn;
-		else
-			strdot = 0.0;
-  }
-
-  stars = strdot * dt;
-  if(stars < 0.0)
-    stars = 0.0;
-
-  if(SupernovaRecipeOn == 1)
-    reheated_mass = FeedbackReheatingEpsilon * stars;
-  else
-    reheated_mass = 0.0;
-
-  if(reheated_mass < 0.0)
-  {
-    printf("Something strange here (SF1)....\n");
-    ABORT(32);
-    reheated_mass = 0.0;
-  }
-
-  // cant use more cold gas than is available! so balance SF and feedback 
-  if((stars + reheated_mass) > Gal[p].ColdGas && (stars + reheated_mass) > 0.0)
-  {
-    fac = Gal[p].ColdGas / (stars + reheated_mass);
-    stars *= fac;
-    reheated_mass *= fac;
-  }
-
-  // determine ejection
-  if(SupernovaRecipeOn == 1)
-  {
-    if(Gal[centralgal].Vvir > 0.0)
-			ejected_mass = 
-				(FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) / (Gal[centralgal].Vvir * Gal[centralgal].Vvir) -
-					FeedbackReheatingEpsilon) * stars;
-		else
-			ejected_mass = 0.0;
-		
-    if(ejected_mass < 0.0)
-      ejected_mass = 0.0;
-  }
-  else
-    ejected_mass = 0.0;
-
-  // update the star formation rate 
-  Gal[p].SfrDisk[step] += stars / dt;
   Gal[p].SfrDiskColdGas[step] = Gal[p].ColdGas;
   Gal[p].SfrDiskColdGasMetals[step] = Gal[p].MetalsColdGas;
 
-  // update for star formation 
-  metallicity = get_metallicity(Gal[p].ColdGas, Gal[p].MetalsColdGas);
-  update_from_star_formation(p, stars, metallicity);
+  for(i=0; i<30; i++)
+  {
+	if(Gal[p].Vvir>0) //There can be galaxies passed through they don't appear to be real
+	{
+		area = M_PI * (pow(DiscBinEdge[i+1]/Gal[p].Vvir, 2.0) - pow(DiscBinEdge[i]/Gal[p].Vvir, 2.0));
+		f_H2 = f_H2_const * pow(pow(Gal[p].DiscGas[i]/area, 2.0) + 0.1*Gal[p].DiscGas[i]/area * pow(Gal[p].DiscStars[i]*Gal[p].DiscStars[0], 0.5)/area, 0.92);
+		if(f_H2 > 0.0)
+		  f_H2 = 3.0 * 1.0/(1.0/f_H2 + 1) * (1 - Gal[p].DiscGasMetals[i]/Gal[p].DiscGas[i]); //Changes f_H2 from being H2/HI to H2/Cold Gas
+		else
+	      f_H2 = 0.0;
+		strdot = SFE_H2 * f_H2 * Gal[p].DiscGas[i];
+	
+		if(area!=area || area<0)
+		{
+			printf("DiscBinEdge, DiscBinEdge, Vvir, area...%e\t%e\t%e\t%e\n", DiscBinEdge[i], DiscBinEdge[i+1], Gal[p].Vvir, area);
+			printf("Mvir, ColdGas...%e\t%e\n", Gal[p].Mvir, Gal[p].ColdGas);
+			ABORT(1);
+		}
+	
+		//printf("Disc properties\n");
+		//printf("%e", Gal[p].DiscGas[i]);
+		//printf("\n");
+		//printf("%e", Gal[p].DiscStars[i]);
+		//printf("\n");
+		//printf("%e", Gal[p].DiscStars[0]);
+		//printf("\n");
+	
 
-  // recompute the metallicity of the cold phase
-  metallicity = get_metallicity(Gal[p].ColdGas, Gal[p].MetalsColdGas);
+    }
 
-  // update from SN feedback 
-  update_from_feedback(p, centralgal, reheated_mass, ejected_mass, metallicity);
+	stars = strdot * dt;
+	
+	if(stars!=stars || stars<-1e-30)
+	{
+		printf("DiscGas, metals, area, f_H2...%e\t%e\t%e\t%e\n", Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i], area, f_H2);
+		printf("stars, strdot, dt...%e\t%e\t%e\n", stars, strdot, dt);
+		ABORT(1);
+	}
+	
+	if(stars < 0.0)
+	  stars = 0.0;
+
+	if(SupernovaRecipeOn == 1 && Gal[p].DiscGas[i] > 0.0)
+	{
+	  Sigma_0gas = 2.1 * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
+	  reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area);
+	}
+	else
+	  reheated_mass = 0.0;
+
+	if(reheated_mass < 0.0)
+	{
+	  printf("Something strange here (SF1)....\n");
+	  ABORT(32);
+	  reheated_mass = 0.0;
+	}
+
+	// cant use more cold gas than is available! so balance SF and feedback 
+	if((stars + reheated_mass) > Gal[p].DiscGas[i] && (stars + reheated_mass) > 0.0)
+	{
+	  fac = Gal[p].DiscGas[i] / (stars + reheated_mass);
+	  stars *= fac;
+	  reheated_mass *= fac;
+	}
+
+	// determine ejection
+	if(SupernovaRecipeOn == 1)
+	{
+	  if(Gal[centralgal].Vvir > 0.0)
+		ejected_mass = 
+			(FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) / (Gal[centralgal].Vvir * Gal[centralgal].Vvir) -
+				FeedbackReheatingEpsilon) * stars;
+	  else
+		ejected_mass = 0.0;
+
+      if(ejected_mass < 0.0)
+        ejected_mass = 0.0;
+	  }
+    else
+      ejected_mass = 0.0;
+
+	stars_sum += stars;
+
+    if(Gal[p].HotGas != Gal[p].HotGas || Gal[p].HotGas < 0)
+    {
+      printf("HotGas starformation_and_feedback (2)...%e\n", Gal[p].HotGas);
+      ABORT(1);
+    }
+
+    // update for star formation
+    metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
+    update_from_star_formation(p, stars, metallicity, i);
+
+    if(Gal[p].HotGas != Gal[p].HotGas || Gal[p].HotGas < 0)
+    {
+      printf("HotGas starformation_and_feedback (3)...%e\n", Gal[p].HotGas);
+      ABORT(1);
+    }
+
+    // recompute the metallicity of the cold phase
+    metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
+
+	if(reheated_mass > Gal[p].DiscGas[i] && reheated_mass > 1.0e-8)
+	  printf("reheated mass too high in standard SF recipe....%e\n", reheated_mass/Gal[p].DiscGas[i]);
+
+    // update from SN feedback 
+    update_from_feedback(p, centralgal, reheated_mass, ejected_mass, metallicity, i);
+
+    if(Gal[p].HotGas != Gal[p].HotGas || Gal[p].HotGas < 0)
+    {
+      printf("HotGas starformation_and_feedback (4)...%e\n", Gal[p].HotGas);
+	  printf("reheated, ejected...%e\t%e\n", reheated_mass, ejected_mass);
+      ABORT(1);
+    }
+
+	// Inject new metals from SN II
+	if(SupernovaRecipeOn == 1)
+	{
+	  Gal[p].DiscGasMetals[i] += Yield * stars;
+	  Gal[p].MetalsColdGas += Yield * stars;
+	}
+  }
+
+  // update the star formation rate 
+  Gal[p].SfrDisk[step] += stars_sum / dt;
 
   // check for disk instability
   if(DiskInstabilityOn)
     check_disk_instability(p, centralgal, halonr, time, dt, step);
 
-  // formation of new metals - instantaneous recycling approximation - only SNII 
-  if(Gal[p].ColdGas > 1.0e-8)
+  if(Gal[p].HotGas != Gal[p].HotGas || Gal[p].HotGas < 0)
   {
-    FracZleaveDiskVal = FracZleaveDisk * exp(-1.0 * Gal[centralgal].Mvir / 30.0);  // Krumholz & Dekel 2011 Eq. 22
-    Gal[p].MetalsColdGas += Yield * (1.0 - FracZleaveDiskVal) * stars;
-    Gal[centralgal].MetalsHotGas += Yield * FracZleaveDiskVal * stars;
-    // Gal[centralgal].MetalsEjectedMass += Yield * FracZleaveDiskVal * stars;
+    printf("HotGas final starformation_and_feedback...%e\n", Gal[p].HotGas);
+    ABORT(1);
   }
-  else
-    Gal[centralgal].MetalsHotGas += Yield * stars;
-    // Gal[centralgal].MetalsEjectedMass += Yield * stars;
 }
 
 
 
-void update_from_star_formation(int p, double stars, double metallicity)
+void update_from_star_formation(int p, double stars, double metallicity, int i)
 {
   // update gas and metals from star formation 
+  Gal[p].DiscGas[i] -= (1 - RecycleFraction) * stars;
+  Gal[p].DiscGasMetals[i] -= metallicity * (1 - RecycleFraction) * stars;
+  Gal[p].DiscStars[i] += (1 - RecycleFraction) * stars;
+  Gal[p].DiscStarsMetals[i] += metallicity * (1 - RecycleFraction) * stars;
+  
   Gal[p].ColdGas -= (1 - RecycleFraction) * stars;
   Gal[p].MetalsColdGas -= metallicity * (1 - RecycleFraction) * stars;
   Gal[p].StellarMass += (1 - RecycleFraction) * stars;
   Gal[p].MetalsStellarMass += metallicity * (1 - RecycleFraction) * stars;
+
+  if(Gal[p].DiscGas[i] < 0){
+	printf("DiscGas in update_SF...%e\n", Gal[p].DiscGas[i]);
+	Gal[p].DiscGas[i]=0.0;
+	Gal[p].DiscGasMetals[i]=0.0;}
+
+  if(Gal[p].ColdGas < 0){
+	printf("DiscGas in update_SF...%e\n", Gal[p].DiscGas[i]);
+	Gal[p].ColdGas=0.0;
+	Gal[p].MetalsColdGas=0.0;}
+  
 }
 
 
 
-void update_from_feedback(int p, int centralgal, double reheated_mass, double ejected_mass, double metallicity)
+void update_from_feedback(int p, int centralgal, double reheated_mass, double ejected_mass, double metallicity, int i)
 {
   double metallicityHot;
 
   // check first just to be sure 
-  if(reheated_mass > Gal[p].ColdGas && reheated_mass > 1.0e-8)
+  if(reheated_mass > Gal[p].DiscGas[i] && reheated_mass > 1.0e-8)
   {
-    printf("Something strange here (SF2)....%e\t%e\n", reheated_mass, Gal[p].ColdGas);
+    printf("Something strange here (SF2)....%d\t%e\t%e\n", i, reheated_mass, Gal[p].ColdGas);
     ABORT(19);
     reheated_mass = Gal[p].ColdGas;
   }
@@ -139,6 +211,9 @@ void update_from_feedback(int p, int centralgal, double reheated_mass, double ej
   {
     Gal[p].ColdGas -= reheated_mass;
     Gal[p].MetalsColdGas -= metallicity * reheated_mass;
+
+    Gal[p].DiscGas[i] -= reheated_mass;
+    Gal[p].DiscGasMetals[i] -= metallicity * reheated_mass;
 
     Gal[centralgal].HotGas += reheated_mass;
     Gal[centralgal].MetalsHotGas += metallicity * reheated_mass;
@@ -154,6 +229,24 @@ void update_from_feedback(int p, int centralgal, double reheated_mass, double ej
 
     Gal[p].OutflowRate += reheated_mass;    
   }
+
+  if(Gal[p].DiscGas[i] < -1e-10)
+    printf("DiscGas in update_feedback...%e\n", Gal[p].DiscGas[i]);
+  if(Gal[p].DiscGas[i] < 0){
+	Gal[p].DiscGas[i]=0.0;
+	Gal[p].DiscGasMetals[i]=0.0;}
+
+  if(Gal[p].ColdGas < -1e-10)
+    printf("ColdGas in update_feedback...%e\n", Gal[p].ColdGas);
+  if(Gal[p].ColdGas < 0){
+	Gal[p].ColdGas=0.0;
+	Gal[p].MetalsColdGas=0.0;}
+
+  if(Gal[p].HotGas < -1e-10)
+    printf("HotGas in update_feedback...%e\n", Gal[p].HotGas);
+  if(Gal[p].HotGas < 0){
+	Gal[p].HotGas=0.0;
+	Gal[p].MetalsHotGas=0.0;}
 
 }
 
