@@ -49,13 +49,15 @@ double cooling_recipe(int gal, double dt)
       coolingGas = 0.0;
 
     if(AGNrecipeOn > 0 && coolingGas > 0.0)
-			do_AGN_heating(coolingGas, gal, dt, x, rcool);
+	{
+		do_AGN_heating(coolingGas, gal, dt, x, rcool);
 
 		// update the cooling rate based on current AGN heating
 		if(Gal[gal].r_heat < rcool)
 			coolingGas = (1.0 - Gal[gal].r_heat / rcool) * coolingGas;
 		else
 			coolingGas = 0.0;
+	}
 	
     if(coolingGas < 0.0)
       coolingGas = 0.0;
@@ -161,6 +163,7 @@ void cool_gas_onto_galaxy(int p, double coolingGas)
   double metallicity, coolingGasBin, coolingGasBinSum, DiscGasSum, DiscDiff;
   int i;
 
+
   // Check that Cold Gas has been treated properly prior to this function
   DiscGasSum = 0.0;
   for(i=0; i<30; i++)
@@ -190,6 +193,11 @@ void cool_gas_onto_galaxy(int p, double coolingGas)
     {
 	  for(i=0; i<30; i++)
       {
+		  if(Gal[p].DiscGasMetals[i]>Gal[p].DiscGas[i])
+		  {
+			printf("More metals than total gas before cooling.......%e\t%e\n", Gal[p].DiscGasMetals[i], Gal[p].DiscGas[i]);
+			ABORT(1);
+		  }
 	    //if(coolingGasBinSum < 1.001*coolingGas)
 	      //if(i != 29)
 		coolingGasBin = (coolingGas / Gal[p].DiskScaleRadius) * (exp(-DiscBinEdge[i]/Gal[p].Vvir/Gal[p].DiskScaleRadius)*(DiscBinEdge[i]/Gal[p].Vvir + Gal[p].DiskScaleRadius) - exp(-DiscBinEdge[i+1]/Gal[p].Vvir/Gal[p].DiskScaleRadius)*(DiscBinEdge[i+1]/Gal[p].Vvir + Gal[p].DiskScaleRadius));
@@ -240,6 +248,11 @@ void cool_gas_onto_galaxy(int p, double coolingGas)
     {
 	  for(i=0; i<30; i++)
       {
+		  if(Gal[p].DiscGasMetals[i]>Gal[p].DiscGas[i])
+		  {
+			printf("More metals than total gas before cooling.......%e\t%e\n", Gal[p].DiscGasMetals[i], Gal[p].DiscGas[i]);
+			ABORT(1);
+		  }
 		//if(i != 29)
 		coolingGasBin = (Gal[p].HotGas / Gal[p].DiskScaleRadius) * (exp(-DiscBinEdge[i]/Gal[p].Vvir/Gal[p].DiskScaleRadius)*(DiscBinEdge[i]/Gal[p].Vvir + Gal[p].DiskScaleRadius) - exp(-DiscBinEdge[i+1]/Gal[p].Vvir/Gal[p].DiskScaleRadius)*(DiscBinEdge[i+1]/Gal[p].Vvir + Gal[p].DiskScaleRadius));
 		if(coolingGasBin + coolingGasBinSum > coolingGas)
@@ -250,6 +263,8 @@ void cool_gas_onto_galaxy(int p, double coolingGas)
 		Gal[p].DiscGas[i] += coolingGasBin;
 		Gal[p].DiscGasMetals[i] += metallicity * coolingGasBin;
 		coolingGasBinSum += coolingGasBin;
+
+
 
 		if(coolingGasBin != coolingGasBin || coolingGasBin < 0)
 		{
@@ -270,6 +285,12 @@ void cool_gas_onto_galaxy(int p, double coolingGas)
 		//ABORT(1);
 	  }
 	
+	  if(Gal[p].DiscGasMetals[i]>Gal[p].DiscGas[i])
+	  {
+		printf("More metals than total gas after cooling.......%e\t%e\n", Gal[p].DiscGasMetals[i], Gal[p].DiscGas[i]);
+		ABORT(1);
+	  }
+	
       Gal[p].ColdGas += Gal[p].HotGas;
       Gal[p].MetalsColdGas += Gal[p].MetalsHotGas;
       Gal[p].HotGas = 0.0;
@@ -281,6 +302,8 @@ void cool_gas_onto_galaxy(int p, double coolingGas)
     printf("HotGas final cool_gas_onto_galaxy...%e\n", Gal[p].HotGas);
     //ABORT(1);
   }
+
+
 
   // Check that Cold Gas has been treated properly by this function (in principle, one of the other errors should arise first if this is so)
   DiscGasSum = 0.0;

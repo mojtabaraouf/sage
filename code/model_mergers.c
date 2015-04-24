@@ -125,7 +125,7 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
   }
 
   // grow black hole through accretion from cold disk during mergers, a la Kauffmann & Haehnelt (2000) 
-  if(AGNrecipeOn)
+  if(AGNrecipeOn>0)
   {
     grow_black_hole(merger_centralgal, mass_ratio);
 	if(Gal[p].HotGas != Gal[p].HotGas || Gal[p].HotGas < 0 || Gal[centralgal].HotGas != Gal[centralgal].HotGas || Gal[merger_centralgal].HotGas != Gal[merger_centralgal].HotGas )
@@ -508,7 +508,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_central
 	if(Gal[merger_centralgal].DiscGasMetals[k]>Gal[merger_centralgal].DiscGas[k])
 	{
 		printf("More metals than total gas before updating.......%e\t%e\n", Gal[merger_centralgal].DiscGasMetals[k], Gal[merger_centralgal].DiscGas[k]);
-		//ABORT(1);
+		ABORT(1);
 	}
 
 	metallicity = get_metallicity(Gal[merger_centralgal].DiscGas[k], Gal[merger_centralgal].DiscGasMetals[k]);
@@ -536,7 +536,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_central
 	if(Gal[merger_centralgal].DiscGasMetals[k]>Gal[merger_centralgal].DiscGas[k])
 	{
 		printf("More metals than total gas between updates.......%e\t%e\n", Gal[merger_centralgal].DiscGasMetals[k], Gal[merger_centralgal].DiscGas[k]);
-		//ABORT(1);
+		ABORT(1);
 	}
 
 
@@ -556,7 +556,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_central
 	if(Gal[merger_centralgal].DiscGasMetals[k]>Gal[merger_centralgal].DiscGas[k])
 	{
 		printf("More metals than total gas after updates.......%e\t%e\n", Gal[merger_centralgal].DiscGasMetals[k], Gal[merger_centralgal].DiscGas[k]);
-		//ABORT(1);
+		ABORT(1);
 	}
 
     // Inject new metals from SN II
@@ -574,7 +574,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_central
 	if(Gal[merger_centralgal].DiscGasMetals[k]>Gal[merger_centralgal].DiscGas[k])
 	{
 		printf("More metals than total gas after injection.......%e\t%e\n", Gal[merger_centralgal].DiscGasMetals[k], Gal[merger_centralgal].DiscGas[k]);
-		//ABORT(1);
+		ABORT(1);
 	}
 	
 	stars_sum += stars;

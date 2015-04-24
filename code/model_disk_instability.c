@@ -113,7 +113,14 @@ void check_disk_instability(int p, int centralgal, int halonr, double time, doub
 	  {
 	    for(j=0; j<30; j++)
 	    {
-		  metallicity = get_metallicity(Gal[p].DiscStars[j], Gal[p].DiscStarsMetals[j]);
+		
+		  if(Gal[p].DiscGasMetals[j]>Gal[p].DiscGas[j])
+		  {
+			printf("More metals than total gas before dealing with merger gas.......%e\t%e\n", Gal[p].DiscGasMetals[j], Gal[p].DiscGas[j]);
+			ABORT(1);
+		  }
+		
+		  metallicity = get_metallicity(Gal[p].DiscGas[j], Gal[p].DiscGasMetals[j]);
 		  ring_fraction = Gal[p].DiscGas[j] / DiscGasSum;
 		
 		  Gal[p].DiscGas[j] -= ring_fraction * unstable_gas;
@@ -123,8 +130,8 @@ void check_disk_instability(int p, int centralgal, int halonr, double time, doub
 
 		  Gal[p].StellarMass += ring_fraction * unstable_gas * (1-RecycleFraction);
 		  Gal[p].MetalsStellarMass += metallicity * ring_fraction * unstable_gas * (1-RecycleFraction);
-		  Gal[p].SecularBulgeMass += unstable_stars * ring_fraction * (1-RecycleFraction);
-	      Gal[p].SecularMetalsBulgeMass += metallicity * unstable_stars * ring_fraction * (1-RecycleFraction);
+		  Gal[p].SecularBulgeMass += ring_fraction * unstable_gas * (1-RecycleFraction);
+	      Gal[p].SecularMetalsBulgeMass += metallicity * ring_fraction * unstable_gas * (1-RecycleFraction);
 
 		  Gal[p].HotGas += ring_fraction * unstable_gas * RecycleFraction;
 		  Gal[p].MetalsHotGas += metallicity * ring_fraction * unstable_gas * RecycleFraction;
@@ -140,6 +147,12 @@ void check_disk_instability(int p, int centralgal, int halonr, double time, doub
 			printf("j, ring_fraction, metallicity, unstable_gas, DiscGasSum\n");
 			printf("%d\t%e\t%e\t%e\t%e\n", j, ring_fraction, metallicity, unstable_gas, DiscGasSum);
 		    //ABORT(1);
+		  }
+		
+		  if(Gal[p].DiscGasMetals[j]>Gal[p].DiscGas[j])
+		  {
+			printf("More metals than total gas after dealing with merger gas.......%e\t%e\n", Gal[p].DiscGasMetals[j], Gal[p].DiscGas[j]);
+			ABORT(1);
 		  }
 		}
 	  }

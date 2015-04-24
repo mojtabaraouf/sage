@@ -51,7 +51,8 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 		if(f_H2 > 0.0)
 		  f_H2 = 3.0 * 1.0/(1.0/f_H2 + 1) * (1 - Gal[p].DiscGasMetals[i]/Gal[p].DiscGas[i]); //Changes f_H2 from being H2/HI to H2/Cold Gas
 		else
-	      f_H2 = 0.0;
+		  f_H2 = 0.0;
+	
 		strdot = SFE_H2 * f_H2 * Gal[p].DiscGas[i];
 	
 		if(area!=area || area<0)
@@ -147,6 +148,12 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
       //ABORT(1);
     }
 
+	if(Gal[p].DiscGasMetals[i]>Gal[p].DiscGas[i])
+	{
+		printf("More metals than total gas before updating.......%e\t%e\n", Gal[p].DiscGasMetals[i], Gal[p].DiscGas[i]);
+		ABORT(1);
+	}
+
 	DiscPre = Gal[p].DiscGas[i];
 	ColdPre = Gal[p].ColdGas;
 
@@ -176,6 +183,12 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	DiscPre = Gal[p].DiscGas[i];
 	ColdPre = Gal[p].ColdGas;
 
+	if(Gal[p].DiscGasMetals[i]>Gal[p].DiscGas[i])
+	{
+		printf("More metals than total gas between updates.......%e\t%e\n", Gal[p].DiscGasMetals[i], Gal[p].DiscGas[i]);
+		ABORT(1);
+	}
+
     // update from SN feedback
 	metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
     update_from_feedback(p, centralgal, reheated_mass, ejected_mass, metallicity, i);
@@ -195,6 +208,12 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
       //ABORT(1);
     }
 
+	if(Gal[p].DiscGasMetals[i]>Gal[p].DiscGas[i])
+	{
+		printf("More metals than total gas after updating.......%e\t%e\n", Gal[p].DiscGasMetals[i], Gal[p].DiscGas[i]);
+		ABORT(1);
+	}
+
 	// Inject new metals from SN II
 	if(SupernovaRecipeOn == 1 && stars>1e-9)
 	{
@@ -205,6 +224,12 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
   	  }
 	  else
 		Gal[p].MetalsHotGas += Yield * stars;
+	}
+	
+	if(Gal[p].DiscGasMetals[i]>Gal[p].DiscGas[i])
+	{
+		printf("More metals than total after injecting.......%e\t%e\n", Gal[p].DiscGasMetals[i], Gal[p].DiscGas[i]);
+		ABORT(1);
 	}
   }
 
