@@ -44,65 +44,65 @@ struct GALAXY_OUTPUT
   
   int   SnapNum;
   int   CentralGal;
-  float CentralMvir;
+  double CentralMvir;
 
   int   mergeType;  //0=none; 1=minor merger; 2=major merger; 3=disk instability; 4=disrupt to ICS
   int   mergeIntoID;
   int   mergeIntoSnapNum;
-  float   dT;
+  double   dT;
 
   // properties of subhalo at the last time this galaxy was a central galaaxy 
-  float Pos[3];
-  float Vel[3];
-  float Spin[3];
+  double Pos[3];
+  double Vel[3];
+  double Spin[3];
   int   Len;   
-  float Mvir;
-  float Rvir;
-  float Vvir;
-  float Vmax;
-  float VelDisp;
+  double Mvir;
+  double Rvir;
+  double Vvir;
+  double Vmax;
+  double VelDisp;
 
   // baryonic reservoirs 
-  float ColdGas;
-  float StellarMass;
-  float ClassicalBulgeMass;
-  float SecularBulgeMass;
-  float HotGas;
-  float EjectedMass;
-  float BlackHoleMass;
-  float ICS;
-  float DiscGas[30];
-  float DiscStars[30];
+  double ColdGas;
+  double StellarMass;
+  double ClassicalBulgeMass;
+  double SecularBulgeMass;
+  double HotGas;
+  double EjectedMass;
+  double BlackHoleMass;
+  double ICS;
+  double DiscGas[30];
+  double DiscStars[30];
 
   // metals
-  float MetalsColdGas;
-  float MetalsStellarMass;
-  float ClassicalMetalsBulgeMass;
-  float SecularMetalsBulgeMass;
-  float MetalsHotGas;
-  float MetalsEjectedMass;
-  float MetalsICS;
-  float DiscGasMetals[30];
-  float DiscStarsMetals[30];
+  double MetalsColdGas;
+  double MetalsStellarMass;
+  double ClassicalMetalsBulgeMass;
+  double SecularMetalsBulgeMass;
+  double MetalsHotGas;
+  double MetalsEjectedMass;
+  double MetalsICS;
+  double DiscGasMetals[30];
+  double DiscStarsMetals[30];
 
   // to calculate magnitudes
-  float SfrDisk;
-  float SfrBulge;
-  float SfrDiskZ;
-  float SfrBulgeZ;
+  double SfrDisk;
+  double SfrBulge;
+  double SfrDiskZ;
+  double SfrBulgeZ;
   
   // misc 
-  float DiskScaleRadius;
-  float BulgeEffectiveRadius;
-  float Cooling;
-  float Heating;
-  float LastMajorMerger;
-  float OutflowRate;
+  double DiskScaleRadius;
+  double BulgeEffectiveRadius;
+  double Cooling;
+  double Heating;
+  double LastMajorMerger;
+  double OutflowRate;
 
   //infall properties
-  float infallMvir;
-  float infallVvir;
-  float infallVmax;
+  double infallMvir;
+  double infallVvir;
+  double infallVmax;
 };
 
 
@@ -114,68 +114,68 @@ struct GALAXY
   long long  MostBoundID;
   int   SnapNum;
   int   CentralGal;
-  float CentralMvir;
+  double CentralMvir;
 
   int   mergeType;  //0=none; 1=minor merger; 2=major merger; 3=disk instability; 4=disrupt to ICS
   int   mergeIntoID;
   int   mergeIntoSnapNum;
-  float   dT;
+  double   dT;
 
   // properties of subhalo at the last time this galaxy was a central galaxy 
-  float Pos[3];
-  float Vel[3];
+  double Pos[3];
+  double Vel[3];
   int   Len;   
-  float Mvir;
-  float deltaMvir;
-  float Rvir;
-  float Vvir;
-  float Vmax;
+  double Mvir;
+  double deltaMvir;
+  double Rvir;
+  double Vvir;
+  double Vmax;
 
   // baryonic reservoirs 
-  float ColdGas;
-  float StellarMass;
-  float ClassicalBulgeMass;
-  float SecularBulgeMass;
-  float HotGas;
-  float EjectedMass;
-  float BlackHoleMass;
-  float ICS;
-  float DiscGas[30];
-  float DiscStars[30];
+  double ColdGas;
+  double StellarMass;
+  double ClassicalBulgeMass;
+  double SecularBulgeMass;
+  double HotGas;
+  double EjectedMass;
+  double BlackHoleMass;
+  double ICS;
+  double DiscGas[30];
+  double DiscStars[30];
 
   // metals
-  float MetalsColdGas;
-  float MetalsStellarMass;
-  float ClassicalMetalsBulgeMass;
-  float SecularMetalsBulgeMass;
-  float MetalsHotGas;
-  float MetalsEjectedMass;
-  float MetalsICS;
-  float DiscGasMetals[30];
-  float DiscStarsMetals[30];
+  double MetalsColdGas;
+  double MetalsStellarMass;
+  double ClassicalMetalsBulgeMass;
+  double SecularMetalsBulgeMass;
+  double MetalsHotGas;
+  double MetalsEjectedMass;
+  double MetalsICS;
+  double DiscGasMetals[30];
+  double DiscStarsMetals[30];
 
   // to calculate magnitudes
-  float SfrDisk[STEPS];
-  float SfrBulge[STEPS];
-  float SfrDiskColdGas[STEPS];
-  float SfrDiskColdGasMetals[STEPS];
-  float SfrBulgeColdGas[STEPS];
-  float SfrBulgeColdGasMetals[STEPS];
+  double SfrDisk[STEPS];
+  double SfrBulge[STEPS];
+  double SfrDiskColdGas[STEPS];
+  double SfrDiskColdGasMetals[STEPS];
+  double SfrBulgeColdGas[STEPS];
+  double SfrBulgeColdGasMetals[STEPS];
 
   // misc 
-  float DiskScaleRadius;
-  float ClassicalBulgeRadius;
-  float MergTime;
+  double DiskScaleRadius;
+  double ClassicalBulgeRadius;
+  double MergTime;
   double Cooling;
   double Heating;
-  float r_heat;
-  float LastMajorMerger;
-  float OutflowRate;
+  double r_heat;
+  double LastMajorMerger;
+  double OutflowRate;
 
   //infall properties
-  float infallMvir;
-  float infallVvir;
-  float infallVmax;
+  double infallMvir;
+  double infallVvir;
+  double infallVmax;
 }
 *Gal, *HaloGal;
 

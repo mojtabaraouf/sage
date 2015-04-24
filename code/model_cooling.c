@@ -158,7 +158,7 @@ double do_AGN_heating(double coolingGas, int centralgal, double dt, double x, do
 // This cools the gas onto the correct disc bins
 void cool_gas_onto_galaxy(int p, double coolingGas)
 {
-  double metallicity, coolingGasBin, coolingGasBinSum, DiscGasSum;
+  double metallicity, coolingGasBin, coolingGasBinSum, DiscGasSum, DiscDiff;
   int i;
 
   // Check that Cold Gas has been treated properly prior to this function
@@ -166,16 +166,18 @@ void cool_gas_onto_galaxy(int p, double coolingGas)
   for(i=0; i<30; i++)
 	DiscGasSum += Gal[p].DiscGas[i];
 
-  if(DiscGasSum > 1.01*Gal[p].ColdGas || DiscGasSum < Gal[p].ColdGas/1.01)
+  if(DiscGasSum > 1.001*Gal[p].ColdGas || DiscGasSum < Gal[p].ColdGas/1.001)
   {
-	printf("Gas uneven at start of cooling....%e\n", DiscGasSum/Gal[p].ColdGas);
-	ABORT(1);
+	printf("Gas uneven at start of cooling....%e\t%e\n", DiscGasSum, Gal[p].ColdGas);
+	//ABORT(1);
   }
+
+  DiscDiff = abs(DiscGasSum - Gal[p].ColdGas);
 
   if(Gal[p].HotGas != Gal[p].HotGas || Gal[p].HotGas < 0)
   {
     printf("HotGas initial cool_gas_onto_galaxy...%e\n", Gal[p].HotGas);
-    ABORT(1);
+    //ABORT(1);
   }
 
   // add the fraction 1/STEPS of the total cooling gas to the cold disk 
@@ -217,16 +219,16 @@ void cool_gas_onto_galaxy(int p, double coolingGas)
 			printf("Vvir, DSR...%e\t%e\n", Gal[p].Vvir, Gal[p].DiskScaleRadius);
 			printf("%d", i);
 			printf("\n");
-			ABORT(1);
+			//ABORT(1);
 		}
 		//if(i!=0 && Gal[p].DiscGas[i]!=0.0)
 		  //printf("DiscGas[%d] = %e\n", i, Gal[p].DiscGas[i]);
       }
 
-	  if(coolingGasBinSum > 1.01*coolingGas || coolingGasBinSum < coolingGas/1.01)
+	  if(coolingGasBinSum > 1.001*coolingGas || coolingGasBinSum < coolingGas/1.001)
 	  {
 		printf("coolingGas inconsistent on if -- %e", coolingGasBinSum/coolingGas);
-		ABORT(1);
+		//ABORT(1);
 	  }
 
       Gal[p].ColdGas += coolingGas;
@@ -256,7 +258,7 @@ void cool_gas_onto_galaxy(int p, double coolingGas)
 			printf("\n");
 			printf("%d", i);
 			printf("\n");
-			ABORT(1);
+			//ABORT(1);
 		}
 		if(i!=0 && Gal[p].DiscGas[i]!=0.0)
 		  printf("DiscGas[%d] = %e\n", i, Gal[p].DiscGas[i]);
@@ -265,7 +267,7 @@ void cool_gas_onto_galaxy(int p, double coolingGas)
 	  if(coolingGasBinSum > 1.01*coolingGas || coolingGasBinSum < coolingGas/1.01)
 	  {
 		printf("coolingGas inconsistent on else -- %e", coolingGasBinSum/coolingGas);
-		ABORT(1);
+		//ABORT(1);
 	  }
 	
       Gal[p].ColdGas += Gal[p].HotGas;
@@ -277,7 +279,7 @@ void cool_gas_onto_galaxy(int p, double coolingGas)
   if(Gal[p].HotGas != Gal[p].HotGas || Gal[p].HotGas < 0)
   {
     printf("HotGas final cool_gas_onto_galaxy...%e\n", Gal[p].HotGas);
-    ABORT(1);
+    //ABORT(1);
   }
 
   // Check that Cold Gas has been treated properly by this function (in principle, one of the other errors should arise first if this is so)
@@ -285,10 +287,18 @@ void cool_gas_onto_galaxy(int p, double coolingGas)
   for(i=0; i<30; i++)
 	DiscGasSum += Gal[p].DiscGas[i];
 
-  if(DiscGasSum > 1.01*Gal[p].ColdGas || DiscGasSum < Gal[p].ColdGas/1.01)
+  //if(abs(DiscDiff) > 1.001*abs(DiscGasSum-Gal[p].ColdGas) || abs(DiscDiff) < abs(DiscGasSum-Gal[p].ColdGas)/1.001 || DiscDiff*(DiscGasSum-Gal[p].ColdGas)<0.0)
+  //{
+	//printf("Cooling inducing absolute differences between ColdGas and DiscGas......%e\n", DiscDiff/abs(DiscGasSum-Gal[p].ColdGas));
+	//ABORT(1);
+  //}
+
+  if(DiscGasSum > 1.001*Gal[p].ColdGas || DiscGasSum < Gal[p].ColdGas/1.001)
   {
-	printf("Gas cooled incorrectly....%e\n", DiscGasSum/Gal[p].ColdGas);
-	ABORT(1);
+	printf("Gas cooled incorrectly....%e\t%e\n", DiscGasSum, Gal[p].ColdGas);
+	//ABORT(1);
   }
+
+
 
 }

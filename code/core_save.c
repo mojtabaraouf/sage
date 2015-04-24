@@ -221,7 +221,7 @@ void finalize_galaxy_file(int filenr)
       ABORT(1);
     }
 #endif
-
+	printf("Ntrees, TotGalaxies, TreeNgals = %d\t%d\t%d\n", Ntrees, TotGalaxies, TreeNgals);
     myfwrite(&Ntrees, sizeof(int), 1, fd);
     myfwrite(&TotGalaxies[n], sizeof(int), 1, fd);
     myfwrite(TreeNgals[n], sizeof(int), Ntrees, fd);
