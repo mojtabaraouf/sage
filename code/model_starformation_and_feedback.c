@@ -53,7 +53,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 		else
 		  f_H2 = 0.0;
 	
-		strdot = SFE_H2 * f_H2 * Gal[p].DiscGas[i];
+		strdot = SfrEfficiency * SFE_H2 * f_H2 * Gal[p].DiscGas[i]/1.3;
 	
 		if(area!=area || area<0)
 		{
@@ -94,7 +94,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	  {
 		area = M_PI * (pow(DiscBinEdge[i+1]/Gal[p].Vvir, 2.0) - pow(DiscBinEdge[i]/Gal[p].Vvir, 2.0));
 		Sigma_0gas = 2.1 * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
-        reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area);
+        reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3);
 
 		// can't use more cold gas than is available! so balance SF and feedback 
 	    if((stars + reheated_mass) > Gal[p].DiscGas[i] && (stars + reheated_mass) > 0.0)

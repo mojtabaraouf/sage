@@ -42,7 +42,7 @@ DiskInstabilityOn			1		;0: switch off; 1: bulge and BH growth through instabilit
 %----- Parameters of physical model -------
 %------------------------------------------
 
-SfrEfficiency				0.07	;efficiency of SF (SFprescription=0)
+SfrEfficiency				0.5		;efficiency of SF (SFprescription=0).  Changed definition to original SAGE, just modulates the efficiency.
 ClumpingFactor				5.0		;gas clumping factor in Krumholz & Dekel 2011 (SFprescription=1)
 
 FeedbackReheatingEpsilon	3.5		;mass of cold gas reheated due to SF (see Martin 1999) (SupernovaRecipeOn=1)
@@ -52,7 +52,7 @@ ReIncorporationFactor		0.15	;fraction of ejected mass reincorporated per dynamic
 
 RadioModeEfficiency			1.0		;AGN radio mode efficiency (AGNrecipeOn>0) -- 2.0e-3 / 1.0
 QuasarModeEfficiency		0.001	;AGN quasar mode wind heating efficiency (AGNrecipeOn>0)
-BlackHoleGrowthRate			0.03	;fraction of cold gas added to the BH during mergers (AGNrecipeOn>0)
+BlackHoleGrowthRate			0.005	;fraction of cold gas added to the BH during mergers (AGNrecipeOn>0)
 
 ThreshMajorMerger			0.3		;major merger when mass ratio greater than this
 ThresholdSatDisruption		1.0		;Mvir-to-baryonic mass ratio threshold for satellite merger or disruption
@@ -64,8 +64,8 @@ FracZleaveDisk				0.0		;fraction of metals produced directly to hot component
 Reionization_z0				8.0		;these parameter choices give the best fit to Genedin (2000)...
 Reionization_zr				7.0		;using the analytic fit of Kravtsov et al. 2004 (ReionizationOn=1)
 
-EnergySN								1.0e51	;energy per supernova
-EtaSN										5.0e-3	;supernova efficiency
+EnergySN					1.0e51	;energy per supernova
+EtaSN						5.0e-3	;supernova efficiency
 
 
 %------------------------------------------
