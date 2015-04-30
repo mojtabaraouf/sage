@@ -62,6 +62,7 @@ double get_virial_velocity(int halonr);
 double get_virial_radius(int halonr);
 double get_virial_mass(int halonr);
 double get_disk_radius(int halonr, int p);
+double get_disc_gas(int halonr);
 
 void read_output_snaps(void);
 void read_snap_list(void);

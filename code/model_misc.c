@@ -190,4 +190,14 @@ double get_virial_radius(int halonr)
 }
 
 
-
+double get_disc_gas(int halonr)
+{
+	double DiscGasSum;
+	int l;
+	
+	DiscGasSum = 0.0;
+	for(l=0; l<30; l++)
+		DiscGasSum += Gal[halonr].DiscGas[l];
+		
+	return DiscGasSum;
+}

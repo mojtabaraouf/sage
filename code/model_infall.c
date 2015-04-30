@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <assert.h>
 
 #include "core_allvars.h"
 #include "core_proto.h"
@@ -14,7 +15,11 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
   int i;
   double tot_stellarMass, tot_BHMass, tot_coldMass, tot_hotMass, tot_hotMetals, tot_ejected, tot_ejectedMetals;
   double tot_ICS, tot_ICSMetals;
-  double infallingMass, reionization_modifier;
+  double infallingMass, reionization_modifier, DiscGasSum;
+
+  DiscGasSum = get_disc_gas(centralgal);
+  assert(DiscGasSum < 1.001*Gal[centralgal].ColdGas && DiscGasSum > Gal[centralgal].ColdGas/1.001);
+  assert(Gal[centralgal].HotGas == Gal[centralgal].HotGas && Gal[centralgal].HotGas >= 0);
 
   // need to add up all the baryonic mass asociated with the full halo 
   tot_stellarMass = tot_coldMass = tot_hotMass = tot_hotMetals = tot_ejected = tot_BHMass = tot_ejectedMetals = tot_ICS = tot_ICSMetals = 0.0;
@@ -73,6 +78,10 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
     Gal[centralgal].ICS = Gal[centralgal].MetalsICS = 0.0;
   if(Gal[centralgal].MetalsICS < 0.0)
     Gal[centralgal].MetalsICS = 0.0;
+
+  DiscGasSum = get_disc_gas(centralgal);
+  assert(DiscGasSum < 1.001*Gal[centralgal].ColdGas && DiscGasSum > Gal[centralgal].ColdGas/1.001);
+  assert(Gal[centralgal].HotGas == Gal[centralgal].HotGas && Gal[centralgal].HotGas >= 0);
 
   return infallingMass;
 }
@@ -170,11 +179,7 @@ void add_infall_to_hot(int gal, double infallingGas)
 {
   float metallicity;
 
-  if(Gal[gal].HotGas != Gal[gal].HotGas || Gal[gal].HotGas < 0)
-  {
-    printf("HotGas initial add_infall_to_hot...%e\n", Gal[gal].HotGas);
-    ABORT(1);
-  }
+  assert(Gal[gal].HotGas == Gal[gal].HotGas && Gal[gal].HotGas >= 0);
 
   // if the halo has lost mass, subtract baryons from the ejected mass first, then the hot gas
   if(infallingGas < 0.0 && Gal[gal].EjectedMass > 0.0)
@@ -207,13 +212,8 @@ void add_infall_to_hot(int gal, double infallingGas)
 
   // add (subtract) the ambient (enriched) infalling gas to the central galaxy hot component 
   Gal[gal].HotGas += infallingGas;
-  if(Gal[gal].HotGas < 0.0) Gal[gal].HotGas = Gal[gal].MetalsHotGas = 0.0;
 
-  if(Gal[gal].HotGas != Gal[gal].HotGas || Gal[gal].HotGas < 0)
-  {
-    printf("HotGas final add_infall_to_hot...%e\n", Gal[gal].HotGas);
-    ABORT(1);
-  }
-
+  if(Gal[gal].HotGas < 0.0) 
+    Gal[gal].HotGas = Gal[gal].MetalsHotGas = 0.0;
 }
 
