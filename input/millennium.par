@@ -42,7 +42,7 @@ DiskInstabilityOn			1		;0: switch off; 1: bulge and BH growth through instabilit
 %----- Parameters of physical model -------
 %------------------------------------------
 
-SfrEfficiency				0.5		;efficiency of SF (SFprescription=0).  Changed definition to original SAGE, just modulates the efficiency.
+SfrEfficiency				2.0		;efficiency of SF (SFprescription=0).  Changed definition to original SAGE, just modulates the efficiency.
 ClumpingFactor				5.0		;gas clumping factor in Krumholz & Dekel 2011 (SFprescription=1)
 
 FeedbackReheatingEpsilon	3.5		;mass of cold gas reheated due to SF (see Martin 1999) (SupernovaRecipeOn=1)
