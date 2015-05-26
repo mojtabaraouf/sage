@@ -59,7 +59,10 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	{
 	  if(stars>1e-8)
 	  {
-		area = M_PI * (pow(DiscBinEdge[i+1]/Gal[p].Vvir, 2.0) - pow(DiscBinEdge[i]/Gal[p].Vvir, 2.0));
+		if(Gal[p].Vvir > 0.0)
+		  area = M_PI * (pow(DiscBinEdge[i+1]/Gal[p].Vvir, 2.0) - pow(DiscBinEdge[i]/Gal[p].Vvir, 2.0));
+		else
+		  area = M_PI * (pow(DiscBinEdge[i+1]/Gal[p].Vmax, 2.0) - pow(DiscBinEdge[i]/Gal[p].Vmax, 2.0));
 		Sigma_0gas = 2.1 * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
         reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3);
 

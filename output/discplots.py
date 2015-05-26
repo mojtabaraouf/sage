@@ -120,7 +120,7 @@ plt.axis([0,25,1e0,1e3])
 plt.errorbar([0,0], [0,1], [1,1], ecolor='k', color='k', label=r'Leroy et al. (2008)')
 plt.xlabel(r'Radius [kpc]')
 plt.ylabel(r'$\Sigma_{\rm gas}$ [M$_{\bigodot}$ pc$^{-2}$]')
-plt.legend(fontsize=fsize-4, loc='best', frameon=False)
+plt.legend(fontsize=fsize-4, loc='best', frameon=False, title=r'$V_{\rm vir} \in$ [200,235] km s$^{-1}$')
 gp.Leroygals(HI=True, H2=True)
 gp.savepng(outdir+'GasSurface')
 
@@ -135,7 +135,7 @@ plt.axis([0,25,1e0,1e3])
 plt.errorbar([0,0], [0,1], [1,1], ecolor='k', color='k', label=r'Leroy et al. (2008)')
 plt.xlabel(r'Radius [kpc]')
 plt.ylabel(r'$\Sigma_{\rm HI}$ [M$_{\bigodot}$ pc$^{-2}$]')
-plt.legend(fontsize=fsize-4, loc='best', frameon=False)
+plt.legend(fontsize=fsize-4, loc='best', frameon=False, title=r'$V_{\rm vir} \in$ [200,235] km s$^{-1}$')
 gp.Leroygals(HI=True)
 gp.savepng(outdir+'HISurface')
 
@@ -150,7 +150,7 @@ plt.axis([0,25,1e0,1e3])
 plt.errorbar([0,0], [0,1], [1,1], ecolor='k', color='k', label=r'Leroy et al. (2008)')
 plt.xlabel(r'Radius [kpc]')
 plt.ylabel(r'$\Sigma_{\rm H_2}$ [M$_{\bigodot}$ pc$^{-2}$]')
-plt.legend(fontsize=fsize-4, loc='best', frameon=False)
+plt.legend(fontsize=fsize-4, loc='best', frameon=False, title=r'$V_{\rm vir} \in$ [200,235] km s$^{-1}$')
 gp.Leroygals(H2=True)
 gp.savepng(outdir+'H2Surface')
 
@@ -199,7 +199,7 @@ plt.axis([0,25,1e0,1e3])
 plt.errorbar([0,0], [0,1], [1,1], ecolor='k', color='k', label=r'Leroy et al. (2008)')
 plt.xlabel(r'Radius [kpc]')
 plt.ylabel(r'$\Sigma_{\rm gas}$ [M$_{\bigodot}$ pc$^{-2}$]')
-plt.legend(fontsize=fsize-4, loc='best', frameon=False)
+plt.legend(fontsize=fsize-4, loc='best', frameon=False, title=r'$V_{\rm vir} \in$ [175,200] km s$^{-1}$')
 gp.Leroygals(HI=True, H2=True, HighVvir=False, LowVvir=True)
 gp.savepng(outdir+'GasSurface2')
 
@@ -209,14 +209,15 @@ gp.savepng(outdir+'GasSurface2')
 
 # Stellar mass function
 gp.figure()
-gp.massfunction(G.StellarMass*1e10*0.73, 62.5, extra=2, h=1, step=False, fsize=fsize, binwidth=0.1, label=r'SAGE Disc')
+#gp.massfunction(G.StellarMass*1e10*0.73, 62.5, extra=2, h=1, step=False, fsize=fsize, binwidth=0.1, label=r'SAGE Disc')
+gp.massfunction(G.StellarMass*1e10*0.73, 500*(8./512)**(1./3), extra=2, h=1, step=False, fsize=fsize, binwidth=0.1, label=r'SAGE Disc')
 plt.axis([8,11.8,5e-6,0.2])
 gp.savepng(outdir+'SMF', xpixplot=768, ypixplot=512)
 
 # Black hole -- bulge relation
 filt = (G.BlackHoleMass > 1e-5) * ((G.ClassicalBulgeMass+G.SecularBulgeMass) > 0.01)
 gp.figure()
-gp.bhbulge(G.BlackHoleMass[filt]*1e10*0.73, (G.ClassicalBulgeMass[filt]+G.SecularBulgeMass[filt])*1e10*0.73, h=1, fsize=fsize, Nbins=100, extra=True, label=r'SAGE Disc')
+gp.bhbulge(G.BlackHoleMass[filt]*1e10*0.73, (G.ClassicalBulgeMass[filt]+G.SecularBulgeMass[filt])*1e10*0.73, h=1, fsize=fsize, Nbins=100, extra=2, label=r'SAGE Disc')
 gp.savepng(outdir+'BHbulge', xpixplot=768, ypixplot=512)
 
 # Stellar mass -- gas metallicity relation

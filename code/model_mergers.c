@@ -339,10 +339,13 @@ void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_central
 	{
 	  if(stars>1e-8)
 	  {
-		area = M_PI * (pow(DiscBinEdge[k+1]/Gal[merger_centralgal].Vvir, 2.0) - pow(DiscBinEdge[k]/Gal[merger_centralgal].Vvir, 2.0));
+		if(Gal[merger_centralgal].Vvir > 0.0)
+		  area = M_PI * (pow(DiscBinEdge[k+1]/Gal[merger_centralgal].Vvir, 2.0) - pow(DiscBinEdge[k]/Gal[merger_centralgal].Vvir, 2.0));
+		else
+		  area = M_PI * (pow(DiscBinEdge[k+1]/Gal[merger_centralgal].Vmax, 2.0) - pow(DiscBinEdge[k]/Gal[merger_centralgal].Vmax, 2.0));
 		Sigma_0gas = 2.1 * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
         reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[merger_centralgal].DiscGas[k]/area/1.3);
-
+		
 		// can't use more cold gas than is available! so balance SF and feedback 
 	    if((stars + reheated_mass) > Gal[merger_centralgal].DiscGas[k] && (stars + reheated_mass) > 0.0)
 	    {
@@ -353,7 +356,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_central
 	
 	    if(stars<1e-8)
 	    {
-	      stars = 1e-8;
+		  stars = 1e-8;
 		  reheated_mass = Gal[merger_centralgal].DiscGas[k] - (1-RecycleFraction)*stars;
 	    }
 	
@@ -361,7 +364,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_central
 	    if(ejected_mass < 0.0)
 	        ejected_mass = 0.0;
 	
-		assert(RecycleFraction*stars+reheated_mass < 1.001*Gal[merger_centralgal].DiscGas[k]);
+		assert(RecycleFraction*stars+reheated_mass <= 1.001*Gal[merger_centralgal].DiscGas[k]);
 	  }
 
 	  else
@@ -376,7 +379,8 @@ void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_central
       reheated_mass = 0.0;
 	  ejected_mass = 0.0;
 	}
-		
+	if(reheated_mass!=reheated_mass || reheated_mass<0.0)
+		printf("reheated_mass, stars, fac, DiscGas -- %e\t%e\t%e\t%e\n", reheated_mass, stars, fac, Gal[merger_centralgal].DiscGas[k]);	
 	assert(reheated_mass >= 0.0);
 
 	metallicity = get_metallicity(Gal[merger_centralgal].DiscGas[k], Gal[merger_centralgal].DiscGasMetals[k]);
