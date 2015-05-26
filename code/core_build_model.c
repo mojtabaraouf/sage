@@ -345,7 +345,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
     for(p = 0; p < ngal; p++)
     {
 	  DiscGasSum = get_disc_gas(p);
-	  assert(DiscGasSum < 1.001*Gal[p].ColdGas && DiscGasSum > Gal[p].ColdGas/1.001);
+	  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 	
       // don't treat galaxies that have already merged 
@@ -362,7 +362,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
       if(p == centralgal)
       {
 	    DiscGasSum = get_disc_gas(p);
-		assert(DiscGasSum < 1.001*Gal[p].ColdGas && DiscGasSum > Gal[p].ColdGas/1.001);
+		assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 		assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
         add_infall_to_hot(centralgal, infallingGas / STEPS);
 
@@ -372,7 +372,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
       else if(Gal[p].Type == 1 && Gal[p].HotGas > 0.0)
       {
 	    DiscGasSum = get_disc_gas(p);
-		assert(DiscGasSum < 1.001*Gal[p].ColdGas && DiscGasSum > Gal[p].ColdGas/1.001);
+		assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 		assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
         strip_from_satellite(halonr, centralgal, p);
       }
@@ -381,14 +381,14 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
       cool_gas_onto_galaxy(p, coolingGas);
 
       DiscGasSum = get_disc_gas(p);
-      assert(DiscGasSum < 1.001*Gal[p].ColdGas && DiscGasSum > Gal[p].ColdGas/1.001);
+      assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 	
 	  // stars form and then explode! 
       starformation_and_feedback(p, centralgal, time, deltaT / STEPS, halonr, step);
 
       DiscGasSum = get_disc_gas(p);
-	  assert(DiscGasSum < 1.001*Gal[p].ColdGas && DiscGasSum > Gal[p].ColdGas/1.001);
+	  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 	
     }
@@ -428,7 +428,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
           {
             disrupt_satellite_to_ICS(merger_centralgal, p);
 	        DiscGasSum = get_disc_gas(p);
-			assert(DiscGasSum < 1.001*Gal[p].ColdGas && DiscGasSum > Gal[p].ColdGas/1.001);
+			assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 			assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 	
           }
@@ -439,14 +439,14 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
               time = Age[Gal[p].SnapNum] - (step + 0.5) * (deltaT / STEPS);   
               deal_with_galaxy_merger(p, merger_centralgal, centralgal, time, deltaT / STEPS, halonr, step);
 		      DiscGasSum = get_disc_gas(p);
-			  assert(DiscGasSum < 1.001*Gal[p].ColdGas && DiscGasSum > Gal[p].ColdGas/1.001);
+			  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 			  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
             }
           }
  
         }
        	DiscGasSum = get_disc_gas(p);
-		assert(DiscGasSum < 1.001*Gal[p].ColdGas && DiscGasSum > Gal[p].ColdGas/1.001);
+		assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 		assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
       }
     }

@@ -154,7 +154,7 @@ void grow_black_hole(int merger_centralgal, double mass_ratio)
       BHaccrete = Gal[merger_centralgal].ColdGas;
   
 	DiscGasSum = get_disc_gas(merger_centralgal);
-	assert(DiscGasSum < 1.01*Gal[merger_centralgal].ColdGas && DiscGasSum > Gal[merger_centralgal].ColdGas/1.01);
+	assert(DiscGasSum <= 1.01*Gal[merger_centralgal].ColdGas && DiscGasSum >= Gal[merger_centralgal].ColdGas/1.01);
 
 	for(k=0; k<30; k++)
     {
@@ -263,7 +263,7 @@ void add_galaxies_together(int t, int p, double disc_mass_ratio[30])
   }
 
   DiscGasSum = get_disc_gas(p);
-  assert(DiscGasSum < 1.01*Gal[p].ColdGas && DiscGasSum > Gal[p].ColdGas/1.01);
+  assert(DiscGasSum <= 1.01*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.01);
 }
 
 
@@ -400,7 +400,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_central
 	  else
 		Gal[merger_centralgal].MetalsHotGas += Yield * stars;
 	}
-	assert(Gal[merger_centralgal].DiscGasMetals[k]<Gal[merger_centralgal].DiscGas[k]);
+	assert(Gal[merger_centralgal].DiscGasMetals[k]<=Gal[merger_centralgal].DiscGas[k]);
 	
 	stars_sum += stars;
   }

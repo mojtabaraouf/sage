@@ -21,7 +21,7 @@ void check_disk_instability(int p, int centralgal, int halonr, double time, doub
 
   // Check that Cold Gas has been treated properly prior to this function
   DiscGasSum = get_disc_gas(p);
-  assert(DiscGasSum < 1.001*Gal[p].ColdGas || DiscGasSum > Gal[p].ColdGas/1.001);
+  assert(DiscGasSum <= 1.001*Gal[p].ColdGas || DiscGasSum >= Gal[p].ColdGas/1.001);
 
   // Disk mass has to be > 0.0 !
   diskmass = Gal[p].ColdGas + (Gal[p].StellarMass - Gal[p].ClassicalBulgeMass - Gal[p].SecularBulgeMass);
@@ -56,8 +56,8 @@ void check_disk_instability(int p, int centralgal, int halonr, double time, doub
     // Gal[p].mergeType = 3;  // mark as disk instability partial mass transfer
     // Gal[p].mergeIntoID = NumGals + p - 1;      
       
-	assert((Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass) / Gal[p].StellarMass < 1.0001);
-	assert((Gal[p].ClassicalMetalsBulgeMass + Gal[p].SecularMetalsBulgeMass) / Gal[p].MetalsStellarMass < 1.0001);
+	assert((Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass) <= 1.0001*Gal[p].StellarMass);
+	assert((Gal[p].ClassicalMetalsBulgeMass + Gal[p].SecularMetalsBulgeMass) <= 1.0001*Gal[p].MetalsStellarMass);
 
     // burst excess gas and feed black hole (really need a dedicated model for bursts and BH growth here)
     if(unstable_gas > 0.0)
@@ -76,7 +76,7 @@ void check_disk_instability(int p, int centralgal, int halonr, double time, doub
 	  {
 	    for(j=0; j<30; j++)
 	    {	
-		  assert(Gal[p].DiscGasMetals[j]<Gal[p].DiscGas[j]);
+		  assert(Gal[p].DiscGasMetals[j]<=Gal[p].DiscGas[j]);
 		  metallicity = get_metallicity(Gal[p].DiscGas[j], Gal[p].DiscGasMetals[j]);
 		  ring_fraction = Gal[p].DiscGas[j] / DiscGasSum;
 		

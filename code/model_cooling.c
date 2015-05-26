@@ -166,7 +166,7 @@ void cool_gas_onto_galaxy(int p, double coolingGas)
 
   // Check that Cold Gas has been treated properly prior to this function
   DiscGasSum = get_disc_gas(p);
-  assert(DiscGasSum < 1.001*Gal[p].ColdGas && DiscGasSum > Gal[p].ColdGas/1.001);
+  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
   assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 
   // add the fraction 1/STEPS of the total cooling gas to the cold disk 
@@ -184,11 +184,11 @@ void cool_gas_onto_galaxy(int p, double coolingGas)
 		
 	    Gal[p].DiscGas[i] += coolingGasBin;
 		Gal[p].DiscGasMetals[i] += metallicity * coolingGasBin;
-		assert(Gal[p].DiscGasMetals[i]<Gal[p].DiscGas[i]);
+		assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
 		coolingGasBinSum += coolingGasBin;
 	  }
 	
-	  assert(coolingGasBinSum < 1.001*coolingGas && coolingGasBinSum > coolingGas/1.001);
+	  assert(coolingGasBinSum <= 1.001*coolingGas && coolingGasBinSum >= coolingGas/1.001);
 
       Gal[p].ColdGas += coolingGas;
       Gal[p].MetalsColdGas += metallicity * coolingGas;
@@ -205,11 +205,11 @@ void cool_gas_onto_galaxy(int p, double coolingGas)
 
 		Gal[p].DiscGas[i] += coolingGasBin;
 		Gal[p].DiscGasMetals[i] += metallicity * coolingGasBin;
-		assert(Gal[p].DiscGasMetals[i]<Gal[p].DiscGas[i]);
+		assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
 		coolingGasBinSum += coolingGasBin;
       }
 
-	  assert(coolingGasBinSum < 1.001*coolingGas && coolingGasBinSum > coolingGas/1.001);
+	  assert(coolingGasBinSum <= 1.001*coolingGas && coolingGasBinSum >= coolingGas/1.001);
 
       Gal[p].ColdGas += Gal[p].HotGas;
       Gal[p].MetalsColdGas += Gal[p].MetalsHotGas;

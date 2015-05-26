@@ -18,7 +18,7 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
   double infallingMass, reionization_modifier, DiscGasSum;
 
   DiscGasSum = get_disc_gas(centralgal);
-  assert(DiscGasSum < 1.001*Gal[centralgal].ColdGas && DiscGasSum > Gal[centralgal].ColdGas/1.001);
+  assert(DiscGasSum <= 1.001*Gal[centralgal].ColdGas && DiscGasSum >= Gal[centralgal].ColdGas/1.001);
   assert(Gal[centralgal].HotGas == Gal[centralgal].HotGas && Gal[centralgal].HotGas >= 0);
 
   // need to add up all the baryonic mass asociated with the full halo 
@@ -80,7 +80,7 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
     Gal[centralgal].MetalsICS = 0.0;
 
   DiscGasSum = get_disc_gas(centralgal);
-  assert(DiscGasSum < 1.001*Gal[centralgal].ColdGas && DiscGasSum > Gal[centralgal].ColdGas/1.001);
+  assert(DiscGasSum <= 1.001*Gal[centralgal].ColdGas && DiscGasSum >= Gal[centralgal].ColdGas/1.001);
   assert(Gal[centralgal].HotGas == Gal[centralgal].HotGas && Gal[centralgal].HotGas >= 0);
 
   return infallingMass;

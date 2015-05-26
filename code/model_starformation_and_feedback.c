@@ -17,7 +17,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 
   // Checks that the deconstructed disc is being treated properly and not generating NaNs
   DiscGasSum = get_disc_gas(p);
-  assert(DiscGasSum < 1.001*Gal[p].ColdGas && DiscGasSum > Gal[p].ColdGas/1.001);
+  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
   assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 
   f_H2_const = 1.306e-3 * pow((CM_PER_MPC*CM_PER_MPC/1e12 / SOLAR_MASS) * (UnitMass_in_g / UnitLength_in_cm / UnitLength_in_cm), 2.0*0.92);
@@ -38,7 +38,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 		f_H2 = f_H2_const * pow(pow(Gal[p].DiscGas[i]/area, 2.0) + 0.1*Gal[p].DiscGas[i]/area * pow(Gal[p].DiscStars[i]*Gal[p].DiscStars[0], 0.5)/area, 0.92);
 		if(f_H2 > 0.0)
 		{
-		  assert(Gal[p].DiscGasMetals[i]<Gal[p].DiscGas[i]);
+		  assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
 		  f_H2 = 0.75 * 1.0/(1.0/f_H2 + 1) * (1 - Gal[p].DiscGasMetals[i]/Gal[p].DiscGas[i]); //Changes f_H2 from being H2/HI to H2/Cold Gas
 		}
 		else
@@ -109,8 +109,8 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	if(reheated_mass > Gal[p].DiscGas[i] && reheated_mass < 1.01*Gal[p].DiscGas[i])
 	  reheated_mass = Gal[p].DiscGas[i];
 
-	// These checks ensure numerical uncertainties don't blow up
-    assert((Gal[p].ColdGas-ColdPre)/(Gal[p].DiscGas[i]-DiscPre) < 1.001 && (Gal[p].ColdGas-ColdPre)/(Gal[p].DiscGas[i]-DiscPre) > 0.999 && (Gal[p].ColdGas-ColdPre)*(Gal[p].DiscGas[i]-DiscPre)>=0.0);
+	// These checks ensure numerical uncertainties don't blow up	
+    assert(abs(Gal[p].ColdGas-ColdPre) <= 1.001*abs(Gal[p].DiscGas[i]-DiscPre) && abs(Gal[p].ColdGas-ColdPre) >= 0.999*abs(Gal[p].DiscGas[i]-DiscPre) && (Gal[p].ColdGas-ColdPre)*(Gal[p].DiscGas[i]-DiscPre)>=0.0);
  
 	DiscPre = Gal[p].DiscGas[i];
 	ColdPre = Gal[p].ColdGas;
@@ -119,7 +119,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
     update_from_feedback(p, centralgal, reheated_mass, ejected_mass, metallicity, i);
 
-	assert((Gal[p].ColdGas-ColdPre)/(Gal[p].DiscGas[i]-DiscPre) < 1.001 && (Gal[p].ColdGas-ColdPre)/(Gal[p].DiscGas[i]-DiscPre) > 0.999 && (Gal[p].ColdGas-ColdPre)*(Gal[p].DiscGas[i]-DiscPre)>=0.0);
+	assert(abs(Gal[p].ColdGas-ColdPre) <= 1.001*abs(Gal[p].DiscGas[i]-DiscPre) && abs(Gal[p].ColdGas-ColdPre) >= 0.999*abs(Gal[p].DiscGas[i]-DiscPre) && (Gal[p].ColdGas-ColdPre)*(Gal[p].DiscGas[i]-DiscPre)>=0.0);
 
 	// Inject new metals from SN II
 	if(SupernovaRecipeOn == 1 && stars>1e-9)
@@ -132,14 +132,14 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	  else
 		Gal[p].MetalsHotGas += Yield * stars;
 	}
-	assert(Gal[p].DiscGasMetals[i]<Gal[p].DiscGas[i]);
+	assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
   }
 
   // Update the star formation rate 
   Gal[p].SfrDisk[step] += stars_sum / dt;
 
   DiscGasSum = get_disc_gas(p);
-  assert(DiscGasSum < 1.001*Gal[p].ColdGas && DiscGasSum > Gal[p].ColdGas/1.001);
+  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 
   // Check for disk instability
   if(DiskInstabilityOn)

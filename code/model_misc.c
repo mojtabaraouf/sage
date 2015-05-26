@@ -198,6 +198,9 @@ double get_disc_gas(int halonr)
 	DiscGasSum = 0.0;
 	for(l=0; l<30; l++)
 		DiscGasSum += Gal[halonr].DiscGas[l];
-		
+
+	if(DiscGasSum>1.001*Gal[halonr].ColdGas || DiscGasSum<Gal[halonr].ColdGas/1.001)
+		printf("get_disc_gas report %e\t%e\n", DiscGasSum, Gal[halonr].ColdGas);
+  	
 	return DiscGasSum;
 }
