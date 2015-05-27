@@ -209,8 +209,8 @@ gp.savepng(outdir+'GasSurface2')
 
 # Stellar mass function
 gp.figure()
-#gp.massfunction(G.StellarMass*1e10*0.73, 62.5, extra=2, h=1, step=False, fsize=fsize, binwidth=0.1, label=r'SAGE Disc')
-gp.massfunction(G.StellarMass*1e10*0.73, 500*(8./512)**(1./3), extra=2, h=1, step=False, fsize=fsize, binwidth=0.1, label=r'SAGE Disc')
+gp.massfunction(G.StellarMass*1e10*0.73, 62.5, extra=2, h=1, step=False, fsize=fsize, binwidth=0.1, label=r'SAGE Disc')
+#gp.massfunction(G.StellarMass*1e10*0.73, 500*(8./512)**(1./3), extra=2, h=1, step=False, fsize=fsize, binwidth=0.1, label=r'SAGE Disc')
 plt.axis([8,11.8,5e-6,0.2])
 gp.savepng(outdir+'SMF', xpixplot=768, ypixplot=512)
 

@@ -18,14 +18,14 @@ LastFile					7
 LastSnapShotNr				63
 
 % Mini-Millennium
-%SimulationDir					../../../../../Volumes/AdamDrive/Swinburne/treefiles/millennium/millennium_mini
-%FilesPerSnapshot			8    ; Mini Millennium
-%FileWithSnapList				../../../../../Volumes/AdamDrive/Swinburne/treefiles/millennium/millennium_mini/millennium.a_list
+SimulationDir					../../../../../Volumes/AdamDrive/Swinburne/treefiles/millennium/millennium_mini
+FilesPerSnapshot			8    ; Mini Millennium
+FileWithSnapList				../../../../../Volumes/AdamDrive/Swinburne/treefiles/millennium/millennium_mini/millennium.a_list
 
 % Full Millennium
-SimulationDir				/Users/astevens/trees/Millennium
-FilesPerSnapshot			512  ; Full Millennium
-FileWithSnapList            /Users/astevens/trees/Millennium/millennium.a_list
+%SimulationDir				/Users/astevens/trees/Millennium
+%FilesPerSnapshot			512  ; Full Millennium
+%FileWithSnapList            /Users/astevens/trees/Millennium/millennium.a_list
 
 
 %------------------------------------------
@@ -43,7 +43,7 @@ DiskInstabilityOn			1		;0: switch off; 1: bulge and BH growth through instabilit
 %----- Parameters of physical model -------
 %------------------------------------------
 
-SfrEfficiency				2.0		;efficiency of SF (SFprescription=0).  Changed definition to original SAGE, just modulates the efficiency.
+SfrEfficiency				1.0		;efficiency of SF (SFprescription=0).  Changed definition to original SAGE, just modulates the efficiency.
 ClumpingFactor				5.0		;gas clumping factor in Krumholz & Dekel 2011 (SFprescription=1)
 
 FeedbackReheatingEpsilon	3.5		;mass of cold gas reheated due to SF (see Martin 1999) (SupernovaRecipeOn=1)
@@ -51,7 +51,7 @@ FeedbackEjectionEfficiency	0.3 	;mixing efficiency of SN energy with hot gas to 
 
 ReIncorporationFactor		0.15	;fraction of ejected mass reincorporated per dynamical time to hot
 
-RadioModeEfficiency			1.0		;AGN radio mode efficiency (AGNrecipeOn>0) -- 2.0e-3 / 1.0
+RadioModeEfficiency			0.15	;AGN radio mode efficiency (AGNrecipeOn>0) -- 2.0e-3 / 1.0
 QuasarModeEfficiency		0.001	;AGN quasar mode wind heating efficiency (AGNrecipeOn>0)
 BlackHoleGrowthRate			0.005	;fraction of cold gas added to the BH during mergers (AGNrecipeOn>0)
 
