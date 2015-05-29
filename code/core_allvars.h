@@ -73,6 +73,8 @@ struct GALAXY_OUTPUT
   double ICS;
   double DiscGas[30];
   double DiscStars[30];
+  //double SpinStars[3];
+  //double SpinGas[3];
 
   // metals
   double MetalsColdGas;
@@ -142,6 +144,8 @@ struct GALAXY
   double ICS;
   double DiscGas[30];
   double DiscStars[30];
+  double SpinStars[3];
+  double SpinGas[3];
 
   // metals
   double MetalsColdGas;

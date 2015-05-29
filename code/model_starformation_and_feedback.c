@@ -153,9 +153,13 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 
 void update_from_star_formation(int p, double stars, double metallicity, int i)
 {
+  //double DiscNewSpin[3], OldDisc[30], OldDiscMetals[30];
+	
   // update gas and metals from star formation 
   Gal[p].DiscGas[i] -= (1 - RecycleFraction) * stars;
   Gal[p].DiscGasMetals[i] -= metallicity * (1 - RecycleFraction) * stars;
+
+ // Here's where I need to consider the offset of the gas and star discs
   Gal[p].DiscStars[i] += (1 - RecycleFraction) * stars;
   Gal[p].DiscStarsMetals[i] += metallicity * (1 - RecycleFraction) * stars;
   

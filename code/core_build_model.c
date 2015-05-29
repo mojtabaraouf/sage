@@ -361,21 +361,13 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
       // for central galaxy only 
       if(p == centralgal)
       {
-	    DiscGasSum = get_disc_gas(p);
-		assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
-		assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
         add_infall_to_hot(centralgal, infallingGas / STEPS);
-
         if(ReIncorporationFactor > 0.0)
           reincorporate_gas(centralgal, deltaT / STEPS);
       }
       else if(Gal[p].Type == 1 && Gal[p].HotGas > 0.0)
-      {
-	    DiscGasSum = get_disc_gas(p);
-		assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
-		assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
         strip_from_satellite(halonr, centralgal, p);
-      }
+
       // determine cooling gas given halo properties 
       coolingGas = cooling_recipe(p, deltaT / STEPS);
       cool_gas_onto_galaxy(p, coolingGas);

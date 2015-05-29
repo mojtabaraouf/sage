@@ -38,6 +38,8 @@ void init_galaxy(int p, int halonr)
   {
     Gal[p].Pos[j] = Halo[halonr].Pos[j];
     Gal[p].Vel[j] = Halo[halonr].Vel[j];
+	Gal[p].SpinStars[j] = Halo[halonr].Spin[j] / pow(pow(Halo[halonr].Spin[0], 2.0) + pow(Halo[halonr].Spin[1], 2.0) + pow(Halo[halonr].Spin[2], 2.0), 0.5);
+	Gal[p].SpinGas[j] = Halo[halonr].Spin[j] / pow(pow(Halo[halonr].Spin[0], 2.0) + pow(Halo[halonr].Spin[1], 2.0) + pow(Halo[halonr].Spin[2], 2.0), 0.5);
   }
 
   Gal[p].Len = Halo[halonr].Len;
@@ -200,7 +202,10 @@ double get_disc_gas(int halonr)
 		DiscGasSum += Gal[halonr].DiscGas[l];
 
 	if(DiscGasSum>1.001*Gal[halonr].ColdGas || DiscGasSum<Gal[halonr].ColdGas/1.001)
+	{
 		printf("get_disc_gas report %e\t%e\n", DiscGasSum, Gal[halonr].ColdGas);
-  	
+		if(DiscGasSum<1.01*Gal[halonr].ColdGas || DiscGasSum>Gal[halonr].ColdGas/1.01)
+			Gal[halonr].ColdGas = DiscGasSum; // If difference is small, just set the numbers to be the same to prevent small errors from blowing up
+  	}
 	return DiscGasSum;
 }

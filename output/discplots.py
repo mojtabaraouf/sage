@@ -12,10 +12,13 @@ fsize = 28
 matplotlib.rcParams.update({'font.size': fsize, 'xtick.major.size': 10, 'ytick.major.size': 10, 'xtick.major.width': 1, 'ytick.major.width': 1, 'ytick.minor.size': 5, 'xtick.minor.size': 5, 'axes.linewidth': 1, 'text.usetex': True, 'font.family': 'serif', 'font.serif': 'Times New Roman'})
 
 outdir = 'results/millennium/plots/'
+if not os.path.exists(outdir): os.makedirs(outdir)
 
 G = gr.sagesnap('model_z0.000', 0, 7, 'results/millennium/', disc=True) #Commit 4 - good results/
 
-DiscBinEdge = np.append(0, np.array([0.5*200*1.2**i for i in range(30)])) / 0.73
+#DiscBinEdge = np.append(0, np.array([0.5*200*1.2**i for i in range(30)])) / 0.73
+#DiscBinEdge = np.append(0, np.array([0.2*200*1.2**i for i in range(30)])) / 0.73
+DiscBinEdge = np.append(0, np.array([0.5*200*1.15**i for i in range(30)])) / 0.73
 
 # Just get the galaxies of interest
 filt = (G.Vvir>=200) * (G.Vvir<=235) * np.isfinite(G.Vvir) * (G.StellarMass/0.73 > 1.0) * (G.ColdGas/0.73 > 10**-0.5)
