@@ -16,13 +16,15 @@ if not os.path.exists(outdir): os.makedirs(outdir)
 
 G = gr.sagesnap('model_z0.000', 0, 7, 'results/millennium/', disc=True) #Commit 4 - good results/
 
-#DiscBinEdge = np.append(0, np.array([0.5*200*1.2**i for i in range(30)])) / 0.73
-#DiscBinEdge = np.append(0, np.array([0.2*200*1.2**i for i in range(30)])) / 0.73
-DiscBinEdge = np.append(0, np.array([0.5*200*1.15**i for i in range(30)])) / 0.73
+h = 0.678;
+
+DiscBinEdge = np.append(0, np.array([0.5*200*1.2**i for i in range(30)])) / h
+#DiscBinEdge = np.append(0, np.array([0.2*200*1.2**i for i in range(30)])) / h
+#DiscBinEdge = np.append(0, np.array([0.5*200*1.15**i for i in range(30)])) / h
 
 # Just get the galaxies of interest
-filt = (G.Vvir>=200) * (G.Vvir<=235) * np.isfinite(G.Vvir) * (G.StellarMass/0.73 > 1.0) * (G.ColdGas/0.73 > 10**-0.5)
-filt2 = (G.Vvir>=175) * (G.Vvir<200) * np.isfinite(G.Vvir) * (G.StellarMass/0.73 > 1.0) * (G.ColdGas/0.73 > 10**-0.8) # Maybe 1.4 for stellar mass
+filt = (G.Vvir>=200) * (G.Vvir<=235) * np.isfinite(G.Vvir) * (G.StellarMass/h > 1.0) * (G.ColdGas/h > 10**-0.5)
+filt2 = (G.Vvir>=175) * (G.Vvir<200) * np.isfinite(G.Vvir) * (G.StellarMass/h > 1.0) * (G.ColdGas/h > 10**-0.8) # Maybe 1.4 for stellar mass
 #filt = (G.Vvir>=200) * (G.Vvir<=235) * np.isfinite(G.Vvir) * ((G.ClassicalBulgeMass+G.SecularBulgeMass)/G.StellarMass < 0.15)
 #filt2 = (G.Vvir>=175) * (G.Vvir<200) * np.isfinite(G.Vvir) * ((G.ClassicalBulgeMass+G.SecularBulgeMass)/G.StellarMass < 0.15) 
 
@@ -46,9 +48,9 @@ Sigma_gas_arr2 = np.zeros((N2,30))
 
 for i in xrange(N):
 	radius_bins = DiscBinEdge / G.Vvir[filt][i]
-	Sigma_star = (G.DiscStars[filt][i]*1e10/0.73) / (np.pi*(radius_bins[1:]**2 - radius_bins[:-1]**2)*1e6) # Solar masses per pc^2
+	Sigma_star = (G.DiscStars[filt][i]*1e10/h) / (np.pi*(radius_bins[1:]**2 - radius_bins[:-1]**2)*1e6) # Solar masses per pc^2
 	Sigma_star_arr[i,:] = Sigma_star
-	Sigma_gas = (G.DiscGas[filt][i]*1e10/0.73) / (np.pi*(radius_bins[1:]**2 - radius_bins[:-1]**2)*1e6)
+	Sigma_gas = (G.DiscGas[filt][i]*1e10/h) / (np.pi*(radius_bins[1:]**2 - radius_bins[:-1]**2)*1e6)
 	Sigma_gas_arr[i,:] = Sigma_gas
 	#
 	H2_HI = 1.306e-3 * (Sigma_gas**2 + 0.1*Sigma_gas * np.sqrt(Sigma_star*Sigma_star[0]))**0.92
@@ -59,9 +61,9 @@ for i in xrange(N):
 
 for i in xrange(N2):
 	radius_bins = DiscBinEdge / G.Vvir[filt2][i]
-	Sigma_star = (G.DiscStars[filt2][i]*1e10/0.73) / (np.pi*(radius_bins[1:]**2 - radius_bins[:-1]**2)*1e6) # Solar masses per pc^2
+	Sigma_star = (G.DiscStars[filt2][i]*1e10/h) / (np.pi*(radius_bins[1:]**2 - radius_bins[:-1]**2)*1e6) # Solar masses per pc^2
 	Sigma_star_arr2[i,:] = Sigma_star
-	Sigma_gas_arr2[i,:] = (G.DiscGas[filt2][i]*1e10/0.73) / (np.pi*(radius_bins[1:]**2 - radius_bins[:-1]**2)*1e6)
+	Sigma_gas_arr2[i,:] = (G.DiscGas[filt2][i]*1e10/h) / (np.pi*(radius_bins[1:]**2 - radius_bins[:-1]**2)*1e6)
 
 #Sigma_star_arr[np.where(Sigma_star_arr==0)] = np.min(Sigma_star_arr[Sigma_star_arr>0])
 #Sigma_star_arr = np.sort(np.log10(Sigma_star_arr), axis=0)
@@ -212,25 +214,25 @@ gp.savepng(outdir+'GasSurface2')
 
 # Stellar mass function
 gp.figure()
-gp.massfunction(G.StellarMass*1e10*0.73, 62.5, extra=2, h=1, step=False, fsize=fsize, binwidth=0.1, label=r'SAGE Disc')
-#gp.massfunction(G.StellarMass*1e10*0.73, 500*(8./512)**(1./3), extra=2, h=1, step=False, fsize=fsize, binwidth=0.1, label=r'SAGE Disc')
+gp.massfunction(G.StellarMass*1e10/h, 62.5/h, extra=2, h=h, step=False, fsize=fsize, binwidth=0.1, label=r'SAGE Disc')
+#gp.massfunction(G.StellarMass*1e10*h, 500*(8./512)**(1./3), extra=2, h=1, step=False, fsize=fsize, binwidth=0.1, label=r'SAGE Disc')
 plt.axis([8,11.8,5e-6,0.2])
 gp.savepng(outdir+'SMF', xpixplot=768, ypixplot=512)
 
 # Black hole -- bulge relation
 filt = (G.BlackHoleMass > 1e-5) * ((G.ClassicalBulgeMass+G.SecularBulgeMass) > 0.01)
 gp.figure()
-gp.bhbulge(G.BlackHoleMass[filt]*1e10*0.73, (G.ClassicalBulgeMass[filt]+G.SecularBulgeMass[filt])*1e10*0.73, h=1, fsize=fsize, Nbins=100, extra=2, label=r'SAGE Disc')
+gp.bhbulge(G.BlackHoleMass[filt]*1e10/h, (G.ClassicalBulgeMass[filt]+G.SecularBulgeMass[filt])*1e10/h, h=h, fsize=fsize, Nbins=100, extra=2, label=r'SAGE Disc')
 gp.savepng(outdir+'BHbulge', xpixplot=768, ypixplot=512)
 
 # Stellar mass -- gas metallicity relation
 filt = (G.Type==0) * (G.ColdGas > 0) * (G.MetalsColdGas > 0) * (G.StellarMass > 0.01)
 gp.figure()
-gp.massmet(G.StellarMass[filt]*1e10*0.73, np.log10(G.MetalsColdGas[filt]/G.ColdGas[filt]/0.02)+9, h=1, fsize=fsize, Nbins=100, extra=True, label=r'SAGE Disc')
+gp.massmet(G.StellarMass[filt]*1e10/h, np.log10(G.MetalsColdGas[filt]/G.ColdGas[filt]/0.02)+9, h=h, fsize=fsize, Nbins=100, extra=True, label=r'SAGE Disc')
 gp.savepng(outdir+'MassMet', xpixplot=768, ypixplot=512)
 
 # Baryonic Tully-Fisher
 filt = (G.Type==0) * (G.StellarMass+G.ColdGas > 0) * (G.ClassicalBulgeMass+G.SecularBulgeMass > 0.1*G.StellarMass) * (G.ClassicalBulgeMass+G.SecularBulgeMass < 0.5*G.StellarMass)
 gp.figure()
-gp.btf((G.StellarMass[filt]+G.ColdGas[filt])*1e10*0.73, G.Vmax[filt], h=1, fsize=fsize, extra=True, label=r'SAGE Disc')
+gp.btf((G.StellarMass[filt]+G.ColdGas[filt])*1e10/h, G.Vmax[filt], h=h, fsize=fsize, extra=True, label=r'SAGE Disc')
 gp.savepng(outdir+'BTF', xpixplot=768, ypixplot=512)
