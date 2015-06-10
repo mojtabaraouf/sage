@@ -370,9 +370,12 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 
       // determine cooling gas given halo properties 
       coolingGas = cooling_recipe(p, deltaT / STEPS);
-      cool_gas_onto_galaxy(p, coolingGas);
+      cool_gas_onto_galaxy(p, centralgal, coolingGas, deltaT / STEPS, step);
 
       DiscGasSum = get_disc_gas(p);
+	  //if(DiscGasSum>1.001*Gal[p].ColdGas || DiscGasSum<Gal[p].ColdGas/1.001)
+		//printf("core_build_model report %e\t%e\n", DiscGasSum, Gal[p].ColdGas);
+
       assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 	

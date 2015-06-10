@@ -206,8 +206,24 @@ double get_disc_gas(int halonr)
 		printf("get_disc_gas report %e\t%e\n", DiscGasSum, Gal[halonr].ColdGas);
 		if(DiscGasSum<1.01*Gal[halonr].ColdGas || DiscGasSum>Gal[halonr].ColdGas/1.01)
 			Gal[halonr].ColdGas = DiscGasSum; // If difference is small, just set the numbers to be the same to prevent small errors from blowing up
-		if(Gal[halonr].ColdGas==0.0) 
-			for(l=0; l<30; l++) Gal[halonr].DiscGas[l] = 0.0; // Sometimes a tiny non-zero difference can creep in (probably due to projecting discs).  This just takes care of that.
+		if(Gal[halonr].ColdGas==0.0)
+		{
+			for(l=0; l<30; l++) 
+				Gal[halonr].DiscGas[l] = 0.0; // Sometimes a tiny non-zero difference can creep in (probably due to projecting discs).  This just takes care of that.
+			DiscGasSum = 0.0;
+		}
   	}
 	return DiscGasSum;
+}
+
+double get_disc_ang_mom(int halonr)
+{
+	double J_sum;
+	int l;
+	
+	J_sum = 0.0;
+	for(l=0; l<30; l++)
+		J_sum += Gal[halonr].DiscGas[l] * (DiscBinEdge[l]+DiscBinEdge[l+1])/2.0;
+	
+	return J_sum;
 }

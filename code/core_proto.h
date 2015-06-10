@@ -39,7 +39,8 @@ void init_galaxy(int p, int halonr);
 double infall_recipe(int centralgal, int ngal, double Zcurr);
 void add_infall_to_hot(int centralgal, double infallingGas);
 double cooling_recipe(int centralgal, double dt);
-void cool_gas_onto_galaxy(int centralgal, double coolingGas);
+void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, int step);
+void retrograde_gas_collision(int p, double RetroGas[30], double cos_angle_halo_new, double cos_angle_disc_new, double J_disc, double J_cool);
 void reincorporate_gas(int centralgal, double dt);
 double estimate_merging_time(int prog, int mother_halo, int ngal);
 void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, double time, double dt, int halonr, int step);
@@ -63,6 +64,7 @@ double get_virial_radius(int halonr);
 double get_virial_mass(int halonr);
 double get_disk_radius(int halonr, int p);
 double get_disc_gas(int halonr);
+double get_disc_ang_mom(int halonr);
 
 void read_output_snaps(void);
 void read_snap_list(void);
