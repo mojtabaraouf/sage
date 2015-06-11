@@ -141,8 +141,6 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
   }
 
-  
-
   // Sum stellar discs together
   combine_stellar_discs(p, NewStars, NewStarsMetals);
     
@@ -284,8 +282,6 @@ void combine_stellar_discs(int p, double NewStars[30], double NewStarsMetals[30]
 			for(i=0; i<3; i++)
 			{
 				Gal[p].SpinStars[i] /= sdisc_spin_mag; 
-				//SDiscNewSpin[i] = Gal[p].SpinStars[i]; // Default value as the reverse line occurs later
-                //assert(SDiscNewSpin[i]==SDiscNewSpin[i]);
                 assert(Gal[p].SpinStars[i]==Gal[p].SpinStars[i]);
 			}
 		}
@@ -301,10 +297,8 @@ void combine_stellar_discs(int p, double NewStars[30], double NewStarsMetals[30]
 		sdisc_spin_mag = pow(pow(SDiscNewSpin[0], 2.0) + pow(SDiscNewSpin[1], 2.0) + pow(SDiscNewSpin[2], 2.0), 0.5);
         if(sdisc_spin_mag>0.0)
         {
-            for(i=0; i<3; i++){
-                assert(SDiscNewSpin[i]==SDiscNewSpin[i]);
+            for(i=0; i<3; i++)
                 SDiscNewSpin[i] /= sdisc_spin_mag;
-                assert(SDiscNewSpin[i]==SDiscNewSpin[i]);}
         }
 		
 		cos_angle_sdisc_comb = Gal[p].SpinStars[0]*SDiscNewSpin[0] + Gal[p].SpinStars[1]*SDiscNewSpin[1] + Gal[p].SpinStars[2]*SDiscNewSpin[2];
@@ -322,9 +316,7 @@ void combine_stellar_discs(int p, double NewStars[30], double NewStarsMetals[30]
 	// Combine the discs
 	if(cos_angle_sdisc_comb<1.0)
     {
-        //printf("Disc1[0] before = %e\n", Disc1[0]);
 		project_disc(Gal[p].DiscStars, cos_angle_sdisc_comb, p, Disc1);
-        //printf("Disc1[0] after = %e\n", Disc1[0]);
 		project_disc(Gal[p].DiscStarsMetals, cos_angle_sdisc_comb, p, Disc1Metals);
 		project_disc(NewStars, cos_angle_new_comb, p, Disc2);
 		project_disc(NewStarsMetals, cos_angle_new_comb, p, Disc2Metals);
@@ -341,8 +333,6 @@ void combine_stellar_discs(int p, double NewStars[30], double NewStarsMetals[30]
 	}
 	else if(Gal[p].StellarMass == Gal[p].SecularMetalsBulgeMass + Gal[p].ClassicalMetalsBulgeMass)
 	{
-        //Gal[p].StellarMass = 0.0;
-        //Gal[p].MetalsStellarMass = 0.0;
 		for(i=0; i<30; i++)
 		{
 			Gal[p].DiscStars[i] = NewStars[i];
@@ -365,44 +355,27 @@ void combine_stellar_discs(int p, double NewStars[30], double NewStarsMetals[30]
 	{
 		project_disc(Gal[p].DiscStars, (J_sum - 2.0*J_retro)/J_sum, p, Disc1);
 		project_disc(Gal[p].DiscStarsMetals, (J_sum - 2.0*J_retro)/J_sum, p, Disc1Metals);
-        //Gal[p].StellarMass = 0.0;
-        //Gal[p].MetalsStellarMass = 0.0;
 		for(i=0; i<30; i++)
 		{
 			Gal[p].DiscStars[i] = Disc1[i];
 			Gal[p].DiscStarsMetals[i] = Disc1Metals[i];
-            //Gal[p].StellarMass += Gal[p].DiscStars[i];
-            //Gal[p].MetalsStellarMass += Gal[p].DiscStarsMetals[i];
 		}
 	}
 	
 	// Set the new spin direction of the stellar disc
 	for(i=0; i<3; i++){
-        assert(SDiscNewSpin[i]==SDiscNewSpin[i]);
 		Gal[p].SpinStars[i] = SDiscNewSpin[i];
-		if((Gal[p].SpinStars[i]!=Gal[p].SpinStars[i]) || SDiscNewSpin[i]!=SDiscNewSpin[i])
-			printf("i, SpinStars, DiscNewSpin = %d, %e, %e\n", i, Gal[p].SpinStars[i], SDiscNewSpin[i]);
-		assert(SDiscNewSpin[i]==SDiscNewSpin[i]);
 		assert(Gal[p].SpinStars[i]==Gal[p].SpinStars[i]);}
     
     DiscStarSum = get_disc_stars(p);
     if(DiscStarSum>0.0) assert(DiscStarSum <= 1.001*(Gal[p].StellarMass-Gal[p].SecularBulgeMass-Gal[p].ClassicalBulgeMass) && DiscStarSum >= (Gal[p].StellarMass-Gal[p].SecularBulgeMass-Gal[p].ClassicalBulgeMass)/1.001);
-
-    //if((Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass) > 1.001*DiscStarSum)
-        //printf("DiscStarSum, BulgeSum = %e, %e\n", DiscStarSum, Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass);
-    assert((Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass) <= 1.001*Gal[p].StellarMass);
 }
 
 
 void project_disc(double DiscMass[30], double cos_angle, int p, double *NewDisc)
 {
 	double high_bound, ratio_last_bin;
-    double mass_init, mass_final;
 	int i, j, j_old, k;
-
-    mass_init = 0.0;
-    for(i=0; i<30; i++)
-        mass_init += DiscMass[i];
     
 	cos_angle = fabs(cos_angle); // This function will not deal with retrograde motion so needs an angle less than pi/2
 	
@@ -447,27 +420,7 @@ void project_disc(double DiscMass[30], double cos_angle, int p, double *NewDisc)
 
 		j_old = j;
 	}
-	
-    mass_final = 0.0;
-    for(i=0; i<30; i++)
-        mass_final += NewDisc[i];
-    
-    assert(mass_final<=1.001*mass_init && mass_final>=mass_init/1.001);
-	//return NewDisc;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

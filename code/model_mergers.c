@@ -303,6 +303,7 @@ void make_bulge_from_burst(int p)
 void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_centralgal, int centralgal, double time, double dt, int halonr, int mode, int step, double mass_ratio)
 {
  double stars, reheated_mass, ejected_mass, fac, metallicity, CentralVvir, eburst, Sigma_0gas, area, stars_sum;
+ double NewStars[30], NewStarsMetals[30];
  int k;
 
  // This is the major and minor merger starburst recipe of Somerville et al. 2001. 
@@ -384,6 +385,8 @@ void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_central
 	assert(reheated_mass >= 0.0);
 
 	metallicity = get_metallicity(Gal[merger_centralgal].DiscGas[k], Gal[merger_centralgal].DiscGasMetals[k]);
+	NewStars[k] = (1 - RecycleFraction) * stars;
+	NewStarsMetals[k] = (1 - RecycleFraction) * metallicity * stars;
     update_from_star_formation(merger_centralgal, stars, metallicity, k);
 
     if(reheated_mass > Gal[merger_centralgal].DiscGas[k] && reheated_mass < 1.01*Gal[merger_centralgal].DiscGas[k])
@@ -408,6 +411,9 @@ void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_central
 	
 	stars_sum += stars;
   }
+
+  // Sum stellar discs together
+  combine_stellar_discs(merger_centralgal, NewStars, NewStarsMetals);
 
   Gal[merger_centralgal].SfrBulge[step] += stars_sum / dt;
 
