@@ -162,7 +162,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 {
   double metallicity, coolingGasBin, coolingGasBinSum, DiscGasSum, DiscGasSum_new, cos_angle_disc_new, cos_angle_halo_new, ratio_last_bin, high_bound, disc_spin_mag, J_disc, J_cool;
   double HaloSpin[3], DiscNewSpin[3];
-  double OldDisc[30], OldDiscMetals[30], RetroGas[30], RetroGasMetals[30];
+  double OldDisc[30], OldDiscMetals[30], RetroGas[30];
   int i, j, k, j_old;
 
   // Check that Cold Gas has been treated properly prior to this function
@@ -195,7 +195,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 	if(Gal[p].ColdGas > 0.0)
 	{
 		// Get magnitude of ang mom of disc currently in native orientation 
-		J_disc = get_disc_ang_mom(p);
+		J_disc = get_disc_ang_mom(p, 0);
 		
 		// Determine orientation of disc after cooling
 		for(i=0; i<3; i++)
@@ -258,9 +258,8 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 				else if(high_bound < Gal[p].Rvir/Gal[p].Vvir){
 					ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (Gal[p].Rvir/Gal[p].Vvir-DiscBinEdge[j]), 2.0);
 					assert(ratio_last_bin<=1.0);}
-				else{
+				else
 					ratio_last_bin = 1.0;
-					assert(ratio_last_bin<=1.0);}
 				Gal[p].DiscGas[i] += ratio_last_bin * OldDisc[j];
 				Gal[p].DiscGasMetals[i] += ratio_last_bin * OldDiscMetals[j];
 				OldDisc[j] -= ratio_last_bin * OldDisc[j];
@@ -274,10 +273,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 			assert(Gal[p].DiscGas[i]>=0.0);
 			assert(Gal[p].DiscGasMetals[i]>=0.0);
 			if(cos_angle_disc_new<0.0)
-			{
 				RetroGas[i] = Gal[p].DiscGas[i];
-				RetroGasMetals[i] = Gal[p].DiscGasMetals[i];
-			}
 			j_old = j;
 		}
 	}
@@ -297,10 +293,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 	    Gal[p].DiscGas[i] += coolingGasBin;
 		Gal[p].DiscGasMetals[i] += metallicity * coolingGasBin;
 		if(cos_angle_halo_new<0.0)
-		{
 			RetroGas[i] = coolingGasBin;
-			RetroGasMetals[i] = metallicity * coolingGasBin;
-		}
 		assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
 		coolingGasBinSum += coolingGasBin;
 	  }
@@ -326,10 +319,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 		Gal[p].DiscGas[i] += coolingGasBin;
 		Gal[p].DiscGasMetals[i] += metallicity * coolingGasBin;
 		if(cos_angle_halo_new<0.0)
-		{
 			RetroGas[i] = coolingGasBin;
-			RetroGasMetals[i] = metallicity * coolingGasBin;
-		}
 		assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
 		coolingGasBinSum += coolingGasBin;
       }
@@ -359,75 +349,89 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 
 void retrograde_gas_collision(int p, double RetroGas[30], double cos_angle_halo_new, double cos_angle_disc_new, double J_disc, double J_cool)
 {
-	double J_sum, J_retro, RetroSum, bin_ratio, high_bound, ratio_last_bin;
-	double OldDisc[30], OldDiscMetals[30];
-	int i, j, j_old, k;
+	double J_sum, J_retro, bin_ratio;
+	double NewDisc[30];
+	double NewDiscMetals[30];
+	int i;
+	
+	//, RetroSum,  high_bound, ratio_last_bin;
+	//double OldDisc[30], OldDiscMetals[30];
+	//int i, j, j_old, k;
 	
 	J_sum = J_disc*fabs(cos_angle_disc_new) + J_cool*fabs(cos_angle_halo_new);
 	if(cos_angle_disc_new<0.0)
 		J_retro = J_disc*fabs(cos_angle_disc_new);
 	else if(cos_angle_halo_new<0.0)
 		J_retro = J_cool*fabs(cos_angle_halo_new);
-	else
-		printf("retrograde_gas_collision entered despite no retrograde gas");
+	else{
+		J_retro = 0.0;
+		printf("retrograde_gas_collision entered despite no retrograde gas");}
 		
 	assert(J_sum >= 2.0*J_retro);
 	
 	// Change the bin edges by the ratio of what the ang mom should be to the actual current ang mom
 	bin_ratio = (J_sum - 2.0*J_retro) / J_sum;
 	
+	project_disc(Gal[p].DiscGas, bin_ratio, p, NewDisc);
+	project_disc(Gal[p].DiscGasMetals, bin_ratio, p, NewDiscMetals);
+	
+	for(i=0; i<30; i++)
+	{
+		Gal[p].DiscGas[i] = NewDisc[i];
+		Gal[p].DiscGasMetals[i] = NewDiscMetals[i];
+	}
+	
 	// Project the smaller bins back to the original bins
-	for(i=0; i<30; i++)
-	{
-		OldDisc[i] = Gal[p].DiscGas[i];
-		OldDiscMetals[i] = Gal[p].DiscGasMetals[i];
-	}
-	j_old = 0;
-
-	for(i=0; i<30; i++)
-	{
-		high_bound = DiscBinEdge[i+1] / bin_ratio;
-		j = j_old;
-		while(DiscBinEdge[j]<=high_bound)
-		{
-			j++;
-			if(j==30) break;
-		} 
-		j -= 1;
-		
-		Gal[p].DiscGas[i] = 0.0;
-		Gal[p].DiscGasMetals[i] = 0.0;
-		for(k=j_old; k<j; k++) 
-		{
-			Gal[p].DiscGas[i] += OldDisc[k];
-			Gal[p].DiscGasMetals[i] += OldDiscMetals[k];
-			OldDisc[k] = 0.0;
-			OldDiscMetals[k] = 0.0;
-		}
-		
-		if(i!=29)
-		{
-			if(j!=29){
-				ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (DiscBinEdge[j+1]-DiscBinEdge[j]), 2.0);
-				assert(ratio_last_bin<=1.0);}
-			else if(high_bound < Gal[p].Rvir/Gal[p].Vvir){
-				ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (Gal[p].Rvir/Gal[p].Vvir-DiscBinEdge[j]), 2.0);
-				assert(ratio_last_bin<=1.0);}
-			else{
-				ratio_last_bin = 1.0;
-				assert(ratio_last_bin<=1.0);}
-			Gal[p].DiscGas[i] += ratio_last_bin * OldDisc[j];
-			Gal[p].DiscGasMetals[i] += ratio_last_bin * OldDiscMetals[j];
-			OldDisc[j] -= ratio_last_bin * OldDisc[j];
-			OldDiscMetals[j] -= ratio_last_bin * OldDiscMetals[j];
-		}
-		else
-		{
-			Gal[p].DiscGas[i] = OldDisc[i];
-			Gal[p].DiscGasMetals[i] = OldDiscMetals[i];
-		}
-		assert(Gal[p].DiscGas[i]>=0.0);
-		assert(Gal[p].DiscGasMetals[i]>=0.0);
-		j_old = j;
-	}
+	// for(i=0; i<30; i++)
+	// {
+	// 	OldDisc[i] = Gal[p].DiscGas[i];
+	// 	OldDiscMetals[i] = Gal[p].DiscGasMetals[i];
+	// }
+	// j_old = 0;
+	// 
+	// for(i=0; i<30; i++)
+	// {
+	// 	high_bound = DiscBinEdge[i+1] / bin_ratio;
+	// 	j = j_old;
+	// 	while(DiscBinEdge[j]<=high_bound)
+	// 	{
+	// 		j++;
+	// 		if(j==30) break;
+	// 	} 
+	// 	j -= 1;
+	// 	
+	// 	Gal[p].DiscGas[i] = 0.0;
+	// 	Gal[p].DiscGasMetals[i] = 0.0;
+	// 	for(k=j_old; k<j; k++) 
+	// 	{
+	// 		Gal[p].DiscGas[i] += OldDisc[k];
+	// 		Gal[p].DiscGasMetals[i] += OldDiscMetals[k];
+	// 		OldDisc[k] = 0.0;
+	// 		OldDiscMetals[k] = 0.0;
+	// 	}
+	// 	
+	// 	if(i!=29)
+	// 	{
+	// 		if(j!=29){
+	// 			ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (DiscBinEdge[j+1]-DiscBinEdge[j]), 2.0);
+	// 			assert(ratio_last_bin<=1.0);}
+	// 		else if(high_bound < Gal[p].Rvir/Gal[p].Vvir){
+	// 			ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (Gal[p].Rvir/Gal[p].Vvir-DiscBinEdge[j]), 2.0);
+	// 			assert(ratio_last_bin<=1.0);}
+	// 		else
+	// 			ratio_last_bin = 1.0;
+	// 		Gal[p].DiscGas[i] += ratio_last_bin * OldDisc[j];
+	// 		Gal[p].DiscGasMetals[i] += ratio_last_bin * OldDiscMetals[j];
+	// 		OldDisc[j] -= ratio_last_bin * OldDisc[j];
+	// 		OldDiscMetals[j] -= ratio_last_bin * OldDiscMetals[j];
+	// 	}
+	// 	else
+	// 	{
+	// 		Gal[p].DiscGas[i] = OldDisc[i];
+	// 		Gal[p].DiscGasMetals[i] = OldDiscMetals[i];
+	// 	}
+	// 	assert(Gal[p].DiscGas[i]>=0.0);
+	// 	assert(Gal[p].DiscGasMetals[i]>=0.0);
+	// 	j_old = j;
+	// }
 }

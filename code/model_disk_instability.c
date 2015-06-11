@@ -12,7 +12,7 @@
 
 void check_disk_instability(int p, int centralgal, int halonr, double time, double dt, int step)
 {
-  double Mcrit, gas_fraction, unstable_gas, unstable_gas_fraction, unstable_stars, diskmass, metallicity, DiscGasSum;
+  double Mcrit, gas_fraction, unstable_gas, unstable_gas_fraction, unstable_stars, diskmass, metallicity, DiscGasSum, DiscStarSum;
   double star_fraction, ring_fraction, GasBeforeBH;
   int j;
 
@@ -55,9 +55,13 @@ void check_disk_instability(int p, int centralgal, int halonr, double time, doub
     // Need to fix this. Excluded for now.
     // Gal[p].mergeType = 3;  // mark as disk instability partial mass transfer
     // Gal[p].mergeIntoID = NumGals + p - 1;      
-      
-	assert((Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass) <= 1.0001*Gal[p].StellarMass);
-	assert((Gal[p].ClassicalMetalsBulgeMass + Gal[p].SecularMetalsBulgeMass) <= 1.0001*Gal[p].MetalsStellarMass);
+    
+    DiscStarSum = get_disc_stars(p);
+    assert((Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass) <= 1.001*Gal[p].StellarMass);
+    //if(DiscStarSum > 1.001*(Gal[p].StellarMass-Gal[p].SecularBulgeMass-Gal[p].ClassicalBulgeMass) || DiscStarSum < (Gal[p].StellarMass-Gal[p].SecularBulgeMass-Gal[p].ClassicalBulgeMass)/1.001)
+        //printf("DiscStarSum, StellarMass, BulgeSum, diff = %e, %e, %e, %e\n", DiscStarSum, Gal[p].StellarMass, Gal[p].SecularBulgeMass+Gal[p].ClassicalBulgeMass, Gal[p].StellarMass-Gal[p].SecularBulgeMass-Gal[p].ClassicalBulgeMass);
+    if(DiscStarSum>0.0) assert(DiscStarSum <= 1.001*(Gal[p].StellarMass-Gal[p].SecularBulgeMass-Gal[p].ClassicalBulgeMass) && DiscStarSum >= (Gal[p].StellarMass-Gal[p].SecularBulgeMass-Gal[p].ClassicalBulgeMass)/1.001);
+	assert((Gal[p].ClassicalMetalsBulgeMass + Gal[p].SecularMetalsBulgeMass) <= 1.001*Gal[p].MetalsStellarMass);
 
     // burst excess gas and feed black hole (really need a dedicated model for bursts and BH growth here)
     if(unstable_gas > 0.0)
