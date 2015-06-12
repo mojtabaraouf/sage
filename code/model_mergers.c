@@ -212,21 +212,22 @@ void quasar_mode_wind(int gal, float BHaccrete)
 
 
 
-void add_galaxies_together(int t, int p, double disc_mass_ratio[30])
+void add_galaxies_together(int t, int p, double *disc_mass_ratio)
 {
   int step, i;
   double DiscGasSum;
   
   for(i=0; i<30; i++)
   {
+	if(Gal[t].DiscGas[i]>0.0 && Gal[p].DiscGas[i]>0.0)
+	  disc_mass_ratio[i] = Gal[p].DiscGas[i] / Gal[t].DiscGas[i];
+	else
+	  disc_mass_ratio[i] = 0.0;
+	
 	Gal[t].DiscGas[i] += Gal[p].DiscGas[i];
 	Gal[t].DiscGasMetals[i] += Gal[p].DiscGasMetals[i];
 	Gal[t].ColdGas += Gal[p].DiscGas[i];
 	Gal[t].MetalsColdGas += Gal[p].DiscGasMetals[i];
-	if(Gal[t].DiscGas[i]>0.0 && Gal[p].DiscGas[i]>0.0)
-	  disc_mass_ratio[i] = Gal[t].DiscGas[i] / Gal[p].DiscGas[i];
-	else
-	  disc_mass_ratio[i] = 0.0;
   }
 
   Gal[t].StellarMass += Gal[p].StellarMass;

@@ -190,6 +190,7 @@ void update_from_star_formation(int p, double stars, double metallicity, int i)
 
 void update_from_feedback(int p, int centralgal, double reheated_mass, double ejected_mass, double metallicity, int i)
 {
+  // In older SAGE, this updated the gas and stellar components.  It only does the gas component now due to the way in which discs are handled.
   double metallicityHot;
 
   // Check first just to be sure 
