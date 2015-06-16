@@ -110,7 +110,7 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 
   assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0 && Gal[centralgal].HotGas == Gal[centralgal].HotGas && Gal[merger_centralgal].HotGas == Gal[merger_centralgal].HotGas);
 
-  add_galaxies_together(merger_centralgal, p, disc_mass_ratio);
+  add_galaxies_together(merger_centralgal, p, mass_ratio, disc_mass_ratio);
 
   // Initiate quasar accretion and feedback
   if(AGNrecipeOn>0)
@@ -212,23 +212,113 @@ void quasar_mode_wind(int gal, float BHaccrete)
 
 
 
-void add_galaxies_together(int t, int p, double *disc_mass_ratio)
+void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ratio)
 {
   int step, i;
   double DiscGasSum;
   
-  for(i=0; i<30; i++)
+  DiscGasSum = get_disc_gas(p);
+  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
+  Gal[t].ColdGas += DiscGasSum;
+  Gal[t].MetalsColdGas += Gal[p].MetalsColdGas;
+
+  if(mass_ratio<ThreshMajorMerger && Gal[p].ColdGas>0.0)
   {
-	if(Gal[t].DiscGas[i]>0.0 && Gal[p].DiscGas[i]>0.0)
-	  disc_mass_ratio[i] = Gal[p].DiscGas[i] / Gal[t].DiscGas[i];
-	else
-	  disc_mass_ratio[i] = 0.0;
+	// Satellite's specific angular momentum
+	double sat_sam[3];
+	sat_sam[0] = (Gal[p].Pos[1]-Gal[t].Pos[1])*(Gal[p].Vel[1]-Gal[t].Vel[1]) - (Gal[p].Pos[2]-Gal[t].Pos[2])*(Gal[p].Vel[2]-Gal[t].Vel[2]);
+	sat_sam[1] = (Gal[p].Pos[2]-Gal[t].Pos[2])*(Gal[p].Vel[2]-Gal[t].Vel[2]) - (Gal[p].Pos[0]-Gal[t].Pos[0])*(Gal[p].Vel[0]-Gal[t].Vel[0]);
+	sat_sam[2] = (Gal[p].Pos[0]-Gal[t].Pos[0])*(Gal[p].Vel[0]-Gal[t].Vel[0]) - (Gal[p].Pos[1]-Gal[t].Pos[1])*(Gal[p].Vel[1]-Gal[t].Vel[1]);
 	
-	Gal[t].DiscGas[i] += Gal[p].DiscGas[i];
-	Gal[t].DiscGasMetals[i] += Gal[p].DiscGasMetals[i];
-	Gal[t].ColdGas += Gal[p].DiscGas[i];
-	Gal[t].MetalsColdGas += Gal[p].DiscGasMetals[i];
+	double sat_sam_mag = pow(sat_sam[0]*sat_sam[0] + sat_sam[1]*sat_sam[1] + sat_sam[2]*sat_sam[2], 0.5);
+	double cos_angle_sat_disc = (Gal[t].SpinGas[0]*sat_sam[0] + Gal[t].SpinGas[1]*sat_sam[1] + Gal[t].SpinGas[2]*sat_sam[2]) / sat_sam_mag; // Angle between ang mom of satellite and central's disc
+	sat_sam_mag *= fabs(cos_angle_sat_disc); // Project satellite's (gas) angular momentum onto central's disc
+	
+	// Consider that the satellite will have rotation and hence it will have a distribution of angular momentum to contribute
+	double sat_sam_max =  sat_sam_mag  +  Gal[p].Vvir * fabs(cos_angle_sat_disc) * pow(pow(Gal[p].Pos[0]-Gal[t].Pos[0], 2.0) + pow(Gal[p].Pos[1]-Gal[t].Pos[1], 2.0) + pow(Gal[p].Pos[2]-Gal[t].Pos[2], 2.0), 0.5);
+	double sat_sam_min = 2.0*sat_sam_mag - sat_sam_max;
+	if(sat_sam_min<0.0)
+		sat_sam_min = 0.0;
+		
+	int i_min=0;
+	while(DiscBinEdge[i_min]<=sat_sam_min)
+	{
+		i_min++;
+		if(i_min==30) break;
+	}
+	i_min -= 1;
+	
+	int i_max=i_min;
+	while(DiscBinEdge[i_max]<=sat_sam_max)
+	{
+		i_max++;
+		if(i_max==30) break;
+	}
+	
+	int bin_num = i_max - i_min; // How many bins the satellite's gas will be added to in the main disc
+	//printf("sat_sam_min, sat_sam_mag, sat_sam_max = %e, %e, %e\n", sat_sam_min, sat_sam_mag, sat_sam_max);
+	//printf("i_min, i_max, bin_num, ColdGas = %d, %d, %d, %e\n", i_min, i_max, bin_num, Gal[p].ColdGas);
+	
+	for(i=0; i<30; i++)
+	{
+		if(i<i_min || i>=i_max)
+			disc_mass_ratio[i] = 0.0;
+		else
+		{
+			disc_mass_ratio[i] = Gal[p].ColdGas / bin_num / Gal[t].DiscGas[i];
+			Gal[t].DiscGas[i] += Gal[p].ColdGas / bin_num;
+			//printf("gas added = %e\n", Gal[p].ColdGas / bin_num);
+			Gal[t].DiscGasMetals[i] += Gal[p].MetalsColdGas / bin_num;
+		}
+	}
+	
+	// Check if the satellite is a retrograde orbiter and get ready to deal with it
+	if(cos_angle_sat_disc<0.0)
+	{
+		//printf("retro sat\n");
+		double J_retro = sat_sam_mag*Gal[p].ColdGas;
+		double J_sum = get_disc_ang_mom(t, 0);
+		if(J_sum > 2.0*J_retro)
+		{
+			double NewDisc[30], NewDiscMetals[30];
+			project_disc(Gal[t].DiscGas, (J_sum - 2.0*J_retro)/J_sum, t, NewDisc);
+			project_disc(Gal[t].DiscGasMetals, (J_sum - 2.0*J_retro)/J_sum, t, NewDiscMetals);
+			for(i=0; i<30; i++)
+			{
+				Gal[t].DiscGas[i] = NewDisc[i];
+				Gal[t].DiscGasMetals[i] = NewDiscMetals[i];
+			}
+		}
+		// else
+		// {
+		// 	project_disc(Gal[t].DiscGas, (J_retro - 2.0*J_sum)/J_retro, t, NewDisc);
+		// 	project_disc(Gal[t].DiscGasMetals, (J_retro - 2.0*J_sum)/J_retro, t, NewDiscMetals);
+		// 	for(i=0; i<3; i++)
+		// 		Gal[t].SpinGas[i] *= -1.0;
+		// }
+		
+	}
+	//else
+		//printf("pro sat\n");	
   }
+  else
+  {
+	for(i=0; i<30; i++)
+	{
+		if(Gal[t].DiscGas[i]>0.0 && Gal[p].DiscGas[i]>0.0)
+	  		disc_mass_ratio[i] = Gal[p].DiscGas[i] / Gal[t].DiscGas[i];
+		else
+	  		disc_mass_ratio[i] = 0.0;
+		Gal[t].DiscGas[i] += Gal[p].DiscGas[i];
+		Gal[t].DiscGasMetals[i] += Gal[p].DiscGasMetals[i];
+		//Gal[t].ColdGas += Gal[p].DiscGas[i];
+		//Gal[t].MetalsColdGas += Gal[p].DiscGasMetals[i];
+	}
+	
+	
+  }
+
+
 
   Gal[t].StellarMass += Gal[p].StellarMass;
   Gal[t].MetalsStellarMass += Gal[p].MetalsStellarMass;
@@ -263,8 +353,8 @@ void add_galaxies_together(int t, int p, double *disc_mass_ratio)
     Gal[t].SfrBulgeColdGasMetals[step] += Gal[p].SfrDiskColdGasMetals[step] + Gal[p].SfrBulgeColdGasMetals[step];
   }
 
-  DiscGasSum = get_disc_gas(p);
-  assert(DiscGasSum <= 1.01*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.01);
+  DiscGasSum = get_disc_gas(t);
+  assert(DiscGasSum <= 1.001*Gal[t].ColdGas && DiscGasSum >= Gal[t].ColdGas/1.001);
 }
 
 
