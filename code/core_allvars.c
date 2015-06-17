@@ -70,6 +70,7 @@ double SfrEfficiency;
 double FeedbackReheatingEpsilon;
 double FeedbackEjectionEfficiency;
 double RadioModeEfficiency;
+double HeatingRadiusScale;
 double QuasarModeEfficiency;
 double BlackHoleGrowthRate;
 double Reionization_z0;

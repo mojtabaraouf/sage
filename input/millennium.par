@@ -36,7 +36,7 @@ SFprescription				0		;0: original Croton et al. 2006; 1: new Krumholz & Dekel 20
 AGNrecipeOn					2		;0: switch off; 1: empirical model; 2: Bondi-Hoyle model; 3: cold cloud accretion model
 SupernovaRecipeOn			1		;0: switch off
 ReionizationOn				0		;0: switch off
-DiskInstabilityOn			1		;0: switch off; 1: bulge and BH growth through instabilities w. instability starbursts
+DiskInstabilityOn			0		;0: switch off; 1: bulge and BH growth through instabilities w. instability starbursts
 
 
 %------------------------------------------
@@ -52,6 +52,7 @@ FeedbackEjectionEfficiency	0.3 	;mixing efficiency of SN energy with hot gas to 
 ReIncorporationFactor		0.15	;fraction of ejected mass reincorporated per dynamical time to hot
 
 RadioModeEfficiency			0.15	;AGN radio mode efficiency (AGNrecipeOn>0) -- 2.0e-3 / 1.0
+HeatingRadiusScale			0.95	;parameter to set scale at which gas can no longer cool
 QuasarModeEfficiency		0.001	;AGN quasar mode wind heating efficiency (AGNrecipeOn>0)
 BlackHoleGrowthRate			0.005	;fraction of cold gas added to the BH during mergers (AGNrecipeOn>0)
 

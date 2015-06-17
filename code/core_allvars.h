@@ -73,8 +73,8 @@ struct GALAXY_OUTPUT
   double ICS;
   double DiscGas[30];
   double DiscStars[30];
-  //double SpinStars[3];
-  //double SpinGas[3];
+  double SpinStars[3];
+  double SpinGas[3];
 
   // metals
   double MetalsColdGas;
@@ -251,6 +251,7 @@ extern double SfrEfficiency;
 extern double FeedbackReheatingEpsilon;
 extern double FeedbackEjectionEfficiency;
 extern double RadioModeEfficiency;
+extern double HeatingRadiusScale;
 extern double QuasarModeEfficiency;
 extern double BlackHoleGrowthRate;
 extern double Reionization_z0;

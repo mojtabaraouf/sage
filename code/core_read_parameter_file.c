@@ -181,6 +181,10 @@ void read_parameter_file(char *fname)
   addr[nt] = &RadioModeEfficiency;
   id[nt++] = DOUBLE;
 
+  strcpy(tag[nt], "HeatingRadiusScale");
+  addr[nt] = &HeatingRadiusScale;
+  id[nt++] = DOUBLE;
+
   strcpy(tag[nt], "QuasarModeEfficiency");
   addr[nt] = &QuasarModeEfficiency;
   id[nt++] = DOUBLE;
