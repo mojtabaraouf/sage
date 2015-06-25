@@ -226,9 +226,9 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
   {
 	// Satellite's specific angular momentum
 	double sat_sam[3];
-	sat_sam[0] = (Gal[p].Pos[1]-Gal[t].Pos[1])*(Gal[p].Vel[1]-Gal[t].Vel[1]) - (Gal[p].Pos[2]-Gal[t].Pos[2])*(Gal[p].Vel[2]-Gal[t].Vel[2]);
-	sat_sam[1] = (Gal[p].Pos[2]-Gal[t].Pos[2])*(Gal[p].Vel[2]-Gal[t].Vel[2]) - (Gal[p].Pos[0]-Gal[t].Pos[0])*(Gal[p].Vel[0]-Gal[t].Vel[0]);
-	sat_sam[2] = (Gal[p].Pos[0]-Gal[t].Pos[0])*(Gal[p].Vel[0]-Gal[t].Vel[0]) - (Gal[p].Pos[1]-Gal[t].Pos[1])*(Gal[p].Vel[1]-Gal[t].Vel[1]);
+	sat_sam[0] = (Gal[p].Pos[1]-Gal[t].Pos[1])*(Gal[p].Vel[2]-Gal[t].Vel[2]) - (Gal[p].Pos[2]-Gal[t].Pos[2])*(Gal[p].Vel[1]-Gal[t].Vel[1]);
+	sat_sam[1] = (Gal[p].Pos[2]-Gal[t].Pos[2])*(Gal[p].Vel[0]-Gal[t].Vel[0]) - (Gal[p].Pos[0]-Gal[t].Pos[0])*(Gal[p].Vel[2]-Gal[t].Vel[2]);
+	sat_sam[2] = (Gal[p].Pos[0]-Gal[t].Pos[0])*(Gal[p].Vel[1]-Gal[t].Vel[1]) - (Gal[p].Pos[1]-Gal[t].Pos[1])*(Gal[p].Vel[0]-Gal[t].Vel[0]);
 	
 	double sat_sam_mag = pow(sat_sam[0]*sat_sam[0] + sat_sam[1]*sat_sam[1] + sat_sam[2]*sat_sam[2], 0.5);
 	double cos_angle_sat_disc = (Gal[t].SpinGas[0]*sat_sam[0] + Gal[t].SpinGas[1]*sat_sam[1] + Gal[t].SpinGas[2]*sat_sam[2]) / sat_sam_mag; // Angle between ang mom of satellite and central's disc

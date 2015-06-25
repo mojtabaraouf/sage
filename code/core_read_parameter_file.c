@@ -40,34 +40,19 @@ void read_parameter_file(char *fname)
 
   if(ThisTask == 0)
     printf("\nreading parameter file:\n\n");
-
-  strcpy(tag[nt], "OutputDir");
-  addr[nt] = OutputDir;
-  id[nt++] = STRING;
-
+	
+  
   strcpy(tag[nt], "FileNameGalaxies");
   addr[nt] = FileNameGalaxies;
-  id[nt++] = STRING;
-
-  strcpy(tag[nt], "SimulationDir");
-  addr[nt] = SimulationDir;
   id[nt++] = STRING;
 
   strcpy(tag[nt], "FileWithOutputSnaps");
   addr[nt] = FileWithOutputSnaps;
   id[nt++] = STRING;
 
-  strcpy(tag[nt], "FileWithSnapList");
-  addr[nt] = FileWithSnapList;
+  strcpy(tag[nt], "OutputDir");
+  addr[nt] = OutputDir;
   id[nt++] = STRING;
-
-  strcpy(tag[nt], "FilesPerSnapshot");
-  addr[nt] = &FilesPerSnapshot;
-  id[nt++] = INT;
-
-  strcpy(tag[nt], "LastSnapShotNr");
-  addr[nt] = &LastSnapShotNr;
-  id[nt++] = INT;
 
   strcpy(tag[nt], "FirstFile");
   addr[nt] = &FirstFile;
@@ -76,6 +61,22 @@ void read_parameter_file(char *fname)
   strcpy(tag[nt], "LastFile");
   addr[nt] = &LastFile;
   id[nt++] = INT;
+
+  strcpy(tag[nt], "LastSnapShotNr");
+  addr[nt] = &LastSnapShotNr;
+  id[nt++] = INT;
+
+  strcpy(tag[nt], "SimulationDir");
+  addr[nt] = SimulationDir;
+  id[nt++] = STRING;
+
+  strcpy(tag[nt], "FilesPerSnapshot");
+  addr[nt] = &FilesPerSnapshot;
+  id[nt++] = INT;
+  
+  strcpy(tag[nt], "FileWithSnapList");
+  addr[nt] = FileWithSnapList;
+  id[nt++] = STRING;
 
   strcpy(tag[nt], "ThreshMajorMerger");
   addr[nt] = &ThreshMajorMerger;

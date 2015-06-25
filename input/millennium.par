@@ -18,9 +18,14 @@ LastFile					7
 LastSnapShotNr				63
 
 % Mini-Millennium
-SimulationDir					../../../../../Volumes/AdamDrive/Swinburne/treefiles/millennium/millennium_mini
+%SimulationDir					../../../../../Volumes/AdamDrive/Swinburne/treefiles/millennium/millennium_mini
+%FilesPerSnapshot			8    ; Mini Millennium
+%FileWithSnapList				../../../../../Volumes/AdamDrive/Swinburne/treefiles/millennium/millennium_mini/millennium.a_list
+
+% Mini-Millennium
+SimulationDir					/Users/astevens/trees/Mini_Millennium
 FilesPerSnapshot			8    ; Mini Millennium
-FileWithSnapList				../../../../../Volumes/AdamDrive/Swinburne/treefiles/millennium/millennium_mini/millennium.a_list
+FileWithSnapList				/Users/astevens/trees/Mini_Millennium/millennium.a_list
 
 % Full Millennium
 %SimulationDir				/Users/astevens/trees/Millennium
@@ -51,10 +56,10 @@ FeedbackEjectionEfficiency	0.4 	;mixing efficiency of SN energy with hot gas to 
 
 ReIncorporationFactor		0.15	;fraction of ejected mass reincorporated per dynamical time to hot
 
-RadioModeEfficiency			0.10	;AGN radio mode efficiency (AGNrecipeOn>0) -- 2.0e-3 / 1.0
-HeatingRadiusScale			0.95	;parameter to set scale at which gas can no longer cool
-QuasarModeEfficiency		0.002	;AGN quasar mode wind heating efficiency (AGNrecipeOn>0)
-BlackHoleGrowthRate			0.015	;fraction of cold gas added to the BH during mergers (AGNrecipeOn>0)
+RadioModeEfficiency			0.05	;AGN radio mode efficiency (AGNrecipeOn>0) -- 2.0e-3 / 1.0
+HeatingRadiusScale			1.00	;parameter to set scale at which gas can no longer cool
+QuasarModeEfficiency		0.0005	;AGN quasar mode wind heating efficiency (AGNrecipeOn>0)
+BlackHoleGrowthRate			0.010	;fraction of cold gas added to the BH during mergers (AGNrecipeOn>0)
 
 ThreshMajorMerger			0.3		;major merger when mass ratio greater than this
 ThresholdSatDisruption		1.0		;Mvir-to-baryonic mass ratio threshold for satellite merger or disruption

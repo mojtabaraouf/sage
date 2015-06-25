@@ -25,8 +25,8 @@ DiscBinEdge = np.append(0, np.array([0.5*200*1.2**i for i in range(30)])) / h
 # Just get the galaxies of interest
 filt = (G.Vvir>=200) * (G.Vvir<=235) * np.isfinite(G.Vvir) * (G.StellarMass/h > 1.0) * (G.ColdGas/h > 10**-0.5)# * (G.StellarMass/h < 10**0.8) * (G.ColdGas/h < 10**0.2)
 filt2 = (G.Vvir>=175) * (G.Vvir<200) * np.isfinite(G.Vvir) * (G.StellarMass/h > 1.0) * (G.ColdGas/h > 10**-0.8) # Maybe 1.4 for stellar mass
-#filt = (G.Vvir>=200) * (G.Vvir<=235) * np.isfinite(G.Vvir) * ((G.ClassicalBulgeMass+G.SecularBulgeMass)/G.StellarMass < 0.15)
-#filt2 = (G.Vvir>=175) * (G.Vvir<200) * np.isfinite(G.Vvir) * ((G.ClassicalBulgeMass+G.SecularBulgeMass)/G.StellarMass < 0.15) 
+#filt = (G.Vvir>=200) * (G.Vvir<=235) * np.isfinite(G.Vvir) * ((G.ClassicalBulgeMass+G.SecularBulgeMass) <= 0.15*G.StellarMass)
+#filt2 = (G.Vvir>=175) * (G.Vvir<200) * np.isfinite(G.Vvir) * ((G.ClassicalBulgeMass+G.SecularBulgeMass) <= 0.15*G.StellarMass)
 
 
 #randgals = np.array(np.random.random(10) * len(G.Vvir[filt]), dtype=int)

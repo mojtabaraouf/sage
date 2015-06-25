@@ -142,7 +142,11 @@ double do_AGN_heating(double coolingGas, int centralgal, double dt, double x, do
 		// update the heating radius as needed
 		if(Gal[centralgal].r_heat < rcool && coolingGas > 0.0)
 		{
-			r_heat_new = HeatingRadiusScale * (AGNheating / coolingGas) * rcool;
+			if(AGNheating<coolingGas)
+				r_heat_new = HeatingRadiusScale * (AGNheating / coolingGas) * rcool;
+			else
+				r_heat_new = rcool;
+			
 			if(r_heat_new > Gal[centralgal].r_heat)
 				Gal[centralgal].r_heat = r_heat_new;
 		}
