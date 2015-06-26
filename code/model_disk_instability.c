@@ -46,12 +46,11 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 				Gal[p].DiscGas[i-1] += gas_sink;
 				Gal[p].DiscGasMetals[i-1] += metallicity * gas_sink;
 			}
-			else if(AGNrecipeOn > 0) // I could also shift the quasar feedback to after SF is done in the zeroth annulus
+			else
 			{
 				Gal[p].BlackHoleMass += gas_sink;
 				Gal[p].ColdGas -= gas_sink;
-				Gal[p].MetalsColdGas -= gas_sink;
-				quasar_mode_wind(p, gas_sink);
+				Gal[p].MetalsColdGas -= metallicity * gas_sink;
 			}
 		
 			// Calculate new stars formed in that annulus
@@ -114,6 +113,9 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 				Gal[p].DiscGasMetals[i] += Yield * stars;
 			    Gal[p].MetalsColdGas += Yield * stars;
 			}
+			
+			if(i==0 && AGNrecipeOn > 0)  // Deal with quasar feedback
+				quasar_mode_wind(p, gas_sink);
 			
 		}
 	}

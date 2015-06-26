@@ -177,40 +177,86 @@ void grow_black_hole(int merger_centralgal, double mass_ratio)
 
 
 
-void quasar_mode_wind(int gal, float BHaccrete)
+void quasar_mode_wind(int p, float BHaccrete)
 {
-  float quasar_energy, cold_gas_energy, hot_gas_energy;
+  double quasar_energy, cold_gas_energy, hot_gas_energy, DiscGasSum, cold_gas_energy_tot;
   int k;
   
   // work out total energies in quasar wind (eta*m*c^2), cold and hot gas (1/2*m*Vvir^2)
   quasar_energy = QuasarModeEfficiency * 0.1 * BHaccrete * (C / UnitVelocity_in_cm_per_s) * (C / UnitVelocity_in_cm_per_s);
-  cold_gas_energy = 0.5 * Gal[gal].ColdGas * Gal[gal].Vvir * Gal[gal].Vvir;
-  hot_gas_energy = 0.5 * Gal[gal].HotGas * Gal[gal].Vvir * Gal[gal].Vvir;
-   
-  // compare quasar wind and cold gas energies and eject cold
-  if(quasar_energy > cold_gas_energy)
-  {
-    Gal[gal].EjectedMass += Gal[gal].ColdGas;
-    Gal[gal].MetalsEjectedMass += Gal[gal].MetalsColdGas;
-   
-    Gal[gal].ColdGas = 0.0;
-    Gal[gal].MetalsColdGas = 0.0;
+  cold_gas_energy_tot = 0.5 * Gal[p].ColdGas * Gal[p].Vvir * Gal[p].Vvir;
 
+  DiscGasSum = get_disc_gas(p);
+  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
+
+  if(quasar_energy > cold_gas_energy_tot)
+  {
+	Gal[p].EjectedMass += Gal[p].ColdGas;
+    Gal[p].MetalsEjectedMass += Gal[p].MetalsColdGas;
+	Gal[p].ColdGas = 0.0;
+	Gal[p].MetalsColdGas = 0.0;
+	
 	for(k=0; k<30; k++)
-    {
-	  Gal[gal].DiscGas[k] = 0.0;
-	  Gal[gal].DiscGasMetals[k] = 0.0;
-    }
+	{
+		Gal[p].DiscGas[k] = 0.0;
+		Gal[p].DiscGasMetals[k] = 0.0;
+	}
+	
+	quasar_energy -= cold_gas_energy_tot;
   }
+  else
+  {
+	for(k=0; k<30; k++)
+	{
+		cold_gas_energy = 0.5 * Gal[p].DiscGas[k] * Gal[p].Vvir * Gal[p].Vvir;
+		if(quasar_energy >= cold_gas_energy && cold_gas_energy > 0.0)
+		{
+			Gal[p].EjectedMass += Gal[p].DiscGas[k];
+			Gal[p].MetalsEjectedMass += Gal[p].DiscGasMetals[k];
+			Gal[p].ColdGas -= Gal[p].DiscGas[k];
+			Gal[p].MetalsColdGas -= Gal[p].DiscGasMetals[k];
+			Gal[p].DiscGas[k] = 0.0;
+			Gal[p].DiscGasMetals[k] = 0.0;
+			quasar_energy -= cold_gas_energy;
+			//DiscGasSum = get_disc_gas(p);
+			//assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
+		}
+		else if(quasar_energy > 0.0 && cold_gas_energy > 0.0)
+		{
+			Gal[p].EjectedMass += Gal[p].DiscGas[k] * quasar_energy/cold_gas_energy;
+			Gal[p].MetalsEjectedMass += Gal[p].DiscGasMetals[k] * quasar_energy/cold_gas_energy;
+			Gal[p].ColdGas -= Gal[p].DiscGas[k] * quasar_energy/cold_gas_energy;
+			Gal[p].MetalsColdGas -= Gal[p].DiscGasMetals[k] * quasar_energy/cold_gas_energy;
+			Gal[p].DiscGas[k] *= 1 - quasar_energy/cold_gas_energy;
+			Gal[p].DiscGasMetals[k] *= 1 - quasar_energy/cold_gas_energy;
+			quasar_energy = 0.0;
+			break;
+			//DiscGasSum = get_disc_gas(p);
+			//assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
+		}
+		else if(cold_gas_energy > 0.0 || quasar_energy < 0.0)
+		{
+			quasar_energy = 0.0;
+			break;
+		}
+	}
+
+	DiscGasSum = get_disc_gas(p);
+	assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
+	
+  }
+
+   
+  hot_gas_energy = 0.5 * Gal[p].HotGas * Gal[p].Vvir * Gal[p].Vvir;
   
   // compare quasar wind and cold+hot gas energies and eject hot
-  if(quasar_energy > cold_gas_energy + hot_gas_energy)
+  if(quasar_energy > hot_gas_energy)
   {
-    Gal[gal].EjectedMass += Gal[gal].HotGas;
-    Gal[gal].MetalsEjectedMass += Gal[gal].MetalsHotGas;
+    Gal[p].EjectedMass += Gal[p].HotGas;
+    Gal[p].MetalsEjectedMass += Gal[p].MetalsHotGas;
    
-    Gal[gal].HotGas = 0.0;
-    Gal[gal].MetalsHotGas = 0.0;
+    Gal[p].HotGas = 0.0;
+    Gal[p].MetalsHotGas = 0.0;
   }
 }
 
