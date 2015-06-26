@@ -94,7 +94,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 		ejected_mass = 0.0;
 	  }
 	}  
-    else
+    else // I haven't actually dealt with the situation of Supernovae being turned off here.  But do I even want to turn SN off?
 	{
 	  stars=0.0;
       reheated_mass = 0.0;
@@ -152,7 +152,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 
   // Check for disk instability
   if(DiskInstabilityOn)
-    check_disk_instability(p, centralgal, halonr, time, dt, step);
+    check_disk_instability(p, centralgal, time, dt, step);
 }
 
 

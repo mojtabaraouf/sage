@@ -51,7 +51,8 @@ void update_from_star_formation(int p, double stars, double metallicity, int i);
 void update_from_feedback(int p, int centralgal, double reheated_mass, double ejected_mass, double metallicity, int i);
 void make_bulge_from_burst(int p);
 void grow_black_hole(int merger_centralgal, double mass_ratio);
-void check_disk_instability(int p, int centralgal, int halonr, double time, double dt, int step);
+//void check_disk_instability_old(int p, int centralgal, int halonr, double time, double dt, int step);
+void check_disk_instability(int p, int centralgal, double time, double dt, int step);
 
 // Adam's functions
 void retrograde_gas_collision(int p, double RetroGas[30], double cos_angle_halo_new, double cos_angle_disc_new, double J_disc, double J_cool);

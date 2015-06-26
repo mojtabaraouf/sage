@@ -64,31 +64,31 @@ double cooling_recipe(int gal, double dt)
 
 
 
-double do_AGN_heating(double coolingGas, int centralgal, double dt, double x, double rcool)
+double do_AGN_heating(double coolingGas, int p, double dt, double x, double rcool)
 {
   double AGNrate, EDDrate, AGNaccreted, AGNcoeff, AGNheating, metallicity, r_heat_new;
 
 
   // first update the cooling rate based on the past AGN heating
-  if(Gal[centralgal].r_heat < rcool)
-	coolingGas = (1.0 - Gal[centralgal].r_heat / rcool) * coolingGas;
+  if(Gal[p].r_heat < rcool)
+	coolingGas = (1.0 - Gal[p].r_heat / rcool) * coolingGas;
   else
 	coolingGas = 0.0;
 	
   assert(coolingGas >= 0.0);
 
-  if(Gal[centralgal].HotGas > 0.0)
+  if(Gal[p].HotGas > 0.0)
   {
 
     if(AGNrecipeOn == 2)
     {
       // Bondi-Hoyle accretion recipe
-      AGNrate = (2.5 * M_PI * G) * (0.375 * 0.6 * x) * Gal[centralgal].BlackHoleMass * RadioModeEfficiency;
+      AGNrate = (2.5 * M_PI * G) * (0.375 * 0.6 * x) * Gal[p].BlackHoleMass * RadioModeEfficiency;
     }
     else if(AGNrecipeOn == 3)
     {
       // Cold cloud accretion: trigger: rBH > 1.0e-4 Rsonic, and accretion rate = 0.01% cooling rate 
-      if(Gal[centralgal].BlackHoleMass > 0.0001 * Gal[centralgal].Mvir * pow(rcool/Gal[centralgal].Rvir, 3.0))
+      if(Gal[p].BlackHoleMass > 0.0001 * Gal[p].Mvir * pow(rcool/Gal[p].Rvir, 3.0))
         AGNrate = 0.0001 * coolingGas / dt;
       else
         AGNrate = 0.0;
@@ -96,17 +96,17 @@ double do_AGN_heating(double coolingGas, int centralgal, double dt, double x, do
     else
     {
       // empirical (standard) accretion recipe 
-      if(Gal[centralgal].Mvir > 0.0)
+      if(Gal[p].Mvir > 0.0)
         AGNrate = RadioModeEfficiency / (UnitMass_in_g / UnitTime_in_s * SEC_PER_YEAR / SOLAR_MASS)
-          * (Gal[centralgal].BlackHoleMass / 0.01) * pow(Gal[centralgal].Vvir / 200.0, 3.0)
-            * ((Gal[centralgal].HotGas / Gal[centralgal].Mvir) / 0.1);
+          * (Gal[p].BlackHoleMass / 0.01) * pow(Gal[p].Vvir / 200.0, 3.0)
+            * ((Gal[p].HotGas / Gal[p].Mvir) / 0.1);
       else
         AGNrate = RadioModeEfficiency / (UnitMass_in_g / UnitTime_in_s * SEC_PER_YEAR / SOLAR_MASS)
-          * (Gal[centralgal].BlackHoleMass / 0.01) * pow(Gal[centralgal].Vvir / 200.0, 3.0);
+          * (Gal[p].BlackHoleMass / 0.01) * pow(Gal[p].Vvir / 200.0, 3.0);
     }
     
     // Eddington rate 
-    EDDrate = 1.3e48 * Gal[centralgal].BlackHoleMass / (UnitEnergy_in_cgs / UnitTime_in_s) / 9e10;
+    EDDrate = 1.3e48 * Gal[p].BlackHoleMass / (UnitEnergy_in_cgs / UnitTime_in_s) / 9e10;
 
     // accretion onto BH is always limited by the Eddington rate 
     if(AGNrate > EDDrate)
@@ -116,12 +116,12 @@ double do_AGN_heating(double coolingGas, int centralgal, double dt, double x, do
     AGNaccreted = AGNrate * dt;
 
     // cannot accrete more mass than is available! 
-    if(AGNaccreted > Gal[centralgal].HotGas)
-      AGNaccreted = Gal[centralgal].HotGas;
+    if(AGNaccreted > Gal[p].HotGas)
+      AGNaccreted = Gal[p].HotGas;
 
     // coefficient to heat the cooling gas back to the virial temperature of the halo 
     // 1.34e5 = sqrt(2*eta*c^2), eta=0.1 (standard efficiency) and c in km/s 
-    AGNcoeff = (1.34e5 / Gal[centralgal].Vvir) * (1.34e5 / Gal[centralgal].Vvir);
+    AGNcoeff = (1.34e5 / Gal[p].Vvir) * (1.34e5 / Gal[p].Vvir);
 
     // cooling mass that can be suppresed from AGN heating 
     AGNheating = AGNcoeff * AGNaccreted;
@@ -134,25 +134,25 @@ double do_AGN_heating(double coolingGas, int centralgal, double dt, double x, do
     }
 
     // accreted mass onto black hole 
-    metallicity = get_metallicity(Gal[centralgal].HotGas, Gal[centralgal].MetalsHotGas);
-    Gal[centralgal].BlackHoleMass += AGNaccreted;
-    Gal[centralgal].HotGas -= AGNaccreted;
-    Gal[centralgal].MetalsHotGas -= metallicity * AGNaccreted;
+    metallicity = get_metallicity(Gal[p].HotGas, Gal[p].MetalsHotGas);
+    Gal[p].BlackHoleMass += AGNaccreted;
+    Gal[p].HotGas -= AGNaccreted;
+    Gal[p].MetalsHotGas -= metallicity * AGNaccreted;
 
 		// update the heating radius as needed
-		if(Gal[centralgal].r_heat < rcool && coolingGas > 0.0)
+		if(Gal[p].r_heat < rcool && coolingGas > 0.0)
 		{
 			if(AGNheating<coolingGas)
 				r_heat_new = HeatingRadiusScale * (AGNheating / coolingGas) * rcool;
 			else
 				r_heat_new = rcool;
 			
-			if(r_heat_new > Gal[centralgal].r_heat)
-				Gal[centralgal].r_heat = r_heat_new;
+			if(r_heat_new > Gal[p].r_heat)
+				Gal[p].r_heat = r_heat_new;
 		}
 
 		if (AGNheating > 0.0)
-			Gal[centralgal].Heating += 0.5 * AGNheating * Gal[centralgal].Vvir * Gal[centralgal].Vvir;
+			Gal[p].Heating += 0.5 * AGNheating * Gal[p].Vvir * Gal[p].Vvir;
   }
 
   return coolingGas;
