@@ -13,7 +13,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 {
 	// New treatment of instabilities based on the Toomre Q parameter
 	double Q_star, Q_gas, Sigma_star, Sigma_gas, area, radius, V_vir;
-	double unstable_gas, unstable_stars, gas_sink, metallicity;
+	double unstable_gas, unstable_stars, gas_sink, metallicity, gas_sink_sum, gas_sf;
 	double stars, reheated_mass, ejected_mass, stars_sum, Sigma_0gas, fac;
 	double NewStars[30], NewStarsMetals[30];
 	int i;
@@ -25,6 +25,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	
 	// Deal with gaseous instabilities
 	stars_sum = 0.0;
+	gas_sink_sum = 0.0;
 	for(i=29; i>=0; i--)
 	{
 		area = M_PI * (pow(DiscBinEdge[i+1]/V_vir, 2.0) - pow(DiscBinEdge[i]/V_vir, 2.0)) * pow(CM_PER_MPC, 2.0);
@@ -41,19 +42,21 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 			gas_sink = BlackHoleGrowthRate * unstable_gas / (1.0 + pow(280.0 / V_vir, 2.0));
 			Gal[p].DiscGas[i] -= gas_sink;
 			Gal[p].DiscGasMetals[i] -= metallicity * gas_sink;
-			if(i!=0)
-			{
-				Gal[p].DiscGas[i-1] += gas_sink;
-				Gal[p].DiscGasMetals[i-1] += metallicity * gas_sink;
-			}
-			else
-			{
+			gas_sink_sum += gas_sink;
+			// if(i!=0)
+			// 			{
+			// 				Gal[p].DiscGas[i-1] += gas_sink;
+			// 				Gal[p].DiscGasMetals[i-1] += metallicity * gas_sink;
+			// 			}
+			// 			else
+			// 			{
 				Gal[p].BlackHoleMass += gas_sink;
 				Gal[p].ColdGas -= gas_sink;
 				Gal[p].MetalsColdGas -= metallicity * gas_sink;
-			}
+			// }
 		
 			// Calculate new stars formed in that annulus
+			gas_sf = unstable_gas - gas_sink;
 			stars = unstable_gas - gas_sink;
 			if(Gal[p].DiscGas[i] > 0.0 && stars > 0.0) // Quasar feedback could blow out the unstable gas
 			{
@@ -63,9 +66,9 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 			        reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3*pow(CM_PER_MPC, 2.0));
 			
 					// Can't use more cold gas than is available, so balance SF and feedback 
-				    if((stars + reheated_mass) > Gal[p].DiscGas[i] && (stars + reheated_mass) > 0.0)
+				    if((stars + reheated_mass) > gas_sf && (stars + reheated_mass) > 0.0)
 				    {
-				    	fac = Gal[p].DiscGas[i] / (stars + reheated_mass);
+				    	fac = gas_sf / (stars + reheated_mass);
 				    	stars *= fac;
 				    	reheated_mass *= fac;
 				    }
@@ -75,11 +78,11 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 						if(unstable_gas - gas_sink >= 1e-8)
 						{
 				    		stars = 1e-8;
-							reheated_mass = Gal[p].DiscGas[i] - (1-RecycleFraction)*stars;
+							reheated_mass = gas_sf - (1-RecycleFraction)*stars;
 						}
 						else
 						{
-							stars = unstable_gas - gas_sink;
+							stars = gas_sf;
 							reheated_mass = 0.0;
 						}
 						ejected_mass = 0.0;
@@ -113,12 +116,14 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 				Gal[p].DiscGasMetals[i] += Yield * stars;
 			    Gal[p].MetalsColdGas += Yield * stars;
 			}
-			
-			if(i==0 && AGNrecipeOn > 0)  // Deal with quasar feedback
-				quasar_mode_wind(p, gas_sink);
+						
+			//if(i==0 && AGNrecipeOn > 0)  // Deal with quasar feedback
+				
 			
 		}
 	}
+	if(gas_sink_sum > 0.0 && AGNrecipeOn > 0)
+		quasar_mode_wind(p, gas_sink_sum);
 	
 	// Merge new-star disc with previous stellar disc
 	if(stars_sum>0.0)

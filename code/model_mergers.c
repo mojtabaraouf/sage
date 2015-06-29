@@ -111,10 +111,6 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
   assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0 && Gal[centralgal].HotGas == Gal[centralgal].HotGas && Gal[merger_centralgal].HotGas == Gal[merger_centralgal].HotGas);
 
   add_galaxies_together(merger_centralgal, p, mass_ratio, disc_mass_ratio);
-
-  // Initiate quasar accretion and feedback
-  //if(AGNrecipeOn>0)
-    //grow_black_hole(merger_centralgal, mass_ratio);
   
   //collisional_starburst_recipe(disc_mass_ratio, merger_centralgal, centralgal, time, dt, halonr, 0, step, mass_ratio);
 
@@ -125,6 +121,9 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 
   if(mass_ratio > ThreshMajorMerger)
   {
+	if(AGNrecipeOn>0)
+	    grow_black_hole(merger_centralgal, mass_ratio);
+	
     make_bulge_from_burst(merger_centralgal);
     Gal[merger_centralgal].LastMajorMerger = time;
     Gal[p].mergeType = 2;  // Mark as major merger
