@@ -125,6 +125,10 @@ double get_metallicity(double gas, double metals)
 {
   double metallicity;
 
+  if(metals>gas)
+	printf("get_metallicity report: metals, gas/stars = %e, %e\n", metals, gas);
+  //assert(gas>metals);
+
   if(gas > 0.0 && metals > 0.0)
   {
     metallicity = metals / gas;
@@ -192,57 +196,57 @@ double get_virial_radius(int halonr)
 }
 
 
-double get_disc_gas(int halonr)
+double get_disc_gas(int p)
 {
 	double DiscGasSum;
 	int l;
 	
 	DiscGasSum = 0.0;
 	for(l=0; l<30; l++)
-		DiscGasSum += Gal[halonr].DiscGas[l];
+		DiscGasSum += Gal[p].DiscGas[l];
 
-	if(DiscGasSum>1.001*Gal[halonr].ColdGas || DiscGasSum<Gal[halonr].ColdGas/1.001)
+	if(DiscGasSum>1.001*Gal[p].ColdGas || DiscGasSum<Gal[p].ColdGas/1.001)
 	{
-		printf("get_disc_gas report %e\t%e\n", DiscGasSum, Gal[halonr].ColdGas);
-		if(DiscGasSum<1.01*Gal[halonr].ColdGas && DiscGasSum>Gal[halonr].ColdGas/1.01)
-			Gal[halonr].ColdGas = DiscGasSum; // If difference is small, just set the numbers to be the same to prevent small errors from blowing up
-		if(Gal[halonr].ColdGas==0.0)
+		printf("get_disc_gas report %e\t%e\n", DiscGasSum, Gal[p].ColdGas);
+		if(DiscGasSum<1.01*Gal[p].ColdGas && DiscGasSum>Gal[p].ColdGas/1.01)
+			Gal[p].ColdGas = DiscGasSum; // If difference is small, just set the numbers to be the same to prevent small errors from blowing up
+		if(Gal[p].ColdGas==0.0)
 		{
 			for(l=0; l<30; l++) 
-				Gal[halonr].DiscGas[l] = 0.0; // Sometimes a tiny non-zero difference can creep in (probably due to projecting discs).  This just takes care of that.
+				Gal[p].DiscGas[l] = 0.0; // Sometimes a tiny non-zero difference can creep in (probably due to projecting discs).  This just takes care of that.
 			DiscGasSum = 0.0;
 		}
   	}
 	return DiscGasSum;
 }
 
-double get_disc_stars(int halonr)
+double get_disc_stars(int p)
 {
     double DiscStarSum, DiscAndBulge;
     int l;
     
     DiscStarSum = 0.0;
     for(l=0; l<30; l++)
-        DiscStarSum += Gal[halonr].DiscStars[l];
+        DiscStarSum += Gal[p].DiscStars[l];
     
-    DiscAndBulge = DiscStarSum + Gal[halonr].ClassicalBulgeMass + Gal[halonr].SecularBulgeMass;
+    DiscAndBulge = DiscStarSum + Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass;
     
-    if(DiscAndBulge>1.001*Gal[halonr].StellarMass || DiscAndBulge<Gal[halonr].StellarMass/1.001)
+    if(DiscAndBulge>1.001*Gal[p].StellarMass || DiscAndBulge<Gal[p].StellarMass/1.001)
     {
-        printf("get_disc_stars report %e\t%e\n", DiscAndBulge, Gal[halonr].StellarMass);
-        if(DiscAndBulge<1.01*Gal[halonr].StellarMass && DiscAndBulge>Gal[halonr].StellarMass/1.01)
-            Gal[halonr].StellarMass = DiscAndBulge; // If difference is small, just set the numbers to be the same to prevent small errors from blowing up
-        if(Gal[halonr].StellarMass <= Gal[halonr].ClassicalBulgeMass + Gal[halonr].SecularBulgeMass)
+        printf("get_disc_stars report %e\t%e\n", DiscAndBulge, Gal[p].StellarMass);
+        if(DiscAndBulge<1.01*Gal[p].StellarMass && DiscAndBulge>Gal[p].StellarMass/1.01)
+            Gal[p].StellarMass = DiscAndBulge; // If difference is small, just set the numbers to be the same to prevent small errors from blowing up
+        if(Gal[p].StellarMass <= Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass)
         {
             for(l=0; l<30; l++)
-                Gal[halonr].DiscStars[l] = 0.0;
+                Gal[p].DiscStars[l] = 0.0;
             DiscStarSum = 0.0;
         }
     }
     return DiscStarSum;
 }
 
-double get_disc_ang_mom(int halonr, int type)
+double get_disc_ang_mom(int p, int type)
 {
 	// type=0 for gas, type=1 for stars
 	double J_sum;
@@ -252,12 +256,12 @@ double get_disc_ang_mom(int halonr, int type)
 	if(type==0)
 	{
 		for(l=0; l<30; l++)
-			J_sum += Gal[halonr].DiscGas[l] * pow((pow(DiscBinEdge[l],2.0) + pow(DiscBinEdge[l+1],2.0))/2.0, 0.5);
+			J_sum += Gal[p].DiscGas[l] * pow((pow(DiscBinEdge[l],2.0) + pow(DiscBinEdge[l+1],2.0))/2.0, 0.5);
 	}
-	else if(type=1)
+	else if(type==1)
 	{
 		for(l=0; l<30; l++)
-			J_sum += Gal[halonr].DiscStars[l] * pow((pow(DiscBinEdge[l],2.0) + pow(DiscBinEdge[l+1],2.0))/2.0, 0.5);
+			J_sum += Gal[p].DiscStars[l] * pow((pow(DiscBinEdge[l],2.0) + pow(DiscBinEdge[l+1],2.0))/2.0, 0.5);
 	}
 	
 	return J_sum;

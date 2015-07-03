@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <time.h>
+#include <assert.h>
 
 #include "core_allvars.h"
 #include "core_proto.h"
@@ -26,6 +27,7 @@ void reincorporate_gas(int centralgal, double dt)
       reincorporated = Gal[centralgal].EjectedMass;
 
     metallicity = get_metallicity(Gal[centralgal].EjectedMass, Gal[centralgal].MetalsEjectedMass);
+    assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
     Gal[centralgal].EjectedMass -= reincorporated;
     Gal[centralgal].MetalsEjectedMass -= metallicity * reincorporated;
     Gal[centralgal].HotGas += reincorporated;

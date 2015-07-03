@@ -104,6 +104,7 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
   if(strippedGas > 0.0)
   {
     metallicity = get_metallicity(Gal[gal].HotGas, Gal[gal].MetalsHotGas);
+	assert(Gal[gal].MetalsHotGas <= Gal[gal].HotGas);
     strippedGasMetals = strippedGas * metallicity;
   
     if(strippedGas > Gal[gal].HotGas) strippedGas = Gal[gal].HotGas;
@@ -185,6 +186,7 @@ void add_infall_to_hot(int gal, double infallingGas)
   if(infallingGas < 0.0 && Gal[gal].EjectedMass > 0.0)
   {  
     metallicity = get_metallicity(Gal[gal].EjectedMass, Gal[gal].MetalsEjectedMass);
+	assert(Gal[gal].MetalsEjectedMass <= Gal[gal].EjectedMass);
     Gal[gal].MetalsEjectedMass += infallingGas*metallicity;
     if(Gal[gal].MetalsEjectedMass < 0.0) Gal[gal].MetalsEjectedMass = 0.0;
 
@@ -202,6 +204,7 @@ void add_infall_to_hot(int gal, double infallingGas)
   if(infallingGas < 0.0 && Gal[gal].MetalsHotGas > 0.0)
   {
     metallicity = get_metallicity(Gal[gal].HotGas, Gal[gal].MetalsHotGas);
+	assert(Gal[gal].MetalsHotGas <= Gal[gal].HotGas);
     Gal[gal].MetalsHotGas += infallingGas*metallicity;
     if(Gal[gal].MetalsHotGas < 0.0) Gal[gal].MetalsHotGas = 0.0;
   }

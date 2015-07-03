@@ -133,8 +133,9 @@ double do_AGN_heating(double coolingGas, int p, double dt, double x, double rcoo
       AGNheating = coolingGas;
     }
 
-    // accreted mass onto black hole 
+    // accreted mass onto black hole
     metallicity = get_metallicity(Gal[p].HotGas, Gal[p].MetalsHotGas);
+	assert(Gal[p].MetalsHotGas <= Gal[p].HotGas);
     Gal[p].BlackHoleMass += AGNaccreted;
     Gal[p].HotGas -= AGNaccreted;
     Gal[p].MetalsHotGas -= metallicity * AGNaccreted;
@@ -173,6 +174,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
   DiscGasSum = get_disc_gas(p);
   assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
   assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
+  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
 
   disc_spin_mag = pow(pow(Gal[p].SpinGas[0], 2.0) + pow(Gal[p].SpinGas[1], 2.0) + pow(Gal[p].SpinGas[2], 2.0), 0.5);
   assert(disc_spin_mag==disc_spin_mag);
@@ -192,6 +194,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
   {
 	coolingGasBinSum = 0.0;
 	metallicity = get_metallicity(Gal[p].HotGas, Gal[p].MetalsHotGas);
+	assert(Gal[p].MetalsHotGas <= Gal[p].HotGas);
 	
 	// Get ang mom of cooling gas in its native orientations
 	J_cool = 2.0 * coolingGas * Gal[p].Vvir * Gal[p].DiskScaleRadius;
@@ -225,7 +228,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 		
 	if(cos_angle_disc_new != 1.0)
 	{
-		// Project current disc to new orientation
+		// Project current disc to new orientation -- I have a function to shorten code here
 		for(i=0; i<30; i++)
 		{
 			OldDisc[i] = Gal[p].DiscGas[i];
@@ -251,6 +254,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 			{
 				Gal[p].DiscGas[i] += OldDisc[k];
 				Gal[p].DiscGasMetals[i] += OldDiscMetals[k];
+				assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
 				OldDisc[k] = 0.0;
 				OldDiscMetals[k] = 0.0;
 			}
@@ -266,6 +270,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 					ratio_last_bin = 1.0;
 				Gal[p].DiscGas[i] += ratio_last_bin * OldDisc[j];
 				Gal[p].DiscGasMetals[i] += ratio_last_bin * OldDiscMetals[j];
+				assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
 				OldDisc[j] -= ratio_last_bin * OldDisc[j];
 				OldDiscMetals[j] -= ratio_last_bin * OldDiscMetals[j];
 			}
@@ -284,7 +289,9 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 	assert(Gal[p].ColdGas == Gal[p].ColdGas);
 		
 	DiscGasSum_new = get_disc_gas(p);
-	assert(DiscGasSum <= 1.001*DiscGasSum_new && DiscGasSum >= DiscGasSum_new/1.001);	
+	assert(DiscGasSum <= 1.001*DiscGasSum_new && DiscGasSum >= DiscGasSum_new/1.001);
+	assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
+	for(i=0; i<30; i++) assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);	
 	
     if(coolingGas < Gal[p].HotGas)
     {
@@ -309,7 +316,8 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
       Gal[p].HotGas -= coolingGas;
       Gal[p].MetalsHotGas -= metallicity * coolingGas;
 	  assert(Gal[p].ColdGas == Gal[p].ColdGas);
-
+	  assert(Gal[p].MetalsHotGas <= Gal[p].HotGas);
+	  for(i=0; i<30; i++) assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
     }
     else
     {
@@ -324,7 +332,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 		Gal[p].DiscGasMetals[i] += metallicity * coolingGasBin;
 		if(cos_angle_halo_new<0.0)
 			RetroGas[i] = coolingGasBin;
-		assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
+		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
 		coolingGasBinSum += coolingGasBin;
       }
 
@@ -335,14 +343,15 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
       Gal[p].HotGas = 0.0;
       Gal[p].MetalsHotGas = 0.0;
 	  assert(Gal[p].ColdGas == Gal[p].ColdGas);
+	  for(i=0; i<30; i++) assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
     }
 			
     // Set spin of new disc
 	for(i=0; i<3; i++) 
 		Gal[p].SpinGas[i] = DiscNewSpin[i];
 	
-	if(cos_angle_disc_new < -1e-5 || cos_angle_halo_new < -1e-5)
-		retrograde_gas_collision(p, RetroGas, cos_angle_halo_new, cos_angle_disc_new, J_disc, J_cool);
+	if(cos_angle_disc_new < -1e-5 || cos_angle_halo_new < -1e-5) 
+		retrograde_gas_collision(p, RetroGas, cos_angle_halo_new, cos_angle_disc_new, J_disc, J_cool); // I have better ways of dealing with this now
 	
   
   }
@@ -376,6 +385,8 @@ void retrograde_gas_collision(int p, double RetroGas[30], double cos_angle_halo_
 	// Change the bin edges by the ratio of what the ang mom should be to the actual current ang mom
 	bin_ratio = (J_sum - 2.0*J_retro) / J_sum;
 	
+	for(i=0; i<30; i++) assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
+	
 	project_disc(Gal[p].DiscGas, bin_ratio, p, NewDisc);
 	project_disc(Gal[p].DiscGasMetals, bin_ratio, p, NewDiscMetals);
 	
@@ -383,6 +394,7 @@ void retrograde_gas_collision(int p, double RetroGas[30], double cos_angle_halo_
 	{
 		Gal[p].DiscGas[i] = NewDisc[i];
 		Gal[p].DiscGasMetals[i] = NewDiscMetals[i];
+		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
 	}
 	
 	// Project the smaller bins back to the original bins
