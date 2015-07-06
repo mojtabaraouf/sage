@@ -145,9 +145,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 			area = M_PI * (pow(DiscBinEdge[i+1]/V_rot, 2.0) - pow(DiscBinEdge[i]/V_rot, 2.0));
 			Sigma_0gas = 2.1 * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
 	        reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3);
-			
-			double SNII_metals;
-			
+						
 			// Can't use more cold gas than is available, so balance SF and feedback 
 		    if((stars + reheated_mass) > gas_sf && (stars + reheated_mass) > 0.0)
 		    {

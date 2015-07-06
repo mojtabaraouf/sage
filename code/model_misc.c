@@ -111,7 +111,7 @@ double get_disk_radius(int halonr, int p)
 		Halo[halonr].Spin[1] * Halo[halonr].Spin[1] + Halo[halonr].Spin[2] * Halo[halonr].Spin[2]);
   
   // trim the extreme tail of the spin distribution for more a realistic r_s
-  if(SpinMagnitude > 1.5) SpinMagnitude = 1.5;
+  //if(SpinMagnitude > 1.5) SpinMagnitude = 1.5;
   
   SpinParameter = SpinMagnitude / (1.414 * Gal[p].Vvir * Gal[p].Rvir);
     

@@ -11,10 +11,11 @@ from galprops import galcalc as gc
 fsize = 28
 matplotlib.rcParams.update({'font.size': fsize, 'xtick.major.size': 10, 'ytick.major.size': 10, 'xtick.major.width': 1, 'ytick.major.width': 1, 'ytick.minor.size': 5, 'xtick.minor.size': 5, 'axes.linewidth': 1, 'text.usetex': True, 'font.family': 'serif', 'font.serif': 'Times New Roman'})
 
-outdir = 'results/millennium/plots/'
+indir = 'results/millennium/'
+outdir = indir+'plots/'
 if not os.path.exists(outdir): os.makedirs(outdir)
 
-G = gr.sagesnap('model_z0.000', 0, 7, 'results/millennium/', disc=True) #Commit 4 - good results/
+G = gr.sagesnap('model_z0.000', 0, 7, indir, disc=True) #Commit 4 - good results/
 
 h = 0.678;
 
@@ -236,3 +237,37 @@ filt = (G.Type==0) * (G.StellarMass+G.ColdGas > 0) * (G.ClassicalBulgeMass+G.Sec
 gp.figure()
 gp.btf((G.StellarMass[filt]+G.ColdGas[filt])*1e10/h, G.Vmax[filt], h=h, fsize=fsize, extra=True, label=r'SAGE Disc')
 gp.savepng(outdir+'BTF', xpixplot=768, ypixplot=512)
+
+
+### BH mass history plot
+zstr = ['0.000', '0.089', '0.208', '0.362', '0.564', '0.828', '1.173', '1.630', '2.239', '3.060', '4.179', '5.724', '7.883', '10.944', '15.343']
+if os.path.isfile(indir+'model_z'+zstr[1]+'_0'):
+    z = np.array(zstr, dtype='f4')
+    SFRD = np.zeros(len(z))
+    gp.figure()
+    for s in xrange(len(z)):
+        M = gr.sagesnap('model_z'+zstr[s], 0, 7, indir, disc=True)
+        SFRD[s] = np.log10(np.sum(M.SfrDisk + M.SfrBulge)*h**3 / (62.5**3))
+        gp.point_with_spread(z[s], M.BlackHoleMass[M.BlackHoleMass>0]*1e10/h, mean=False, alpha=0.8)
+    plt.xlabel(r'Redshift')
+    plt.yscale('log')
+    plt.ylabel(r'$\log_{10} (M_{\rm BH}\ [\mathrm{M}_{\bigodot}])$')
+    plt.axis([0, 12, 1e3, 1e8])
+    gp.savepng(outdir+'BHhistory', xpixplot=768, ypixplot=512)
+
+
+
+### Madau plot
+if os.path.isfile(indir+'model_z'+zstr[1]+'_0'):
+	gp.figure()
+	gp.SFRD_obs(h)
+	plt.plot(z, SFRD, 'k-', lw=2, label=r'\textsc{sage} Disc')
+	plt.axis([0,7.5,-2.8,-0.5])
+	plt.xlabel(r'Redshift')
+	plt.ylabel(r'$\log_{10} \left(\bar{\rho}_{\rm SFR}\ [\mathrm{M}_{\bigodot}\ \mathrm{yr}^{-1}\ \mathrm{cMpc}^{-3}] \right)$')
+	plt.legend(fontsize=fsize-4, loc='best', frameon=False, numpoints=1)
+	gp.savepng(outdir+'SFRD', xpixplot=768, ypixplot=512)
+
+
+
+	
