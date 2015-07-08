@@ -374,13 +374,6 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
       }
       else if(Gal[p].Type == 1 && Gal[p].HotGas > 0.0)
         strip_from_satellite(halonr, centralgal, p);
-
-		for(i=0; i<30; i++) 
-		{
-			if (Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i])
-				printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
-			assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
-		}
 	
       // determine cooling gas given halo properties 
       coolingGas = cooling_recipe(p, deltaT / STEPS);
@@ -393,12 +386,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
       assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
-		for(i=0; i<30; i++) 
-		{
-			if (Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i])
-				printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
-			assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
-		}
+
 	
 	  // stars form and then explode! 
       starformation_and_feedback(p, centralgal, time, deltaT / STEPS, halonr, step);

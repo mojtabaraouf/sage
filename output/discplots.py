@@ -24,8 +24,8 @@ DiscBinEdge = np.append(0, np.array([0.5*200*1.2**i for i in range(30)])) / h
 #DiscBinEdge = np.append(0, np.array([0.5*200*1.15**i for i in range(30)])) / h
 
 # Just get the galaxies of interest
-filt = (G.Vvir>=200) * (G.Vvir<=235) * np.isfinite(G.Vvir) * (G.StellarMass/h > 1.0) * (G.ColdGas/h > 10**-0.5)# * (G.StellarMass/h < 10**0.8) * (G.ColdGas/h < 10**0.2)
-filt2 = (G.Vvir>=175) * (G.Vvir<200) * np.isfinite(G.Vvir) * (G.StellarMass/h > 1.0) * (G.ColdGas/h > 10**-0.8) # Maybe 1.4 for stellar mass
+filt = (G.Vvir>=200) * (G.Vvir<=235) * np.isfinite(G.Vvir) * (G.StellarMass/h > 1.0) * (G.ColdGas/h > 10**-0.5) * (G.Type==0)# * (G.StellarMass/h < 10**0.8) * (G.ColdGas/h < 10**0.2)
+filt2 = (G.Vvir>=175) * (G.Vvir<200) * np.isfinite(G.Vvir) * (G.StellarMass/h > 1.0) * (G.ColdGas/h > 10**-0.8) * (G.Type==0)# Maybe 1.4 for stellar mass
 #filt = (G.Vvir>=200) * (G.Vvir<=235) * np.isfinite(G.Vvir) * ((G.ClassicalBulgeMass+G.SecularBulgeMass) <= 0.15*G.StellarMass)
 #filt2 = (G.Vvir>=175) * (G.Vvir<200) * np.isfinite(G.Vvir) * ((G.ClassicalBulgeMass+G.SecularBulgeMass) <= 0.15*G.StellarMass)
 
@@ -48,23 +48,23 @@ Sigma_star_arr2 = np.zeros((N2,30))
 Sigma_gas_arr2 = np.zeros((N2,30))
 
 for i in xrange(N):
-	radius_bins = DiscBinEdge / G.Vvir[filt][i]
-	Sigma_star = (G.DiscStars[filt][i]*1e10/h) / (np.pi*(radius_bins[1:]**2 - radius_bins[:-1]**2)*1e6) # Solar masses per pc^2
-	Sigma_star_arr[i,:] = Sigma_star
-	Sigma_gas = (G.DiscGas[filt][i]*1e10/h) / (np.pi*(radius_bins[1:]**2 - radius_bins[:-1]**2)*1e6)
-	Sigma_gas_arr[i,:] = Sigma_gas
-	#
-	H2_HI = 1.306e-3 * (Sigma_gas**2 + 0.1*Sigma_gas * np.sqrt(Sigma_star*Sigma_star[0]))**0.92
-	H2_gas = 0.75 * 1.0/(gc.divide(np.ones(len(H2_HI)),H2_HI) + 1) * (1 - gc.divide(G.DiscGasMetals[filt][i], G.DiscGas[filt][i]))
-	#H2_gas = 1.0/(gc.divide(np.ones(len(H2_HI)),H2_HI) + 1)
-	Sigma_H2_arr[i,:] = Sigma_gas_arr[i,:] * H2_gas
-	Sigma_HI_arr[i,:] = gc.divide(Sigma_H2_arr[i,:], H2_HI)
+    radius_bins = DiscBinEdge / G.Vvir[filt][i]
+    Sigma_star = (G.DiscStars[filt][i]*1e10/h) / (np.pi*(radius_bins[1:]**2 - radius_bins[:-1]**2)*1e6) # Solar masses per pc^2
+    Sigma_star_arr[i,:] = Sigma_star
+    Sigma_gas = (G.DiscGas[filt][i]*1e10/h) / (np.pi*(radius_bins[1:]**2 - radius_bins[:-1]**2)*1e6)
+    Sigma_gas_arr[i,:] = Sigma_gas
+    #
+    H2_HI = 1.306e-3 * (Sigma_gas**2 + 0.1*Sigma_gas * np.sqrt(Sigma_star*Sigma_star[0]))**0.92
+    H2_gas = 0.75 * 1.0/(gc.divide(np.ones(len(H2_HI)),H2_HI) + 1) * (1 - gc.divide(G.DiscGasMetals[filt][i], G.DiscGas[filt][i]))
+    #H2_gas = 1.0/(gc.divide(np.ones(len(H2_HI)),H2_HI) + 1)
+    Sigma_H2_arr[i,:] = Sigma_gas_arr[i,:] * H2_gas
+    Sigma_HI_arr[i,:] = gc.divide(Sigma_H2_arr[i,:], H2_HI)
 
 for i in xrange(N2):
-	radius_bins = DiscBinEdge / G.Vvir[filt2][i]
-	Sigma_star = (G.DiscStars[filt2][i]*1e10/h) / (np.pi*(radius_bins[1:]**2 - radius_bins[:-1]**2)*1e6) # Solar masses per pc^2
-	Sigma_star_arr2[i,:] = Sigma_star
-	Sigma_gas_arr2[i,:] = (G.DiscGas[filt2][i]*1e10/h) / (np.pi*(radius_bins[1:]**2 - radius_bins[:-1]**2)*1e6)
+    radius_bins = DiscBinEdge / G.Vvir[filt2][i]
+    Sigma_star = (G.DiscStars[filt2][i]*1e10/h) / (np.pi*(radius_bins[1:]**2 - radius_bins[:-1]**2)*1e6) # Solar masses per pc^2
+    Sigma_star_arr2[i,:] = Sigma_star
+    Sigma_gas_arr2[i,:] = (G.DiscGas[filt2][i]*1e10/h) / (np.pi*(radius_bins[1:]**2 - radius_bins[:-1]**2)*1e6)
 
 #Sigma_star_arr[np.where(Sigma_star_arr==0)] = np.min(Sigma_star_arr[Sigma_star_arr>0])
 #Sigma_star_arr = np.sort(np.log10(Sigma_star_arr), axis=0)
@@ -239,6 +239,16 @@ gp.btf((G.StellarMass[filt]+G.ColdGas[filt])*1e10/h, G.Vmax[filt], h=h, fsize=fs
 gp.savepng(outdir+'BTF', xpixplot=768, ypixplot=512)
 
 
+
+# z=2 Stellar mass function
+G = gr.sagesnap('model_z2.239', 0, 7, indir, disc=True)
+gp.figure()
+gp.massfunction(G.StellarMass*1e10/h, 62.5/h, extra=0, h=h, step=False, fsize=fsize, binwidth=0.1, label=r'SAGE Disc')
+gp.smf_nifty_obs(h, z=2, haxes=False)
+plt.legend(fontsize=fsize-4, loc='best', frameon=False, title=r'$z=2$')
+plt.axis([8,11.8,5e-6,0.2])
+gp.savepng(outdir+'SMF_z2', xpixplot=768, ypixplot=512)
+
 ### BH mass history plot
 zstr = ['0.000', '0.089', '0.208', '0.362', '0.564', '0.828', '1.173', '1.630', '2.239', '3.060', '4.179', '5.724', '7.883', '10.944', '15.343']
 if os.path.isfile(indir+'model_z'+zstr[1]+'_0'):
@@ -259,15 +269,14 @@ if os.path.isfile(indir+'model_z'+zstr[1]+'_0'):
 
 ### Madau plot
 if os.path.isfile(indir+'model_z'+zstr[1]+'_0'):
-	gp.figure()
-	gp.SFRD_obs(h)
-	plt.plot(z, SFRD, 'k-', lw=2, label=r'\textsc{sage} Disc')
-	plt.axis([0,7.5,-2.8,-0.5])
-	plt.xlabel(r'Redshift')
-	plt.ylabel(r'$\log_{10} \left(\bar{\rho}_{\rm SFR}\ [\mathrm{M}_{\bigodot}\ \mathrm{yr}^{-1}\ \mathrm{cMpc}^{-3}] \right)$')
-	plt.legend(fontsize=fsize-4, loc='best', frameon=False, numpoints=1)
-	gp.savepng(outdir+'SFRD', xpixplot=768, ypixplot=512)
+    gp.figure()
+    gp.SFRD_obs(h)
+    plt.plot(z, SFRD, 'k-', lw=2, label=r'\textsc{sage} Disc')
+    plt.axis([0,7.5,-2.8,-0.5])
+    plt.xlabel(r'Redshift')
+    plt.ylabel(r'$\log_{10} \left(\bar{\rho}_{\rm SFR}\ [\mathrm{M}_{\bigodot}\ \mathrm{yr}^{-1}\ \mathrm{cMpc}^{-3}] \right)$')
+    plt.legend(fontsize=fsize-4, loc='best', frameon=False, numpoints=1)
+    gp.savepng(outdir+'SFRD', xpixplot=768, ypixplot=512)
 
 
 
-	

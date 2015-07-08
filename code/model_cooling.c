@@ -144,7 +144,7 @@ double do_AGN_heating(double coolingGas, int p, double dt, double x, double rcoo
 		if(Gal[p].r_heat < rcool && coolingGas > 0.0)
 		{
 			if(AGNheating<coolingGas)
-				r_heat_new = HeatingRadiusScale * (AGNheating / coolingGas) * rcool;
+				r_heat_new = (AGNheating / coolingGas) * rcool;
 			else
 				r_heat_new = rcool;
 			

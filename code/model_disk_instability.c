@@ -13,7 +13,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 {
 	// New treatment of instabilities based on the Toomre Q parameter
 	double Q_star, Q_gas, Sigma_star, Sigma_gas, area, radius, V_rot;
-	double unstable_gas, unstable_stars, metallicity, stars, stars_sum;
+	double unstable_gas, unstable_stars, metallicity, stars, stars_sum, gas_sink;
 	double NewStars[30], NewStarsMetals[30];
 	int i;
 	
@@ -24,7 +24,8 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	
 	// Deal with gaseous instabilities
 	stars_sum = 0.0;
-	//gas_sink_sum = 0.0;
+	gas_sink = -Gal[p].BlackHoleMass;
+	
 	for(i=29; i>=0; i--)
 	{
 		area = M_PI * (pow(DiscBinEdge[i+1]/V_rot, 2.0) - pow(DiscBinEdge[i]/V_rot, 2.0)) * pow(CM_PER_MPC, 2.0);
@@ -41,7 +42,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 			assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
 			assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
 			
-			stars = deal_with_unstable_gas(unstable_gas, p, i, V_rot, metallicity, centralgal);
+			stars = deal_with_unstable_gas(unstable_gas, p, i, V_rot, metallicity, centralgal, 0);
 			
 			if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 			assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
@@ -58,8 +59,10 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 			NewStarsMetals[i] = 0.0;
 		}
 	}
-	//if(gas_sink_sum > 0.0 && AGNrecipeOn > 0)
-		//quasar_mode_wind(p, gas_sink_sum);
+	
+	gas_sink += Gal[p].BlackHoleMass;
+	if(gas_sink>0.0 && AGNrecipeOn > 0)
+		quasar_mode_wind(p, gas_sink);
 	
 	// Merge new-star disc with previous stellar disc
 	if(stars_sum>0.0)
@@ -108,31 +111,30 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 		assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);}
 }
 
-double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, double metallicity, int centralgal)
+double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, double metallicity, int centralgal, int direct_to_BH)
 {
 	double gas_sink, gas_sf;
 	double stars, reheated_mass, ejected_mass, stars_sum, Sigma_0gas, fac, area;
 	
-	if(unstable_gas > Gal[p].DiscGas[i])
-		unstable_gas = Gal[p].DiscGas[i];
-	
+    if(unstable_gas > Gal[p].DiscGas[i])
+        unstable_gas = Gal[p].DiscGas[i];
+
 	// Let gas sink -- I may well want to change this formula
 	gas_sink = BlackHoleGrowthRate * unstable_gas / (1.0 + pow(280.0 / V_rot, 2.0));
-	Gal[p].DiscGas[i] -= gas_sink;
-	Gal[p].DiscGasMetals[i] -= metallicity * gas_sink;
-	assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
+    Gal[p].DiscGas[i] -= gas_sink;
+    Gal[p].DiscGasMetals[i] -= metallicity * gas_sink;
 
-	if(i!=0)
-	{
-		Gal[p].DiscGas[i-1] += gas_sink;
-		Gal[p].DiscGasMetals[i-1] += metallicity * gas_sink;
-		assert(Gal[p].DiscGasMetals[i-1] <= Gal[p].DiscGas[i-1]);
-	}
-	else
+    if(direct_to_BH>0 || i==0)
 	{
 		Gal[p].BlackHoleMass += gas_sink;
 		Gal[p].ColdGas -= gas_sink;
 		Gal[p].MetalsColdGas -= metallicity * gas_sink;
+	}
+	else
+	{
+		Gal[p].DiscGas[i-1] += gas_sink;
+		Gal[p].DiscGasMetals[i-1] += metallicity * gas_sink;
+		assert(Gal[p].DiscGasMetals[i-1] <= Gal[p].DiscGas[i-1]);
 	}
 
 	// Calculate new stars formed in that annulus
@@ -207,11 +209,9 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 		}
 		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
 	}
-				
-	if(i==0 && AGNrecipeOn > 0)  // Deal with quasar feedback
-		quasar_mode_wind(p, gas_sink);
-		
+	
 	return stars;
+		
 }
 
 // THIS IS NO LONGER USED
