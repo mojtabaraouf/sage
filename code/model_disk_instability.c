@@ -17,6 +17,10 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	double NewStars[30], NewStarsMetals[30];
 	int i;
 	
+	for(i=0; i<30; i++){
+		metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
+		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);}
+	
 	if(Gal[p].Vvir>0.0)
 		V_rot = Gal[p].Vvir;
 	else
@@ -75,6 +79,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	for(i=0; i<30; i++){
 		if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 		assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
+		metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
 		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);}
 	
 	// Deal with stellar instabilities
@@ -146,7 +151,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 		{
 			area = M_PI * (pow(DiscBinEdge[i+1]/V_rot, 2.0) - pow(DiscBinEdge[i]/V_rot, 2.0));
 			Sigma_0gas = 2.1 * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
-	        reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3);
+            reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3);
 						
 			// Can't use more cold gas than is available, so balance SF and feedback 
 		    if((stars + reheated_mass) > gas_sf && (stars + reheated_mass) > 0.0)

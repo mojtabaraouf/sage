@@ -93,6 +93,7 @@ void init_galaxy(int p, int halonr)
   Gal[p].r_heat = 0.0;
   Gal[p].LastMajorMerger = -1.0;
   Gal[p].OutflowRate = 0.0;
+  Gal[p].TotalSatelliteBaryons = 0.0;
 
   Gal[p].infallMvir = -1.0;  //infall properties
   Gal[p].infallVvir = -1.0;
@@ -198,24 +199,40 @@ double get_virial_radius(int halonr)
 
 double get_disc_gas(int p)
 {
-	double DiscGasSum;
+	double DiscGasSum, DiscMetalsSum;
 	int l;
 	
-	DiscGasSum = 0.0;
+	DiscGasSum = DiscMetalsSum = 0.0;
 	for(l=0; l<30; l++)
+	{
 		DiscGasSum += Gal[p].DiscGas[l];
+		DiscMetalsSum += Gal[p].DiscGasMetals[l];
+	}
 
 	if(DiscGasSum>1.001*Gal[p].ColdGas || DiscGasSum<Gal[p].ColdGas/1.001)
 	{
-		printf("get_disc_gas report %e\t%e\n", DiscGasSum, Gal[p].ColdGas);
-		if(DiscGasSum<1.01*Gal[p].ColdGas && DiscGasSum>Gal[p].ColdGas/1.01)
-			Gal[p].ColdGas = DiscGasSum; // If difference is small, just set the numbers to be the same to prevent small errors from blowing up
-		if(Gal[p].ColdGas==0.0)
+		printf("get_disc_gas report ... DiscSum, ColdGas =  %e, %e\n", DiscGasSum, Gal[p].ColdGas);
+		printf("get_disc_gas report ... MetalsSum, ColdMetals =  %e, %e\n", DiscMetalsSum, Gal[p].MetalsColdGas);
+		
+		if(Gal[p].ColdGas<=0.0)
 		{
-			for(l=0; l<30; l++) 
+			for(l=0; l<30; l++)
+			{
 				Gal[p].DiscGas[l] = 0.0; // Sometimes a tiny non-zero difference can creep in (probably due to projecting discs).  This just takes care of that.
+				Gal[p].DiscGasMetals[l] = 0.0;
+			}
 			DiscGasSum = 0.0;
+			DiscMetalsSum = 0.0;
+			Gal[p].ColdGas = 0.0;
+			Gal[p].MetalsColdGas = 0.0;
 		}
+		
+		if((DiscGasSum<1.01*Gal[p].ColdGas && DiscGasSum>Gal[p].ColdGas/1.01) || (DiscGasSum==0.0 && Gal[p].ColdGas<1e-10))
+		{
+			Gal[p].ColdGas = DiscGasSum; // If difference is small, just set the numbers to be the same to prevent small errors from blowing up
+			Gal[p].MetalsColdGas = DiscMetalsSum;
+		}
+		
   	}
 	return DiscGasSum;
 }

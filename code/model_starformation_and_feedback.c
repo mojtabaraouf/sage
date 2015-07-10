@@ -20,6 +20,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
   DiscGasSum = get_disc_gas(p);
   assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
   assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
+  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 
   f_H2_const = 1.306e-3 * pow((CM_PER_MPC*CM_PER_MPC/1e12 / SOLAR_MASS) * (UnitMass_in_g / UnitLength_in_cm / UnitLength_in_cm), 2.0*0.92);
   SFE_H2 = 7.75e-4 * UnitTime_in_s / SEC_PER_MEGAYEAR;
@@ -171,6 +172,10 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
   DiscGasSum = get_disc_gas(p);
   assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 
+  for(i=0; i<30; i++){
+	metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
+	assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);}
+
   // Check for disk instability
   if(DiskInstabilityOn)
     check_disk_instability(p, centralgal, time, dt, step);
@@ -178,6 +183,8 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
   for(i=0; i<30; i++){
 	if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 	assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);}
+
+  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 
 }
 
@@ -225,6 +232,7 @@ void update_from_feedback(int p, int centralgal, double reheated_mass, double ej
   
   // Check first just to be sure 
   assert(reheated_mass <= Gal[p].DiscGas[i]);
+  metallicityHot = get_metallicity(Gal[centralgal].HotGas, Gal[centralgal].MetalsHotGas);
   assert(Gal[centralgal].MetalsHotGas <= Gal[centralgal].HotGas);
 
   if(SupernovaRecipeOn == 1)
@@ -270,6 +278,9 @@ void update_from_feedback(int p, int centralgal, double reheated_mass, double ej
     Gal[p].OutflowRate += reheated_mass;    
   }
 
+  metallicityHot = get_metallicity(Gal[centralgal].HotGas, Gal[centralgal].MetalsHotGas);
+  assert(Gal[centralgal].MetalsHotGas <= Gal[centralgal].HotGas);
+
   if(Gal[p].DiscGas[i] < 0.0)
   {
     printf("DiscGas in update_feedback...%e\n", Gal[p].DiscGas[i]);
@@ -279,7 +290,7 @@ void update_from_feedback(int p, int centralgal, double reheated_mass, double ej
 
   if(Gal[p].ColdGas < 0.0)
   {
-    printf("ColdGas in update_feedback...%e\n", Gal[p].ColdGas);
+    printf("ColdGas in update_feedback...%d, %e\n", i, Gal[p].ColdGas);
 	Gal[p].ColdGas=0.0;
 	Gal[p].MetalsColdGas=0.0;
   }

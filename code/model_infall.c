@@ -16,13 +16,15 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
   double tot_stellarMass, tot_BHMass, tot_coldMass, tot_hotMass, tot_hotMetals, tot_ejected, tot_ejectedMetals;
   double tot_ICS, tot_ICSMetals;
   double infallingMass, reionization_modifier, DiscGasSum;
+  double newSatBaryons, tot_satBaryons;
 
   DiscGasSum = get_disc_gas(centralgal);
   assert(DiscGasSum <= 1.001*Gal[centralgal].ColdGas && DiscGasSum >= Gal[centralgal].ColdGas/1.001);
   assert(Gal[centralgal].HotGas == Gal[centralgal].HotGas && Gal[centralgal].HotGas >= 0);
+  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 
   // need to add up all the baryonic mass asociated with the full halo 
-  tot_stellarMass = tot_coldMass = tot_hotMass = tot_hotMetals = tot_ejected = tot_BHMass = tot_ejectedMetals = tot_ICS = tot_ICSMetals = 0.0;
+  tot_stellarMass = tot_coldMass = tot_hotMass = tot_hotMetals = tot_ejected = tot_BHMass = tot_ejectedMetals = tot_ICS = tot_ICSMetals = tot_satBaryons = 0.0;
 
   for(i = 0; i < ngal; i++)      // Loop over all galaxies in the FoF-halo 
   {
@@ -36,18 +38,23 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
     tot_ICS += Gal[i].ICS;
     tot_ICSMetals += Gal[i].MetalsICS;
 
+		// record the current baryons in satellites only
+    if(i != centralgal)
+			tot_satBaryons += Gal[i].StellarMass + Gal[i].BlackHoleMass + Gal[i].ColdGas + Gal[i].HotGas;
+
     // satellite ejected gas goes to central ejected reservior
     if(i != centralgal)
       Gal[i].EjectedMass = Gal[i].MetalsEjectedMass = 0.0;
 
     // satellite ICS goes to central ICS
     if(i != centralgal) 
-    {
       Gal[i].ICS = Gal[i].MetalsICS = 0.0; 
-    }
   }
 
-  // conserve baryon fraction by adding/subtracting to/from the hot gas - include reionization if necessary 
+	// the existing baryons that have fallen in with substructure since the last timestep
+	newSatBaryons = tot_satBaryons - Gal[centralgal].TotalSatelliteBaryons;
+
+  // include reionization if necessary 
   if(ReionizationOn)
     reionization_modifier = do_reionization(centralgal, Zcurr);
   else
@@ -55,7 +62,7 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
 
   infallingMass =
     // reionization_modifier * BaryonFrac * Gal[centralgal].Mvir - (tot_stellarMass + tot_coldMass + tot_hotMass + tot_ejected + tot_BHMass + tot_ICS);
-    reionization_modifier * BaryonFrac * Gal[centralgal].deltaMvir;
+    reionization_modifier * BaryonFrac * Gal[centralgal].deltaMvir - newSatBaryons;
 
   // the central galaxy keeps all the ejected mass
   Gal[centralgal].EjectedMass = tot_ejected;
@@ -82,7 +89,7 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
   DiscGasSum = get_disc_gas(centralgal);
   assert(DiscGasSum <= 1.001*Gal[centralgal].ColdGas && DiscGasSum >= Gal[centralgal].ColdGas/1.001);
   assert(Gal[centralgal].HotGas == Gal[centralgal].HotGas && Gal[centralgal].HotGas >= 0);
-
+  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
   return infallingMass;
 }
 
@@ -94,6 +101,8 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
   double r_gal2, v_gal2, rho_IGM, Sigma_gas, area;
   int i, j;
   
+  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
+
   if(ReionizationOn)
     reionization_modifier = do_reionization(gal, ZZ[Halo[halonr].SnapNum]);
   else
@@ -139,27 +148,30 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
 			Gal[gal].DiscGasMetals[i] = 0.0;
 		}
 	}
-	
-	for(i=1; i<30; i++)
+	else
 	{
-		area = M_PI * (pow(DiscBinEdge[i+1]/Gal[gal].Vvir, 2.0) - pow(DiscBinEdge[i]/Gal[gal].Vvir, 2.0)) * pow(CM_PER_MPC/1e3, 2.0);
-		Sigma_gas = Gal[gal].DiscGas[i]*1e10*SOLAR_MASS / area;
-		
-		if(rho_IGM*v_gal2 >= 2*M_PI*GRAVITY*Sigma_gas*Sigma_gas) // Currently no accounting for gravity of stellar disc
+		for(i=1; i<30; i++)
 		{
-			for(j=i; j<30; j++)
+			area = M_PI * (pow(DiscBinEdge[i+1]/Gal[gal].Vvir, 2.0) - pow(DiscBinEdge[i]/Gal[gal].Vvir, 2.0)) * pow(CM_PER_MPC/1e3, 2.0);
+			Sigma_gas = Gal[gal].DiscGas[i]*1e10*SOLAR_MASS / area;
+		
+			if(rho_IGM*v_gal2 >= 2*M_PI*GRAVITY*Sigma_gas*Sigma_gas) // Currently no accounting for gravity of stellar disc
 			{
-				Gal[centralgal].HotGas += Gal[gal].DiscGas[i];
-				Gal[centralgal].MetalsHotGas += Gal[gal].DiscGasMetals[i];
-				Gal[gal].ColdGas -= Gal[gal].DiscGas[i];
-				Gal[gal].MetalsColdGas -= Gal[gal].DiscGasMetals[i];
-				Gal[gal].DiscGas[i] = 0.0;
-				Gal[gal].DiscGasMetals[i] = 0.0;
+				for(j=i; j<30; j++)
+				{
+					Gal[centralgal].HotGas += Gal[gal].DiscGas[i];
+					Gal[centralgal].MetalsHotGas += Gal[gal].DiscGasMetals[i];
+					Gal[gal].ColdGas -= Gal[gal].DiscGas[i];
+					Gal[gal].MetalsColdGas -= Gal[gal].DiscGasMetals[i];
+					Gal[gal].DiscGas[i] = 0.0;
+					Gal[gal].DiscGasMetals[i] = 0.0;
+				}
+				break;
 			}
-			break;
 		}
 	}
-
+	
+	assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 }
 
 
@@ -219,47 +231,60 @@ double do_reionization(int gal, double Zcurr)
 
 
 
-void add_infall_to_hot(int gal, double infallingGas)
+void add_infall_to_hot(int centralgal, double infallingGas)
 {
   float metallicity;
 
-  assert(Gal[gal].HotGas == Gal[gal].HotGas && Gal[gal].HotGas >= 0);
+  assert(Gal[centralgal].HotGas == Gal[centralgal].HotGas && Gal[centralgal].HotGas >= 0);
+  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 
   // if the halo has lost mass, subtract baryons from the ejected mass first, then the hot gas
-  if(infallingGas < 0.0 && Gal[gal].EjectedMass > 0.0)
+  if(infallingGas < 0.0 && Gal[centralgal].EjectedMass > 0.0)
   {  
-    metallicity = get_metallicity(Gal[gal].EjectedMass, Gal[gal].MetalsEjectedMass);
-	assert(Gal[gal].MetalsEjectedMass <= Gal[gal].EjectedMass);
-    Gal[gal].MetalsEjectedMass += infallingGas*metallicity;
-    if(Gal[gal].MetalsEjectedMass < 0.0) Gal[gal].MetalsEjectedMass = 0.0;
+    metallicity = get_metallicity(Gal[centralgal].EjectedMass, Gal[centralgal].MetalsEjectedMass);
+	assert(Gal[centralgal].MetalsEjectedMass <= Gal[centralgal].EjectedMass);
+    Gal[centralgal].MetalsEjectedMass += infallingGas*metallicity;
+    if(Gal[centralgal].MetalsEjectedMass < 0.0) Gal[centralgal].MetalsEjectedMass = 0.0;
 
-    Gal[gal].EjectedMass += infallingGas;
-    if(Gal[gal].EjectedMass < 0.0)
+    Gal[centralgal].EjectedMass += infallingGas;
+    if(Gal[centralgal].EjectedMass < 0.0)
     {
-      infallingGas = Gal[gal].EjectedMass;
-      Gal[gal].EjectedMass = Gal[gal].MetalsEjectedMass = 0.0;
+      infallingGas = Gal[centralgal].EjectedMass;
+      Gal[centralgal].EjectedMass = Gal[centralgal].MetalsEjectedMass = 0.0;
     }
     else
       infallingGas = 0.0;
   }
 
   // if the halo has lost mass, subtract hot metals mass next, then the hot gas
-  if(infallingGas < 0.0 && Gal[gal].MetalsHotGas > 0.0)
+  if(infallingGas < 0.0 && Gal[centralgal].MetalsHotGas > 0.0)
   {
-    metallicity = get_metallicity(Gal[gal].HotGas, Gal[gal].MetalsHotGas);
-	assert(Gal[gal].MetalsHotGas <= Gal[gal].HotGas);
-    Gal[gal].MetalsHotGas += infallingGas*metallicity;
-    if(Gal[gal].MetalsHotGas < 0.0) Gal[gal].MetalsHotGas = 0.0;
+    metallicity = get_metallicity(Gal[centralgal].HotGas, Gal[centralgal].MetalsHotGas);
+	assert(Gal[centralgal].MetalsHotGas <= Gal[centralgal].HotGas);
+    Gal[centralgal].MetalsHotGas += infallingGas*metallicity;
+	Gal[centralgal].HotGas += infallingGas;
+	if(Gal[centralgal].HotGas < 0.0) Gal[centralgal].HotGas = Gal[centralgal].MetalsHotGas = 0.0;
+    if(Gal[centralgal].MetalsHotGas < 0.0) Gal[centralgal].MetalsHotGas = 0.0;
+	metallicity = get_metallicity(Gal[centralgal].HotGas, Gal[centralgal].MetalsHotGas);
+	assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
   }
 
   // limit the infalling gas so that the hot halo alone doesn't exceed the baryon fraction
-  if(infallingGas > 0.0 && (Gal[gal].HotGas + infallingGas) / Gal[gal].Mvir > BaryonFrac)
-    infallingGas = BaryonFrac * Gal[gal].Mvir - Gal[gal].HotGas;
+  if(infallingGas > 0.0 && (Gal[centralgal].HotGas + infallingGas) / Gal[centralgal].Mvir > BaryonFrac)
+    infallingGas = BaryonFrac * Gal[centralgal].Mvir - Gal[centralgal].HotGas;
+
+  metallicity = get_metallicity(Gal[centralgal].HotGas, Gal[centralgal].MetalsHotGas);
+  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 
   // add (subtract) the ambient (enriched) infalling gas to the central galaxy hot component 
-  Gal[gal].HotGas += infallingGas;
+  if(infallingGas > 0.0)
+    Gal[centralgal].HotGas += infallingGas;
 
-  if(Gal[gal].HotGas < 0.0) 
-    Gal[gal].HotGas = Gal[gal].MetalsHotGas = 0.0;
+  metallicity = get_metallicity(Gal[centralgal].HotGas, Gal[centralgal].MetalsHotGas);
+  if(infallingGas<0.0)
+  	assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
+  else
+  	assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
+
 }
 

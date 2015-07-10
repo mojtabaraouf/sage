@@ -50,7 +50,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_central
 void update_from_star_formation(int p, double stars, double metallicity, int i);
 void update_from_feedback(int p, int centralgal, double reheated_mass, double ejected_mass, double metallicity, int i);
 void make_bulge_from_burst(int p);
-double grow_black_hole(int merger_centralgal, double mass_ratio);
+double grow_black_hole(int merger_centralgal, double* disc_mass_ratio);
 //void check_disk_instability_old(int p, int centralgal, int halonr, double time, double dt, int step);
 void check_disk_instability(int p, int centralgal, double time, double dt, int step);
 

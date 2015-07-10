@@ -175,6 +175,7 @@ struct GALAXY
   double r_heat;
   double LastMajorMerger;
   double OutflowRate;
+  double TotalSatelliteBaryons;
 
   //infall properties
   double infallMvir;

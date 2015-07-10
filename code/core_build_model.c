@@ -365,6 +365,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
       if(Gal[p].dT < 0.0)
         Gal[p].dT = deltaT;
 
+	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
       // for central galaxy only 
       if(p == centralgal)
       {
@@ -374,6 +375,8 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
       }
       else if(Gal[p].Type == 1 && Gal[p].HotGas > 0.0)
         strip_from_satellite(halonr, centralgal, p);
+	
+	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 	
       // determine cooling gas given halo properties 
       coolingGas = cooling_recipe(p, deltaT / STEPS);
@@ -386,6 +389,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
       assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
+	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 
 	
 	  // stars form and then explode! 
@@ -395,6 +399,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 	  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
+	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 		for(i=0; i<30; i++) 
 		{
 			if (Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i])
@@ -449,7 +454,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 			assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 			assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 			assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
-	
+			assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
           }
           else
           {
@@ -461,6 +466,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 			  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 			  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 			  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
+			  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
             }
           }
  
@@ -478,11 +484,15 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 
   // extra miscellaneous stuff 
   deltaT = Age[Gal[0].SnapNum] - Age[Halo[halonr].SnapNum];
+  Gal[centralgal].TotalSatelliteBaryons = 0.0;
   for(p = 0; p < ngal; p++)
   {
     Gal[p].Cooling /= deltaT;
     Gal[p].Heating /= deltaT;
-    Gal[p].OutflowRate /= deltaT;    
+    Gal[p].OutflowRate /= deltaT;
+
+    if(p != centralgal)
+		Gal[centralgal].TotalSatelliteBaryons += (Gal[p].StellarMass + Gal[p].BlackHoleMass + Gal[p].ColdGas + Gal[p].HotGas);
   }
 
 
@@ -548,7 +558,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 	assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
   }
 
-
+  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 }
 
 
