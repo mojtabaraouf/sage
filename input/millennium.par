@@ -48,15 +48,15 @@ DiskInstabilityOn			1		;0: switch off; 1: bulge and BH growth through instabilit
 %----- Parameters of physical model -------
 %------------------------------------------
 
-SfrEfficiency				2.0		;efficiency of SF (SFprescription=0).  Changed definition to original SAGE, just modulates the efficiency.
+SfrEfficiency				3.0		;efficiency of SF (SFprescription=0).  Changed definition to original SAGE, just modulates the efficiency.
 ClumpingFactor				5.0		;gas clumping factor in Krumholz & Dekel 2011 (SFprescription=1)
 
-FeedbackReheatingEpsilon	5.0		;mass of cold gas reheated due to SF (see Martin 1999) (SupernovaRecipeOn=1)
-FeedbackEjectionEfficiency	0.5 	;mixing efficiency of SN energy with hot gas to unbind and eject some (SupernovaRecipeOn=1)
+FeedbackReheatingEpsilon	4.0		;mass of cold gas reheated due to SF (see Martin 1999) (SupernovaRecipeOn=1)
+FeedbackEjectionEfficiency	0.4 	;mixing efficiency of SN energy with hot gas to unbind and eject some (SupernovaRecipeOn=1)
 
 ReIncorporationFactor		0.15	;fraction of ejected mass reincorporated per dynamical time to hot
 
-RadioModeEfficiency			0.10     ;AGN radio mode efficiency (AGNrecipeOn>0) -- 2.0e-3 / 1.0
+RadioModeEfficiency			0.04     ;AGN radio mode efficiency (AGNrecipeOn>0) -- 2.0e-3 / 1.0
 HeatingRadiusScale			1.00	;parameter to set scale at which gas can no longer cool
 QuasarModeEfficiency		0.0001	;AGN quasar mode wind heating efficiency (AGNrecipeOn>0)
 BlackHoleGrowthRate			0.015	;fraction of cold gas added to the BH during mergers (AGNrecipeOn>0)

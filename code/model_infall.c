@@ -98,7 +98,7 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
 void strip_from_satellite(int halonr, int centralgal, int gal)
 {
   double reionization_modifier, strippedGas, strippedGasMetals, metallicity;
-  double r_gal2, v_gal2, rho_IGM, Sigma_gas, area;
+  double r_gal2, v_gal2, rho_IGM, Sigma_gas, Sigma_star, area;
   int i, j;
   
   assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
@@ -129,15 +129,16 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
   }
   
 	// Ram pressure stripping of cold gas
-	r_gal2 = pow(Gal[gal].Pos[0]-Gal[centralgal].Pos[0], 2.0) + pow(Gal[gal].Pos[1]-Gal[centralgal].Pos[1], 2.0) + pow(Gal[gal].Pos[2]-Gal[centralgal].Pos[2], 2.0) * CM_PER_MPC/1e3;
-	v_gal2 = pow(Gal[gal].Vel[0]-Gal[centralgal].Vel[0], 2.0) + pow(Gal[gal].Vel[1]-Gal[centralgal].Vel[1], 2.0) + pow(Gal[gal].Vel[2]-Gal[centralgal].Vel[2], 2.0) * 1e5;
+	r_gal2 = (pow(Gal[gal].Pos[0]-Gal[centralgal].Pos[0], 2.0) + pow(Gal[gal].Pos[1]-Gal[centralgal].Pos[1], 2.0) + pow(Gal[gal].Pos[2]-Gal[centralgal].Pos[2], 2.0)) * pow(CM_PER_MPC/1e3, 2.0);
+	v_gal2 = (pow(Gal[gal].Vel[0]-Gal[centralgal].Vel[0], 2.0) + pow(Gal[gal].Vel[1]-Gal[centralgal].Vel[1], 2.0) + pow(Gal[gal].Vel[2]-Gal[centralgal].Vel[2], 2.0)) * pow(1e5,2.0);
 	rho_IGM = Gal[centralgal].HotGas*1e10*SOLAR_MASS / (4 * M_PI * Gal[centralgal].Rvir*CM_PER_MPC/1e3 * r_gal2);
 	
 	area = M_PI * (pow(DiscBinEdge[1]/Gal[gal].Vvir, 2.0) - pow(DiscBinEdge[0]/Gal[gal].Vvir, 2.0)) * pow(CM_PER_MPC/1e3, 2.0);
 	Sigma_gas = Gal[gal].DiscGas[0]*1e10*SOLAR_MASS / area;
-	
-	if(rho_IGM*v_gal2 >= 2*M_PI*GRAVITY*Sigma_gas*Sigma_gas)
+    Sigma_star = Gal[gal].DiscStars[0]*1e10*SOLAR_MASS / area;
+	if(rho_IGM*v_gal2 >= 2*M_PI*GRAVITY*Sigma_gas*Sigma_gas && Gal[gal].DiscGas[0] > 0.0)
 	{
+        printf("LHS, RHS of RPS = %e, %e\n", rho_IGM*v_gal2, 2*M_PI*GRAVITY*Sigma_gas*Sigma_gas);
 		Gal[centralgal].HotGas += Gal[gal].ColdGas;
 		Gal[centralgal].MetalsHotGas += Gal[gal].MetalsColdGas;
 		Gal[gal].ColdGas = 0.0;
@@ -148,7 +149,7 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
 			Gal[gal].DiscGasMetals[i] = 0.0;
 		}
 	}
-	else
+	else if(Gal[gal].ColdGas > 0.0)
 	{
 		for(i=1; i<30; i++)
 		{
@@ -157,6 +158,7 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
 		
 			if(rho_IGM*v_gal2 >= 2*M_PI*GRAVITY*Sigma_gas*Sigma_gas) // Currently no accounting for gravity of stellar disc
 			{
+                //printf("LHS, RHS of RPS = %e, %e\n", rho_IGM*v_gal2, 2*M_PI*GRAVITY*Sigma_gas*Sigma_gas);
 				for(j=i; j<30; j++)
 				{
 					Gal[centralgal].HotGas += Gal[gal].DiscGas[i];

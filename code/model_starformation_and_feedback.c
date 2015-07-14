@@ -12,7 +12,7 @@
 
 void starformation_and_feedback(int p, int centralgal, double time, double dt, int halonr, int step)
 {
-  double strdot, stars, reheated_mass, ejected_mass, fac, metallicity, stars_sum, area, SFE_H2, f_H2, f_H2_const, Sigma_0gas, DiscGasSum, DiscPre, ColdPre;
+    double strdot, stars, reheated_mass, ejected_mass, fac, metallicity, stars_sum, area, SFE_H2, f_H2, f_H2_const, Sigma_0gas, DiscGasSum, DiscPre, ColdPre;//, cos_theta_gas_stars;
   double NewStars[30], NewStarsMetals[30];
   int i;
 
@@ -31,6 +31,8 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 
   Gal[p].SfrDiskColdGas[step] = Gal[p].ColdGas;
   Gal[p].SfrDiskColdGasMetals[step] = Gal[p].MetalsColdGas;
+    
+  //cos_theta_gas_stars = Gal[p].SpinStars[0]*Gal[p].SpinGas[0] + Gal[p].SpinStars[1]*Gal[p].SpinGas[1] + Gal[p].SpinStars[2]*Gal[p].SpinGas[2];
 
   for(i=0; i<30; i++)
   {
@@ -40,7 +42,10 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	if(Gal[p].Vvir>0) //There can be galaxies passed through they don't appear to be real
 	{
 		area = M_PI * (pow(DiscBinEdge[i+1]/Gal[p].Vvir, 2.0) - pow(DiscBinEdge[i]/Gal[p].Vvir, 2.0));
-		f_H2 = f_H2_const * pow(pow(Gal[p].DiscGas[i]/area, 2.0) + 0.1*Gal[p].DiscGas[i]/area * pow(Gal[p].DiscStars[i]*Gal[p].DiscStars[0], 0.5)/area, 0.92);
+        //if(cos_theta_gas_stars >= 0.9397)
+            f_H2 = f_H2_const * pow(pow(Gal[p].DiscGas[i]/area, 2.0) + 0.1*Gal[p].DiscGas[i]/area * pow(Gal[p].DiscStars[i]*Gal[p].DiscStars[0], 0.5)/area, 0.92);
+        //else
+            //f_H2 = f_H2_const * pow(Gal[p].DiscGas[i]/area, 2.0*0.92);
 		if(f_H2 > 0.0)
 		{
 		  assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);

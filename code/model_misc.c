@@ -217,17 +217,20 @@ double get_disc_gas(int p)
 		if(Gal[p].ColdGas<=0.0)
 		{
 			for(l=0; l<30; l++)
-			{
 				Gal[p].DiscGas[l] = 0.0; // Sometimes a tiny non-zero difference can creep in (probably due to projecting discs).  This just takes care of that.
-				Gal[p].DiscGasMetals[l] = 0.0;
-			}
 			DiscGasSum = 0.0;
-			DiscMetalsSum = 0.0;
 			Gal[p].ColdGas = 0.0;
-			Gal[p].MetalsColdGas = 0.0;
 		}
+        
+        if(Gal[p].ColdGas<=0.0 || Gal[p].MetalsColdGas<=0.0)
+        {
+            for(l=0; l<30; l++)
+                Gal[p].DiscGasMetals[l] = 0.0;
+            DiscMetalsSum = 0.0;
+            Gal[p].MetalsColdGas = 0.0;
+        }
 		
-		if((DiscGasSum<1.01*Gal[p].ColdGas && DiscGasSum>Gal[p].ColdGas/1.01) || (DiscGasSum==0.0 && Gal[p].ColdGas<1e-10))
+		if((DiscGasSum<1.01*Gal[p].ColdGas && DiscGasSum>Gal[p].ColdGas/1.01) || (DiscGasSum==0.0 && Gal[p].ColdGas<1e-10) || DiscGasSum < 1e-10)
 		{
 			Gal[p].ColdGas = DiscGasSum; // If difference is small, just set the numbers to be the same to prevent small errors from blowing up
 			Gal[p].MetalsColdGas = DiscMetalsSum;

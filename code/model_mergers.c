@@ -919,7 +919,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_central
   // Sum stellar discs together
   combine_stellar_discs(merger_centralgal, NewStars, NewStarsMetals);
 
-  Gal[merger_centralgal].SfrBulge[step] += stars_sum / dt;
+  Gal[merger_centralgal].SfrDisk[step] += stars_sum / dt; // This can probably be handled better.  It's a bit complicated though (as to whether it's Sfr in the bulge or disc)
 
   // check for disk instability
   // if(DiskInstabilityOn && mode == 0)
