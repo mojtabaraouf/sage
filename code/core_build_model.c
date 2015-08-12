@@ -406,6 +406,10 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 				printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 			assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
 		}
+        
+      // precess gas disc
+      if(GasPrecessionOn)
+        precess_gas(p, deltaT / STEPS, halonr);
 	
     }
 

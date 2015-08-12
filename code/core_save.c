@@ -135,6 +135,10 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
   o->MetalsHotGas = g->MetalsHotGas;
   o->MetalsEjectedMass = g->MetalsEjectedMass;
   o->MetalsICS = g->MetalsICS;
+    
+  o->StarsInSitu = g->StarsInSitu;
+  o->StarsInstability = g->StarsInstability;
+  o->StarsMergeBurst = g->StarsMergeBurst;
   
   for(j=0; j<30; j++)
   {

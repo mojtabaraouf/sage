@@ -74,8 +74,11 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 		for(i=0; i<30; i++) assert(NewStarsMetals[i] <= NewStars[i]);
 		combine_stellar_discs(p, NewStars, NewStarsMetals);
 		Gal[p].SfrDisk[step] += stars_sum / dt; // Some of these stars may quickly be transferred to the bulge, so simply updating SfrDisk might be crude
+        Gal[p].StarsInstability += (1-RecycleFraction)*stars_sum;
+        assert(Gal[p].StellarMass >= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)/1.001 && Gal[p].StellarMass <= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)*1.001);
+
 	}
-				  
+    
 	for(i=0; i<30; i++){
 		if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 		assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
@@ -218,6 +221,80 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 	return stars;
 		
 }
+
+
+void precess_gas(int p, double dt, int halonr)
+{
+    int i;
+    double tdyn, deg_ann, deg, DiscGasSum, NewDisc[30], NewDiscMetals[30];
+    
+    double cos_angle_gas_stars = Gal[p].SpinStars[0]*Gal[p].SpinGas[0] + Gal[p].SpinStars[1]*Gal[p].SpinGas[1] + Gal[p].SpinStars[2]*Gal[p].SpinGas[2];
+        
+    DiscGasSum = get_disc_gas(p);
+    assert(DiscGasSum <= 1.001*Gal[p].ColdGas || DiscGasSum >= Gal[p].ColdGas/1.001);
+    
+    if(cos_angle_gas_stars<1.0 && DiscGasSum>0.0 && Gal[p].StellarMass>0.0)
+    {
+        deg = 0.0;
+        for(i=0; i<30; i++)
+        {
+            tdyn = pow((pow(DiscBinEdge[i],2.0)+pow(DiscBinEdge[i+1],2.0))/2.0, 0.5) / Gal[p].Vvir / Gal[p].Vvir;
+            if(tdyn!=tdyn) printf("tdyn = %e\n", tdyn);
+            deg_ann = DegPerTdyn * dt / tdyn; // degrees this annulus wants to precess
+            deg += deg_ann * Gal[p].DiscGas[i] / DiscGasSum;
+        }
+        
+        double cos_angle_precess = cos(deg*M_PI/180.0);
+        
+        if(cos_angle_precess < fabs(cos_angle_gas_stars))
+            cos_angle_precess = fabs(cos_angle_gas_stars); // Gas stops precessing once it aligns or counter-aligns with stars
+        
+        project_disc(Gal[p].DiscGas, cos_angle_precess, p, NewDisc);
+        project_disc(Gal[p].DiscGasMetals, cos_angle_precess, p, NewDiscMetals);
+        
+        for(i=0; i<30; i++)
+        {
+            Gal[p].DiscGas[i] = NewDisc[i];
+            Gal[p].DiscGasMetals[i] = NewDiscMetals[i];
+        }
+        
+        if(cos_angle_precess == cos_angle_gas_stars && cos_angle_gas_stars >= 0.0)
+            for(i=0; i<3; i++) Gal[p].SpinGas[i] = Gal[p].SpinStars[i];
+        else if(cos_angle_precess == cos_angle_gas_stars && cos_angle_gas_stars < 0.0)
+            for(i=0; i<3; i++) Gal[p].SpinGas[i] = -Gal[p].SpinStars[i];
+        else
+        {
+            double axis[3], axis_mag, NewSpin[3];
+            double sin_angle_precess = sin(acos(cos_angle_precess));
+            axis[0] = Gal[p].SpinGas[1]*Gal[p].SpinStars[2] - Gal[p].SpinGas[2]*Gal[p].SpinStars[1];
+            axis[1] = Gal[p].SpinGas[2]*Gal[p].SpinStars[0] - Gal[p].SpinGas[0]*Gal[p].SpinStars[2];
+            axis[2] = Gal[p].SpinGas[0]*Gal[p].SpinStars[1] - Gal[p].SpinGas[1]*Gal[p].SpinStars[0];
+            axis_mag = pow(pow(axis[0],2.0)+pow(axis[1],2.0)+pow(axis[2],2.0),0.5);
+            for(i=0; i<3; i++) axis[i] /= axis_mag;
+            double dot = axis[0]*Gal[p].SpinGas[0] + axis[1]*Gal[p].SpinGas[1] + axis[2]*Gal[p].SpinGas[2];
+            NewSpin[0] = axis[0]*dot*(1.0-cos_angle_precess) + Gal[p].SpinGas[0]*cos_angle_precess + (axis[1]*Gal[p].SpinGas[2] - axis[2]*Gal[p].SpinGas[1])*sin_angle_precess;
+            NewSpin[1] = axis[1]*dot*(1.0-cos_angle_precess) + Gal[p].SpinGas[1]*cos_angle_precess + (axis[2]*Gal[p].SpinGas[0] - axis[0]*Gal[p].SpinGas[2])*sin_angle_precess;
+            NewSpin[2] = axis[2]*dot*(1.0-cos_angle_precess) + Gal[p].SpinGas[2]*cos_angle_precess + (axis[0]*Gal[p].SpinGas[1] - axis[1]*Gal[p].SpinGas[0])*sin_angle_precess;
+            for(i=0; i<3; i++)
+            {
+                if(NewSpin[i]!=NewSpin[i])
+                {
+                    printf("angle, cos_angle_precess, cos_angle_gas_stars = %e, %e, %e\n", deg, cos_angle_precess, cos_angle_gas_stars);
+                    printf("SpinStars = %e, %e, %e\n", Gal[p].SpinStars[0], Gal[p].SpinStars[1], Gal[p].SpinStars[2]);
+                    printf("HaloSpin = %e, %e, %e\n", Halo[halonr].Spin[0], Halo[halonr].Spin[1], Halo[halonr].Spin[2]);
+                    printf("axis = %e, %e, %e\n", axis[0], axis[1], axis[2]);
+                    printf("NewSpin = %e, %e, %e \n", NewSpin[0], NewSpin[1], NewSpin[2]);
+                }
+                assert(NewSpin[i]==NewSpin[i]);
+                Gal[p].SpinGas[i] = NewSpin[i];
+                
+            }
+        }
+        
+        // check instability here
+    }
+}
+
 
 // THIS IS NO LONGER USED
 // void check_disk_instability_old(int p, int centralgal, int halonr, double time, double dt, int step)

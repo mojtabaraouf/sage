@@ -75,6 +75,9 @@ struct GALAXY_OUTPUT
   double DiscStars[30];
   double SpinStars[3];
   double SpinGas[3];
+  double StarsInSitu;
+  double StarsInstability;
+  double StarsMergeBurst;
 
   // metals
   double MetalsColdGas;
@@ -146,6 +149,9 @@ struct GALAXY
   double DiscStars[30];
   double SpinStars[3];
   double SpinGas[3];
+  double StarsInSitu;
+  double StarsInstability;
+  double StarsMergeBurst;
 
   // metals
   double MetalsColdGas;
@@ -240,6 +246,7 @@ extern int    SupernovaRecipeOn;
 extern int    DiskInstabilityOn;
 extern int    AGNrecipeOn;
 extern int    SFprescription;
+extern int    GasPrecessionOn;
 
 // recipe parameters 
 extern double RecycleFraction;
@@ -252,9 +259,9 @@ extern double SfrEfficiency;
 extern double FeedbackReheatingEpsilon;
 extern double FeedbackEjectionEfficiency;
 extern double RadioModeEfficiency;
-extern double HeatingRadiusScale;
 extern double QuasarModeEfficiency;
 extern double BlackHoleGrowthRate;
+extern double DegPerTdyn;
 extern double Reionization_z0;
 extern double Reionization_zr;
 extern double ThresholdSatDisruption;

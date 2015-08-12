@@ -138,7 +138,7 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
     Sigma_star = Gal[gal].DiscStars[0]*1e10*SOLAR_MASS / area;
 	if(rho_IGM*v_gal2 >= 2*M_PI*GRAVITY*Sigma_gas*Sigma_gas && Gal[gal].DiscGas[0] > 0.0)
 	{
-        printf("LHS, RHS of RPS = %e, %e\n", rho_IGM*v_gal2, 2*M_PI*GRAVITY*Sigma_gas*Sigma_gas);
+        printf("LHS, RHS of RPS = %e, %e at z = %e\n", rho_IGM*v_gal2, 2*M_PI*GRAVITY*Sigma_gas*Sigma_gas, ZZ[Halo[halonr].SnapNum]);
 		Gal[centralgal].HotGas += Gal[gal].ColdGas;
 		Gal[centralgal].MetalsHotGas += Gal[gal].MetalsColdGas;
 		Gal[gal].ColdGas = 0.0;

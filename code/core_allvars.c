@@ -57,6 +57,7 @@ int SupernovaRecipeOn;
 int DiskInstabilityOn;
 int AGNrecipeOn;
 int SFprescription;
+int GasPrecessionOn;
 
 
 // recipe parameters 
@@ -70,9 +71,9 @@ double SfrEfficiency;
 double FeedbackReheatingEpsilon;
 double FeedbackEjectionEfficiency;
 double RadioModeEfficiency;
-double HeatingRadiusScale;
 double QuasarModeEfficiency;
 double BlackHoleGrowthRate;
+double DegPerTdyn;
 double Reionization_z0;
 double Reionization_zr;
 double ThresholdSatDisruption;

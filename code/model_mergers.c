@@ -163,6 +163,9 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 		Gal[merger_centralgal].ClassicalBulgeMass += (1 - RecycleFraction) * stars;
 		Gal[merger_centralgal].ClassicalMetalsBulgeMass += (1 - RecycleFraction) * metallicity * stars;
 		Gal[merger_centralgal].SfrBulge[step] += stars / dt;
+        Gal[merger_centralgal].StarsMergeBurst += (1 - RecycleFraction) * stars;
+        assert(Gal[merger_centralgal].StellarMass >= (Gal[merger_centralgal].StarsInSitu+Gal[merger_centralgal].StarsInstability+Gal[merger_centralgal].StarsMergeBurst)/1.001 && Gal[merger_centralgal].StellarMass <= (Gal[merger_centralgal].StarsInSitu+Gal[merger_centralgal].StarsInstability+Gal[merger_centralgal].StarsMergeBurst)*1.001);
+
 	}
   }
 
@@ -714,10 +717,16 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
   }
 
 
+  Gal[t].StarsInSitu += Gal[p].StarsInSitu;
+  Gal[t].StarsInstability += Gal[p].StarsInstability;
+  Gal[t].StarsMergeBurst += Gal[p].StarsMergeBurst;
 
   Gal[t].StellarMass += Gal[p].StellarMass;
   Gal[t].MetalsStellarMass += Gal[p].MetalsStellarMass;
 
+    assert(Gal[t].StellarMass >= (Gal[t].StarsInSitu+Gal[t].StarsInstability+Gal[t].StarsMergeBurst)/1.001 && Gal[t].StellarMass <= (Gal[t].StarsInSitu+Gal[t].StarsInstability+Gal[t].StarsMergeBurst)*1.001);
+
+    
   Gal[t].HotGas += Gal[p].HotGas;
   Gal[t].MetalsHotGas += Gal[p].MetalsHotGas;
   
@@ -920,6 +929,9 @@ void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_central
   combine_stellar_discs(merger_centralgal, NewStars, NewStarsMetals);
 
   Gal[merger_centralgal].SfrDisk[step] += stars_sum / dt; // This can probably be handled better.  It's a bit complicated though (as to whether it's Sfr in the bulge or disc)
+  Gal[merger_centralgal].StarsMergeBurst += (1-RecycleFraction)*stars_sum;
+     
+  assert(Gal[merger_centralgal].StellarMass >= (Gal[merger_centralgal].StarsInSitu+Gal[merger_centralgal].StarsInstability+Gal[merger_centralgal].StarsMergeBurst)/1.001 && Gal[merger_centralgal].StellarMass <= (Gal[merger_centralgal].StarsInSitu+Gal[merger_centralgal].StarsInstability+Gal[merger_centralgal].StarsMergeBurst)*1.001);
 
   // check for disk instability
   // if(DiskInstabilityOn && mode == 0)

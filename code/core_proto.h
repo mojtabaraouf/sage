@@ -62,6 +62,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 double get_disc_gas(int halonr);
 double get_disc_stars(int halonr);
 double get_disc_ang_mom(int halonr, int type);
+void precess_gas(int p, double dt, int halonr);
 //
 
 void strip_from_satellite(int halonr, int centralgal, int gal);

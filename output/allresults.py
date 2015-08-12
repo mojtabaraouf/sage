@@ -114,7 +114,10 @@ class Results:
                         ('DiscGas'                      , (np.float64, 30)),
                         ('DiscStars'                    , (np.float64, 30)),
                         ('SpinStars'                    , (np.float64, 3)),
-                        ('SpinGas'                    , (np.float64, 3)),
+                        ('SpinGas'                      , (np.float64, 3)),
+                        ('StarsInSitu'                  , np.float64), # This and next 2 introduced at run 66
+                        ('StarsInstability'             , np.float64),
+                        ('StarsMergeBurst'              , np.float64),
                         ('MetalsColdGas'                , np.float64),
                         ('MetalsStellarMass'            , np.float64),
                         ('ClassicalMetalsBulgeMass'     , np.float64),

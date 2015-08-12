@@ -130,6 +130,10 @@ void read_parameter_file(char *fname)
   addr[nt] = &AGNrecipeOn;
   id[nt++] = INT;
 
+  strcpy(tag[nt], "GasPrecessionOn");
+  addr[nt] = &GasPrecessionOn;
+  id[nt++] = INT;
+    
   strcpy(tag[nt], "BaryonFrac");
   addr[nt] = &BaryonFrac;
   id[nt++] = DOUBLE;
@@ -182,14 +186,14 @@ void read_parameter_file(char *fname)
   addr[nt] = &RadioModeEfficiency;
   id[nt++] = DOUBLE;
 
-  strcpy(tag[nt], "HeatingRadiusScale");
-  addr[nt] = &HeatingRadiusScale;
-  id[nt++] = DOUBLE;
-
   strcpy(tag[nt], "QuasarModeEfficiency");
   addr[nt] = &QuasarModeEfficiency;
   id[nt++] = DOUBLE;
 
+  strcpy(tag[nt], "DegPerTdyn");
+  addr[nt] = &DegPerTdyn;
+  id[nt++] = DOUBLE;
+    
   strcpy(tag[nt], "Reionization_z0");
   addr[nt] = &Reionization_z0;
   id[nt++] = DOUBLE;
