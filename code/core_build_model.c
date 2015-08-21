@@ -494,6 +494,8 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
     Gal[p].Cooling /= deltaT;
     Gal[p].Heating /= deltaT;
     Gal[p].OutflowRate /= deltaT;
+      
+    update_HI_H2(p);
 
     if(p != centralgal)
 		Gal[centralgal].TotalSatelliteBaryons += (Gal[p].StellarMass + Gal[p].BlackHoleMass + Gal[p].ColdGas + Gal[p].HotGas);

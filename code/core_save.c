@@ -146,6 +146,8 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
 	o->DiscStars[j] = g->DiscStars[j];
 	o->DiscGasMetals[j] = g->DiscGasMetals[j];
 	o->DiscStarsMetals[j] = g->DiscStarsMetals[j];
+      o->DiscHI[j] = g->DiscHI[j];
+      o->DiscH2[j] = g->DiscH2[j];
   }
 
   o->SfrDisk = 0.0;

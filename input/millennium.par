@@ -37,7 +37,7 @@ FileWithSnapList				/Users/astevens/trees/Mini_Millennium/millennium.a_list
 %----- Code options -----------------------
 %------------------------------------------
 
-SFprescription				0		;0: original Croton et al. 2006; 1: new Krumholz & Dekel 2012; 2: Blitz & Rosolowski 2006
+SFprescription				2		;0: H2 mid-plane pressure; 1: as 0 but all gas for low H2 fraction; 2: metallicity dependence from Krumholz
 AGNrecipeOn					2		;0: switch off; 1: empirical model; 2: Bondi-Hoyle model; 3: cold cloud accretion model
 SupernovaRecipeOn			1		;0: switch off
 ReionizationOn				0		;0: switch off
@@ -66,7 +66,7 @@ DegPerTdyn                  5.0    ;degrees the gas disc precesses to come in li
 ThreshMajorMerger			0.3		;major merger when mass ratio greater than this
 ThresholdSatDisruption		1.0		;Mvir-to-baryonic mass ratio threshold for satellite merger or disruption
 
-Yield						0.025	;fraction of SF mass produced as metals
+Yield						0.02	;fraction of SF mass produced as metals
 RecycleFraction				0.43	;fraction of SF mass instantaneously recycled back to cold
 FracZleaveDisk				0.0		;fraction of metals produced directly to hot component
 

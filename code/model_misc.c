@@ -67,7 +67,7 @@ void init_galaxy(int p, int halonr)
   Gal[p].MetalsStellarMass = 0.0;
   Gal[p].ClassicalMetalsBulgeMass = 0.0;
   Gal[p].SecularMetalsBulgeMass = 0.0;
-  if(SFprescription == 1) Gal[p].MetalsHotGas = 2.0e-5; else Gal[p].MetalsHotGas = 0.0;
+  Gal[p].MetalsHotGas = 0.0;
   Gal[p].MetalsEjectedMass = 0.0;
   Gal[p].MetalsICS = 0.0;
   

@@ -12,7 +12,7 @@
 
 void starformation_and_feedback(int p, int centralgal, double time, double dt, int halonr, int step)
 {
-    double strdot, stars, reheated_mass, ejected_mass, fac, metallicity, stars_sum, area, SFE_H2, f_H2, f_H2_const, Sigma_0gas, DiscGasSum, DiscPre, ColdPre;//, cos_theta_gas_stars;
+    double strdot, stars, reheated_mass, ejected_mass, fac, metallicity, stars_sum, area, SFE_H2, f_H2, f_H2_HI, f_H2_const, Sigma_0gas, DiscGasSum, DiscPre, ColdPre;//, cos_theta_gas_stars;
   double NewStars[30], NewStarsMetals[30];
   int i;
 
@@ -47,18 +47,50 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	{
 		area = M_PI * (pow(DiscBinEdge[i+1]/Gal[p].Vvir, 2.0) - pow(DiscBinEdge[i]/Gal[p].Vvir, 2.0));
         //if(cos_theta_gas_stars >= 0.9397)
-            f_H2 = f_H2_const * pow(pow(Gal[p].DiscGas[i]/area, 2.0) + 0.1*Gal[p].DiscGas[i]/area * pow(Gal[p].DiscStars[i]*Gal[p].DiscStars[0], 0.5)/area, 0.92);
-        //else
-            //f_H2 = f_H2_const * pow(Gal[p].DiscGas[i]/area, 2.0*0.92);
-		if(f_H2 > 0.0)
-		{
-		  assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
-		  f_H2 = 0.75 * 1.0/(1.0/f_H2 + 1) * (1 - Gal[p].DiscGasMetals[i]/Gal[p].DiscGas[i]); //Changes f_H2 from being H2/HI to H2/Cold Gas
-		}
-		else
-		  f_H2 = 0.0;
+        
+        if(SFprescription<=1)
+        {
+            f_H2_HI = f_H2_const * pow(pow(Gal[p].DiscGas[i]/area, 2.0) + 0.1*Gal[p].DiscGas[i]/area * pow(Gal[p].DiscStars[i]*Gal[p].DiscStars[0], 0.5)/area, 0.92);
+            //else
+                //f_H2 = f_H2_const * pow(Gal[p].DiscGas[i]/area, 2.0*0.92);
+        }
+        else
+        {
+            double s, Zp, psi, chi, c_f, Sigma_comp0;
+            c_f = 1.5; // Ideally this should be a free parameter
+            Sigma_comp0 = c_f * (Gal[p].DiscGas[i]*1e10/Hubble_h)/(area*1e6/pow(Hubble_h,2.0));
+            Zp = Gal[p].DiscGasMetals[i] / Gal[p].DiscGas[i] / 0.02; // Might also want solar metal fraction to be variable too
+            if(Zp>10.0) printf("Zp too high for recipe = %e\n", Zp);
+            assert(Gal[p].DiscGas[i] >= Gal[p].DiscGasMetals[i]);
+            chi = 2.3 * (1 + 3.1*pow(Zp,0.365)) / 3.0;
+            psi = chi * (2.5+chi) / (2.5+chi*2.71828);
+            s = Sigma_comp0 * Zp / psi;
+            f_H2_HI = pow(1+pow(s/11.0,3.0)*pow((125.0+s)/(96.0+s),3.0), (1.0/3.0)) - 1.0;
+            //printf("f_H2_HI = %e\n", f_H2_HI);
+        }
+        
+        if(f_H2_HI > 0.0)
+        {
+            //printf("asserting metal content\n");
+            assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
+            f_H2 = 0.75 * 1.0/(1.0/f_H2_HI + 1) * (1 - Gal[p].DiscGasMetals[i]/Gal[p].DiscGas[i]) / 1.3; //Changes f_H2 from being H2/HI to H2/Cold Gas
+        }
+        else
+            f_H2 = 0.0;
+        
+        Gal[p].DiscH2[i] = f_H2 * Gal[p].DiscGas[i];
+        Gal[p].DiscHI[i] = Gal[p].DiscH2[i] / f_H2_HI;
 	
-		strdot = SfrEfficiency * SFE_H2 * f_H2 * Gal[p].DiscGas[i]/1.3;
+        if(SFprescription==1 && f_H2_HI<0.5)
+        {
+            double bb = pow(Gal[p].DiscStars[i]*Gal[p].DiscStars[0], 0.5)/area; // quadratic b term
+            double cc = -pow(0.5/f_H2_const, 1.0/0.92);
+            double Sig_gas_half = 0.5*(-bb + pow(bb*bb-4.0*cc, 0.5));
+            double SFE_gas = SFE_H2 * 0.75 * 1.0/(1.0/0.5 + 1) * (1 - Gal[p].DiscGasMetals[i]/Gal[p].DiscGas[i])/1.3 / Sig_gas_half;
+            strdot = SfrEfficiency * SFE_gas * pow(Gal[p].DiscGas[i], 2.0) / area;
+        }
+        else
+            strdot = SfrEfficiency * SFE_H2 * Gal[p].DiscH2[i];
     }
 
 	stars = strdot * dt;
@@ -515,7 +547,50 @@ void project_disc(double DiscMass[30], double cos_angle, int p, double *NewDisc)
 }
 
 
-
+void update_HI_H2(int p)
+{
+    double f_H2_const, area, f_H2, f_H2_HI;
+    int i;
+    
+    f_H2_const = 1.306e-3 * pow((CM_PER_MPC*CM_PER_MPC/1e12 / SOLAR_MASS) * (UnitMass_in_g / UnitLength_in_cm / UnitLength_in_cm), 2.0*0.92);
+    if(Gal[p].Vvir>0.0)
+    {
+        for(i=0; i<30; i++)
+        {
+            if(SFprescription<=1)
+            {
+                area = M_PI * (pow(DiscBinEdge[i+1]/Gal[p].Vvir, 2.0) - pow(DiscBinEdge[i]/Gal[p].Vvir, 2.0));
+                f_H2_HI = f_H2_const * pow(pow(Gal[p].DiscGas[i]/area, 2.0) + 0.1*Gal[p].DiscGas[i]/area * pow(Gal[p].DiscStars[i]*Gal[p].DiscStars[0], 0.5)/area, 0.92);
+            }
+            else
+            {
+                double s, Zp, psi, chi, c_f, Sigma_comp0;
+                c_f = 1.5; // Ideally this should be a free parameter
+                Sigma_comp0 = c_f * (Gal[p].DiscGas[i]*1e10/Hubble_h)/(area*1e6/pow(Hubble_h,2.0));
+                Zp = Gal[p].DiscGasMetals[i] / Gal[p].DiscGas[i] / 0.02; // Might also want solar metal fraction to be variable too
+                if(Zp>10.0) printf("Zp too high for recipe = %e\n", Zp);
+                assert(Gal[p].DiscGas[i] >= Gal[p].DiscGasMetals[i]);
+                chi = 2.3 * (1 + 3.1*pow(Zp,0.365)) / 3.0;
+                psi = chi * (2.5+chi) / (2.5+chi*2.71828);
+                s = Sigma_comp0 * Zp / psi;
+                f_H2_HI = pow(1+pow(s/11.0,3.0)*pow((125.0+s)/(96.0+s),3.0), (1.0/3.0)) - 1.0;
+            }
+            
+            if(f_H2_HI > 0.0)
+            {
+                assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
+                f_H2 = 0.75 * 1.0/(1.0/f_H2_HI + 1) * (1 - Gal[p].DiscGasMetals[i]/Gal[p].DiscGas[i]) / 1.3; //Changes f_H2 from being H2/HI to H2/Cold Gas
+                Gal[p].DiscH2[i] = f_H2 * Gal[p].DiscGas[i];
+                Gal[p].DiscHI[i] = Gal[p].DiscH2[i] / f_H2_HI;
+            }
+            else
+            {
+                Gal[p].DiscH2[i] = 0.0;
+                Gal[p].DiscHI[i] = 0.0;
+            }
+        }
+    }
+}
 
 
 

@@ -18,6 +18,7 @@ if not os.path.exists(outdir): os.makedirs(outdir)
 G = gr.sagesnap('model_z0.000', 0, 7, indir, disc=True) #Commit 4 - good results/
 
 h = 0.73;
+boxlen = 62.5/h
 
 #angle_limit = 180 # Number of degrees between stellar and gas discs to use stellar info on HI/H2 ratio
 #cos_angle_limit = np.cos(angle_limit*np.pi/180)
@@ -60,8 +61,8 @@ for i in xrange(N):
     cos_angle = G.SpinGas[filt][i,0]*G.SpinStars[filt][i,0] + G.SpinGas[filt][i,1]*G.SpinStars[filt][i,1] + G.SpinGas[filt][i,2]*G.SpinStars[filt][i,2]
     #if cos_angle >= cos_angle_limit:
     H2_HI = 1.306e-3 * (Sigma_gas**2 + 0.1*Sigma_gas * np.sqrt(Sigma_star*Sigma_star[0]))**0.92
-        #else:
-        #H2_HI = 1.306e-3 * Sigma_gas**1.84
+    #else:
+    #H2_HI = 1.306e-3 * Sigma_gas**1.84
     H2_gas = 0.75 * 1.0/(gc.divide(np.ones(len(H2_HI)),H2_HI) + 1) * (1 - gc.divide(G.DiscGasMetals[filt][i], G.DiscGas[filt][i]))
     #H2_gas = 1.0/(gc.divide(np.ones(len(H2_HI)),H2_HI) + 1)
     Sigma_H2_arr[i,:] = Sigma_gas_arr[i,:] * H2_gas
@@ -222,10 +223,10 @@ gp.savepng(outdir+'StarSurface2')
 
 # Stellar mass function
 gp.figure()
-gp.massfunction(G.StellarMass*1e10/h, 62.5/h, extra=2, h=h, step=False, fsize=fsize, binwidth=0.1, label=r'\textsc{dark sage}')
+gp.massfunction(G.StellarMass*1e10/h, boxlen, extra=2, h=h, step=False, fsize=fsize, binwidth=0.1, label=r'\textsc{dark sage}')
 red = (G.SfrDisk+G.SfrBulge)/(G.StellarMass*1e10/h) < 1e-11
-gp.massfunction(G.StellarMass[red]*1e10/h, 62.5/h, extra=0, h=h, step=False, fsize=fsize, binwidth=0.1, colour='r', lw=1)
-gp.massfunction(G.StellarMass[True-red]*1e10/h, 62.5/h, extra=0, h=h, step=False, fsize=fsize, binwidth=0.1, colour='b', lw=1)
+gp.massfunction(G.StellarMass[red]*1e10/h, boxlen, extra=0, h=h, step=False, fsize=fsize, binwidth=0.1, colour='r', lw=1)
+gp.massfunction(G.StellarMass[True-red]*1e10/h, boxlen, extra=0, h=h, step=False, fsize=fsize, binwidth=0.1, colour='b', lw=1)
 #gp.massfunction(G.StellarMass*1e10*h, 500*(8./512)**(1./3), extra=2, h=1, step=False, fsize=fsize, binwidth=0.1, label=r'\textsc{dark sage}')
 plt.axis([8,11.8,5e-6,0.2])
 gp.savepng(outdir+'SMF', xpixplot=768, ypixplot=512)
@@ -261,13 +262,13 @@ filt = (G.ColdGas > 0.0) * (G.Vvir > 0.0)
 Sigma_gas, Sigma_star = np.zeros((len(G[filt]), 30)), np.zeros((len(G[filt]), 30))
 DiscHI, DiscH2 = np.zeros((len(G[filt]), 30)), np.zeros((len(G[filt]), 30))
 cos_angle = G.SpinGas[filt][:,0]*G.SpinStars[filt][:,0] + G.SpinGas[filt][:,1]*G.SpinStars[filt][:,1] + G.SpinGas[filt][:,2]*G.SpinStars[filt][:,2]
-angle_filt = (cos_angle < cos_angle_limit)
+#angle_filt = (cos_angle < cos_angle_limit)
 for i in xrange(30):
     area = np.pi * (DiscBinEdge[i+1]**2 - DiscBinEdge[i]**2) * 1e6 / G.Vvir[filt]**2
     Sigma_gas[:,i] = (G.DiscGas[filt][:,i]*1e10/h) / area
     Sigma_star[:,i] = (G.DiscStars[filt][:,i]*1e10/h) / area
     H2_HI = 1.306e-3 * (Sigma_gas[:,i]**2 + 0.1*Sigma_gas[:,i] * np.sqrt(Sigma_star[:,i]*Sigma_star[:,0]))**0.92
-    H2_HI[angle_filt] = 1.306e-3 * Sigma_gas[angle_filt][:,i]**1.84
+    #H2_HI[angle_filt] = 1.306e-3 * Sigma_gas[angle_filt][:,i]**1.84
     DiscH2[:,i] = 0.75 * 1.0/(gc.divide(np.ones(len(H2_HI)),H2_HI) + 1) * (G.DiscGas[filt][:,i] - G.DiscGasMetals[filt][:,i]) * 1e10/h
 DiscHI = 0.75*G.DiscGas[filt]*1e10/h - G.DiscGasMetals[filt]*1e10/h - DiscH2
 
@@ -276,8 +277,8 @@ H2mass = np.sum(DiscH2,axis=1)
 HImass = 0.75*G.ColdGas[filt]*1e10/h - G.MetalsColdGas[filt]*1e10/h - H2mass
 
 gp.figure()
-gp.massfunction(HImass, 62.5/h, extra=0, h=h, step=False, fsize=fsize, binwidth=0.1, label=r'H\,\textsc{i} \textsc{dark sage}')
-gp.massfunction(H2mass, 62.5/h, extra=0, h=h, step=False, fsize=fsize, binwidth=0.1, label=r'H$_2$ \textsc{dark sage}', colour='c', ls='--')
+gp.massfunction(HImass, boxlen, extra=0, h=h, step=False, fsize=fsize, binwidth=0.1, label=r'H\,\textsc{i} \textsc{dark sage}')
+gp.massfunction(H2mass, boxlen, extra=0, h=h, step=False, fsize=fsize, binwidth=0.1, label=r'H$_2$ \textsc{dark sage}', colour='c', ls='--')
 gp.massfunction_HI_H2_obs()
 plt.legend(fontsize=fsize-4, loc='best', frameon=False)
 gp.savepng(outdir+'GMFs', xpixplot=768, ypixplot=512)
@@ -376,18 +377,18 @@ gp.savepng(outdir+'MassRatioOffsetAbs', xpixplot=768, ypixplot=512)
 plt.close("all")
 
 """
-# Cumulative mass profiles of z=0 galaxies
-#filt = (G.ColdGas*1e10/h >= 1e8) * (G.ColdGas*1e10/h <= 1e12) * ((G.StellarMass-G.SecularBulgeMass-G.ClassicalBulgeMass)*1e10/h >= 1e8) * ((G.StellarMass-G.SecularBulgeMass-G.ClassicalBulgeMass)*1e10/h <= 1e12) * (G.Vvir>100) * (G.Vvir<300)
-filt = (G.Vvir>=200) * (G.Vvir<=235) * np.isfinite(G.Vvir) * (G.StellarMass/h > 1.0) * (G.ColdGas/h > 10**-0.5) * (G.Type==0)
-gals = np.random.random_integers(0, len(G.Type[filt])-1, 20)
-gals = np.unique(gals)
-gp.figure()
-for gal in gals:
+    # Cumulative mass profiles of z=0 galaxies
+    #filt = (G.ColdGas*1e10/h >= 1e8) * (G.ColdGas*1e10/h <= 1e12) * ((G.StellarMass-G.SecularBulgeMass-G.ClassicalBulgeMass)*1e10/h >= 1e8) * ((G.StellarMass-G.SecularBulgeMass-G.ClassicalBulgeMass)*1e10/h <= 1e12) * (G.Vvir>100) * (G.Vvir<300)
+    filt = (G.Vvir>=200) * (G.Vvir<=235) * np.isfinite(G.Vvir) * (G.StellarMass/h > 1.0) * (G.ColdGas/h > 10**-0.5) * (G.Type==0)
+    gals = np.random.random_integers(0, len(G.Type[filt])-1, 20)
+    gals = np.unique(gals)
+    gp.figure()
+    for gal in gals:
     xplot = DiscBinEdge[1:]/G.Vvir[filt][gal]/(G.Rvir[filt][gal]*1e3/h)
     try:
-        xcut = np.where(xplot >= G.Rvir[filt][gal]/h)[0][0] + 1
+    xcut = np.where(xplot >= G.Rvir[filt][gal]/h)[0][0] + 1
     except:
-        continue
+    continue
     if xcut<29: continue
     xplot = xplot[:xcut]
     xplot /= np.max(xplot)
@@ -395,11 +396,11 @@ for gal in gals:
     yplot = np.cumsum((G.DiscGas[filt][gal,:xcut]+G.DiscStars[filt][gal,:xcut]))
     yplot /= np.max(yplot)
     plt.plot(xplot, yplot, lw=2)
-plt.ylabel(r'$M_{\rm bary}(<r) / M_{\rm bary}(<r_{\rm vir})$')
-plt.xlabel(r'$r / r_{\rm vir}$')
-plt.axis([0.1,0.7,0.101,1])
-gp.savepng(outdir+'CumBary0', xpixplot=768, ypixplot=512)
-"""
+    plt.ylabel(r'$M_{\rm bary}(<r) / M_{\rm bary}(<r_{\rm vir})$')
+    plt.xlabel(r'$r / r_{\rm vir}$')
+    plt.axis([0.1,0.7,0.101,1])
+    gp.savepng(outdir+'CumBary0', xpixplot=768, ypixplot=512)
+    """
 
 
 
@@ -484,23 +485,23 @@ gp.savepng(outdir+'baryon_frac', xpixplot=768, ypixplot=512)
 # z=2 Stellar mass function
 G = gr.sagesnap('model_z2.070', 0, 7, indir, disc=True)
 gp.figure()
-gp.massfunction(G.StellarMass*1e10/h, 62.5/h, extra=0, h=h, step=False, fsize=fsize, binwidth=0.1, label=r'\textsc{dark sage}')
+gp.massfunction(G.StellarMass*1e10/h, boxlen, extra=0, h=h, step=False, fsize=fsize, binwidth=0.1, label=r'\textsc{dark sage}')
 gp.smf_nifty_obs(h, z=2, haxes=False)
 plt.legend(fontsize=fsize-4, loc='best', frameon=False, title=r'$z=2$')
 plt.axis([8,11.8,5e-6,0.2])
 gp.savepng(outdir+'SMF_z2', xpixplot=768, ypixplot=512)
 """
-# Cumulative mass profiles of z=2 galaxies
-filt = (G.ColdGas*1e10/h >= 1e8) * (G.ColdGas*1e10/h <= 1e12) * ((G.StellarMass-G.SecularBulgeMass-G.ClassicalBulgeMass)*1e10/h >= 1e8) * ((G.StellarMass-G.SecularBulgeMass-G.ClassicalBulgeMass)*1e10/h <= 1e12) * (G.Vvir>100) * (G.Vvir<300)
-gals = np.random.random_integers(0, len(G.Type[filt])-1, 50)
-gals = np.unique(gals)
-gp.figure()
-for gal in gals:
+    # Cumulative mass profiles of z=2 galaxies
+    filt = (G.ColdGas*1e10/h >= 1e8) * (G.ColdGas*1e10/h <= 1e12) * ((G.StellarMass-G.SecularBulgeMass-G.ClassicalBulgeMass)*1e10/h >= 1e8) * ((G.StellarMass-G.SecularBulgeMass-G.ClassicalBulgeMass)*1e10/h <= 1e12) * (G.Vvir>100) * (G.Vvir<300)
+    gals = np.random.random_integers(0, len(G.Type[filt])-1, 50)
+    gals = np.unique(gals)
+    gp.figure()
+    for gal in gals:
     xplot = DiscBinEdge[1:]/G.Vvir[filt][gal]/(G.Rvir[filt][gal]*1e3/h)
     try:
-        xcut = np.where(xplot >= G.Rvir[filt][gal]/h)[0][0] + 1
+    xcut = np.where(xplot >= G.Rvir[filt][gal]/h)[0][0] + 1
     except:
-        continue
+    continue
     if xcut<10: continue
     xplot = xplot[:xcut]
     xplot /= np.max(xplot)
@@ -508,17 +509,17 @@ for gal in gals:
     yplot = np.cumsum((G.DiscGas[filt][gal,:xcut]+G.DiscStars[filt][gal,:xcut]))
     yplot /= np.max(yplot)
     plt.plot(xplot, yplot)
-plt.ylabel(r'$M_{\rm bary}(<r) / M_{\rm bary}(<r_{\rm vir})$')
-plt.xlabel(r'$r / r_{\rm vir}$')
-plt.axis([0.201,1,0.3,1])
-gp.savepng(outdir+'CumBary2', xpixplot=768, ypixplot=512)
-"""
+    plt.ylabel(r'$M_{\rm bary}(<r) / M_{\rm bary}(<r_{\rm vir})$')
+    plt.xlabel(r'$r / r_{\rm vir}$')
+    plt.axis([0.201,1,0.3,1])
+    gp.savepng(outdir+'CumBary2', xpixplot=768, ypixplot=512)
+    """
 
 
 # SFR function
 G = gr.sagesnap('model_z0.144', 0, 7, indir, disc=True)
 gp.figure()
-gp.massfunction(G.SfrDisk+G.SfrBulge, 62.5/h, label=r'\textsc{dark sage}', step=False, range=[-0.5,2.5], Nbins=6)
+gp.massfunction(G.SfrDisk+G.SfrBulge, boxlen, label=r'\textsc{dark sage}', step=False, range=[-0.5,2.5], Nbins=6)
 gp.SFR_function_obs(h)
 gp.savepng(outdir+'SFRF', xpixplot=768, ypixplot=512)
 
@@ -528,10 +529,14 @@ zstr = ['0.000', '0.144', '0.280', '0.509', '0.755', '1.078', '1.504', '2.070', 
 if os.path.isfile(indir+'model_z'+zstr[1]+'_0'):
     z = np.array(zstr, dtype='f4')
     SFRD = np.zeros(len(z))
+    SMsum = np.zeros(len(z))
+    t = np.zeros(len(z))
     gp.figure()
     for s in xrange(len(z)):
         M = gr.sagesnap('model_z'+zstr[s], 0, 7, indir, disc=True)
-        SFRD[s] = np.log10(np.sum(M.SfrDisk + M.SfrBulge)*h**3 / (62.5**3))
+        SFRD[s] = np.log10(np.sum(M.SfrDisk + M.SfrBulge) / (boxlen**3))
+        SMsum[s] = np.sum(M.StellarMass*1e10/h) + np.sum(M.IntraClusterStars*1e10/h)
+        t[s] = gc.z2t(z[s], 100*h, 0, 0.25, 0.75)*1e9 # Time in years since Big Bang
         gp.point_with_spread(z[s], M.BlackHoleMass[M.BlackHoleMass>0]*1e10/h, mean=False, alpha=0.8)
     plt.xlabel(r'Redshift')
     plt.yscale('log')
@@ -552,6 +557,19 @@ if os.path.isfile(indir+'model_z'+zstr[1]+'_0'):
     plt.legend(fontsize=fsize-4, loc='best', frameon=False, numpoints=1)
     gp.savepng(outdir+'SFRD', xpixplot=768, ypixplot=512)
 
+### Star formation history build-up versus actual total stellar masses
+SFRH = np.append(0, 10**SFRD[::-1] * (boxlen)**3)
+time = np.append(0, t[::-1])
+SM_integrated = 0.57 * np.cumsum(np.diff(time)*(SFRH[1:]+SFRH[:-1])/2)[::-1]
+#
+gp.figure()
+plt.plot(z, SMsum, 'k-', label=r'Actual stellar mass', lw=2)
+plt.plot(z, SM_integrated, 'b--', label=r'Integrated SFR', lw=2)
+plt.xlabel(r'Redshift')
+plt.ylabel(r'$M_{\rm stars}\ [\mathrm{M}_{\bigodot}]$')
+plt.yscale('log')
+plt.legend(fontsize=fsize-4, loc='best', frameon=False)
+gp.savepng(outdir+'StellarHistory', xpixplot=768, ypixplot=512)
 
 
 plt.close("all")

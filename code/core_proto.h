@@ -63,6 +63,7 @@ double get_disc_gas(int halonr);
 double get_disc_stars(int halonr);
 double get_disc_ang_mom(int halonr, int type);
 void precess_gas(int p, double dt, int halonr);
+void update_HI_H2(int p);
 //
 
 void strip_from_satellite(int halonr, int centralgal, int gal);

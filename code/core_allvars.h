@@ -78,6 +78,8 @@ struct GALAXY_OUTPUT
   double StarsInSitu;
   double StarsInstability;
   double StarsMergeBurst;
+    double DiscHI[30];
+    double DiscH2[30];
 
   // metals
   double MetalsColdGas;
@@ -152,6 +154,8 @@ struct GALAXY
   double StarsInSitu;
   double StarsInstability;
   double StarsMergeBurst;
+    double DiscHI[30];
+    double DiscH2[30];
 
   // metals
   double MetalsColdGas;
