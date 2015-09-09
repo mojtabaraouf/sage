@@ -37,7 +37,7 @@ FileWithSnapList				/Users/astevens/trees/Mini_Millennium/millennium.a_list
 %----- Code options -----------------------
 %------------------------------------------
 
-SFprescription				2		;0: H2 mid-plane pressure; 1: as 0 but all gas for low H2 fraction; 2: metallicity dependence from Krumholz
+SFprescription				0		;0: H2 mid-plane pressure; 1: as 0 but all gas for low H2 fraction; 2: metallicity dependence from Krumholz
 AGNrecipeOn					2		;0: switch off; 1: empirical model; 2: Bondi-Hoyle model; 3: cold cloud accretion model
 SupernovaRecipeOn			1		;0: switch off
 ReionizationOn				0		;0: switch off
@@ -49,17 +49,17 @@ GasPrecessionOn             1       ;0: switch off; 1: gas discs will precess to
 %----- Parameters of physical model -------
 %------------------------------------------
 
-SfrEfficiency				2.0		;efficiency of SF (SFprescription=0).  Changed definition to original SAGE, just modulates the efficiency.
+SfrEfficiency				0.5		;efficiency of SF (SFprescription=0).  Changed definition to original SAGE, just modulates the efficiency.
 ClumpingFactor				5.0		;gas clumping factor in Krumholz & Dekel 2011 (SFprescription=1)
 
-FeedbackReheatingEpsilon	6.0		;mass of cold gas reheated due to SF (see Martin 1999) (SupernovaRecipeOn=1)
-FeedbackEjectionEfficiency	0.6 	;mixing efficiency of SN energy with hot gas to unbind and eject some (SupernovaRecipeOn=1)
+FeedbackReheatingEpsilon	8.0		;mass of cold gas reheated due to SF (see Martin 1999) (SupernovaRecipeOn=1)
+FeedbackEjectionEfficiency	0.8 	;mixing efficiency of SN energy with hot gas to unbind and eject some (SupernovaRecipeOn=1)
 
-ReIncorporationFactor		0.15     ;fraction of ejected mass reincorporated per dynamical time to hot
+ReIncorporationFactor		0.10     ;fraction of ejected mass reincorporated per dynamical time to hot
 
-RadioModeEfficiency			0.05     ;AGN radio mode efficiency (AGNrecipeOn>0) -- 2.0e-3 / 1.0
+RadioModeEfficiency			0.1     ;AGN radio mode efficiency (AGNrecipeOn>0) -- 2.0e-3 / 1.0
 QuasarModeEfficiency		0.001	;AGN quasar mode wind heating efficiency (AGNrecipeOn>0)
-BlackHoleGrowthRate			0.01	;fraction of cold gas added to the BH during mergers (AGNrecipeOn>0)
+BlackHoleGrowthRate			0.015	;fraction of cold gas added to the BH during mergers (AGNrecipeOn>0)
 
 DegPerTdyn                  5.0    ;degrees the gas disc precesses to come in line with stars per dynamical time
 

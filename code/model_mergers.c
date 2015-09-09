@@ -129,11 +129,15 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 
   add_galaxies_together(merger_centralgal, p, mass_ratio, disc_mass_ratio, centralgal, dt, PostRetroGas);
   
+    for(i=0; i<30; i++) assert(disc_mass_ratio[i] < 1.0);
+    
   DiscGasSum = get_disc_gas(merger_centralgal);
   assert(DiscGasSum <= 1.001*Gal[merger_centralgal].ColdGas && DiscGasSum >= Gal[merger_centralgal].ColdGas/1.001);
   DiscGasSum = get_disc_gas(p);
   assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
   for(i=29; i>=0; i--) assert(Gal[merger_centralgal].DiscGasMetals[i] <= Gal[merger_centralgal].DiscGas[i]);
+
+    for(i=0; i<30; i++) assert(disc_mass_ratio[i] < 1.0);
 
   collisional_starburst_recipe(disc_mass_ratio, merger_centralgal, centralgal, time, dt, halonr, 0, step, mass_ratio);
   for(i=29; i>=0; i--) assert(Gal[merger_centralgal].DiscGasMetals[i] <= Gal[merger_centralgal].DiscGas[i]);
@@ -443,6 +447,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
                 else
                     disc_mass_ratio[i] = 0.0;
 				if(disc_mass_ratio[i] > 1.0) disc_mass_ratio[i] = 1.0/disc_mass_ratio[i];
+                assert(disc_mass_ratio[i] <= 1.0);
 				Gal[t].DiscGas[i] += Gal[p].ColdGas / bin_num;
 				gas_added += Gal[p].ColdGas / bin_num;
 				//printf("gas added = %e\n", Gal[p].ColdGas / bin_num);
@@ -755,6 +760,9 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 		if (Gal[t].DiscStarsMetals[i] > Gal[t].DiscStars[i])
 			printf("DiscStars, Metals = %e, %e\n", Gal[t].DiscStars[i], Gal[t].DiscStarsMetals[i]);
 		assert(Gal[t].DiscStarsMetals[i] <= Gal[t].DiscStars[i]);
+        
+        // This should already be taken care of above, but for whatever reason I needed to add it here to actually work.
+        if(disc_mass_ratio[i] > 1.0) disc_mass_ratio[i] = 1.0/disc_mass_ratio[i];
 	}
 }
 
@@ -832,6 +840,9 @@ void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_central
 
   for(k=0; k<30; k++)
   {
+      if(disc_mass_ratio[k] > 1.0 || disc_mass_ratio[k]!=disc_mass_ratio[k]) printf("i, disc_mass_ratio[i] = %d, %e\n", k, disc_mass_ratio[k]);
+      assert(disc_mass_ratio[k] <= 1.0);
+      
 	// the bursting fraction 
     if(mode == 1)
       eburst = disc_mass_ratio[k];
