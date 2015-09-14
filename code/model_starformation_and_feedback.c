@@ -25,8 +25,8 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
   assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
   assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
   assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
-
-  f_H2_const = 1.306e-3 * pow((CM_PER_MPC*CM_PER_MPC/1e12 / SOLAR_MASS) * (UnitMass_in_g / UnitLength_in_cm / UnitLength_in_cm), 2.0*0.92);
+// SURELY CAN USE UPDATE_HI_H2 HERE
+  f_H2_const = 1.38e-3 * pow((CM_PER_MPC*CM_PER_MPC/1e12 / SOLAR_MASS) * (UnitMass_in_g / UnitLength_in_cm / UnitLength_in_cm), 2.0*H2FractionExponent);
   SFE_H2 = 7.75e-4 * UnitTime_in_s / SEC_PER_MEGAYEAR;
 
   // Initialise variables
@@ -50,7 +50,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
         
         if(SFprescription<=1)
         {
-            f_H2_HI = f_H2_const * pow(pow(Gal[p].DiscGas[i]/area, 2.0) + 0.1*Gal[p].DiscGas[i]/area * pow(Gal[p].DiscStars[i]*Gal[p].DiscStars[0], 0.5)/area, 0.92);
+            f_H2_HI = f_H2_const * H2FractionFactor * pow(pow(Gal[p].DiscGas[i]/area, 2.0) + 0.1*Gal[p].DiscGas[i]/area * pow(Gal[p].DiscStars[i]*Gal[p].DiscStars[0], 0.5)/area, H2FractionExponent);
             //else
                 //f_H2 = f_H2_const * pow(Gal[p].DiscGas[i]/area, 2.0*0.92);
         }
@@ -552,7 +552,7 @@ void update_HI_H2(int p)
     double f_H2_const, area, f_H2, f_H2_HI;
     int i;
     
-    f_H2_const = 1.306e-3 * pow((CM_PER_MPC*CM_PER_MPC/1e12 / SOLAR_MASS) * (UnitMass_in_g / UnitLength_in_cm / UnitLength_in_cm), 2.0*0.92);
+    f_H2_const = 1.38e-3 * H2FractionFactor * pow((CM_PER_MPC*CM_PER_MPC/1e12 / SOLAR_MASS) * (UnitMass_in_g / UnitLength_in_cm / UnitLength_in_cm), 2.0*H2FractionExponent);
     if(Gal[p].Vvir>0.0)
     {
         for(i=0; i<30; i++)
@@ -560,7 +560,7 @@ void update_HI_H2(int p)
             if(SFprescription<=1)
             {
                 area = M_PI * (pow(DiscBinEdge[i+1]/Gal[p].Vvir, 2.0) - pow(DiscBinEdge[i]/Gal[p].Vvir, 2.0));
-                f_H2_HI = f_H2_const * pow(pow(Gal[p].DiscGas[i]/area, 2.0) + 0.1*Gal[p].DiscGas[i]/area * pow(Gal[p].DiscStars[i]*Gal[p].DiscStars[0], 0.5)/area, 0.92);
+                f_H2_HI = f_H2_const * pow(pow(Gal[p].DiscGas[i]/area, 2.0) + 0.1*Gal[p].DiscGas[i]/area * pow(Gal[p].DiscStars[i]*Gal[p].DiscStars[0], 0.5)/area, H2FractionExponent);
             }
             else
             {

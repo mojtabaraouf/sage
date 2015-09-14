@@ -189,6 +189,26 @@ void read_parameter_file(char *fname)
   strcpy(tag[nt], "QuasarModeEfficiency");
   addr[nt] = &QuasarModeEfficiency;
   id[nt++] = DOUBLE;
+    
+    strcpy(tag[nt], "H2FractionFactor");
+    addr[nt] = &H2FractionFactor;
+    id[nt++] = DOUBLE;
+    
+    strcpy(tag[nt], "H2FractionExponent");
+    addr[nt] = &H2FractionExponent;
+    id[nt++] = DOUBLE;
+    
+    strcpy(tag[nt], "QStarMin");
+    addr[nt] = &QStarMin;
+    id[nt++] = DOUBLE;
+    
+    strcpy(tag[nt], "QGasMin");
+    addr[nt] = &QGasMin;
+    id[nt++] = DOUBLE;
+    
+    strcpy(tag[nt], "GasSinkRate");
+    addr[nt] = &GasSinkRate;
+    id[nt++] = DOUBLE;
 
   strcpy(tag[nt], "DegPerTdyn");
   addr[nt] = &DegPerTdyn;

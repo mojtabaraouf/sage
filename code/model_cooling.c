@@ -18,7 +18,7 @@ double cooling_recipe(int gal, double dt)
   //printf("%e", Gal[gal].HotGas);
   //printf("\n");
 
-  if(Gal[gal].HotGas > 1.0e-6)
+  if(Gal[gal].HotGas > 0.0 && Gal[gal].Vvir > 0.0)
   {
     tcool = Gal[gal].Rvir / Gal[gal].Vvir;
     temp = 35.9 * Gal[gal].Vvir * Gal[gal].Vvir;         // in Kelvin 
@@ -57,7 +57,8 @@ double cooling_recipe(int gal, double dt)
   }
   else
     coolingGas = 0.0;
-
+    
+    assert(coolingGas >= 0.0);
   return coolingGas;
 
 }
@@ -68,7 +69,6 @@ double do_AGN_heating(double coolingGas, int p, double dt, double x, double rcoo
 {
   double AGNrate, EDDrate, AGNaccreted, AGNcoeff, AGNheating, metallicity, r_heat_new;
 
-
   // first update the cooling rate based on the past AGN heating
   if(Gal[p].r_heat < rcool)
 	coolingGas = (1.0 - Gal[p].r_heat / rcool) * coolingGas;
@@ -77,6 +77,7 @@ double do_AGN_heating(double coolingGas, int p, double dt, double x, double rcoo
 	
   assert(coolingGas >= 0.0);
 
+    //
   if(Gal[p].HotGas > 0.0)
   {
 
@@ -143,10 +144,10 @@ double do_AGN_heating(double coolingGas, int p, double dt, double x, double rcoo
 		// update the heating radius as needed
 		if(Gal[p].r_heat < rcool && coolingGas > 0.0)
 		{
-			if(AGNheating<coolingGas)
+			//if(AGNheating<coolingGas)
 				r_heat_new = (AGNheating / coolingGas) * rcool;
-			else
-				r_heat_new = rcool;
+			//else
+				//r_heat_new = rcool;
 			
 			if(r_heat_new > Gal[p].r_heat)
 				Gal[p].r_heat = r_heat_new;

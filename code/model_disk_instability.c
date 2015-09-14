@@ -37,9 +37,9 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 		radius = pow((DiscBinEdge[i]*DiscBinEdge[i] + DiscBinEdge[i+1]*DiscBinEdge[i+1])/2.0, 0.5)/V_rot * CM_PER_MPC;
 		Q_gas = pow(V_rot*1e5, 2.0) / (M_PI * GRAVITY * radius * Sigma_gas);
 		
-		if(Q_gas<1.0)
+		if(Q_gas<QGasMin)
 		{
-			unstable_gas = Gal[p].DiscGas[i] - pow(V_rot*1e5, 2.0)*area / (M_PI * GRAVITY * radius * 1e10*SOLAR_MASS);
+			unstable_gas = Gal[p].DiscGas[i] - pow(V_rot*1e5, 2.0)*area / (M_PI * GRAVITY * radius * 1e10*SOLAR_MASS * QGasMin);
 			metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
 			
 			if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
@@ -91,15 +91,15 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 		area = M_PI * (pow(DiscBinEdge[i+1]/V_rot, 2.0) - pow(DiscBinEdge[i]/V_rot, 2.0)) * pow(CM_PER_MPC, 2.0);
 		Sigma_star = Gal[p].DiscStars[i] * 1e10*SOLAR_MASS / area;
 		radius = pow((DiscBinEdge[i]*DiscBinEdge[i] + DiscBinEdge[i+1]*DiscBinEdge[i+1])/2.0, 0.5)/V_rot * CM_PER_MPC;
-		Q_star = 0.126 * pow(V_rot*1e5, 2.0) / (GRAVITY * radius * Sigma_star);
+		Q_star = 0.21*exp(-radius/(2*Gal[p].DiskScaleRadius*CM_PER_MPC)) * pow(V_rot*1e5, 2.0) / (GRAVITY * radius * Sigma_star);
 		
-		if(Q_star<1.0)
+		if(Q_star<QStarMin)
 		{
-			unstable_stars = Gal[p].DiscStars[i] - 0.126*pow(V_rot*1e5, 2.0)*area / (GRAVITY * 1e10*SOLAR_MASS * radius);
+			unstable_stars = Gal[p].DiscStars[i] - 0.21*pow(V_rot*1e5, 2.0)*area*exp(-radius/(2*Gal[p].DiskScaleRadius*CM_PER_MPC)) / (GRAVITY * 1e10*SOLAR_MASS * radius * QStarMin);
 			metallicity = get_metallicity(Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 			assert(Gal[p].DiscStarsMetals[i]<=Gal[p].DiscStars[i]);
 			Gal[p].DiscStars[i] -= unstable_stars;
-			Gal[p].DiscStarsMetals[i] -= metallicity * unstable_stars;
+			Gal[p].DiscStarsMetals[i] = metallicity * Gal[p].DiscStars[i];
 			if(i!=0)
 			{
 				Gal[p].DiscStars[i-1] += unstable_stars;
