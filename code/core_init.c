@@ -25,7 +25,6 @@ void init(void)
   set_units();
   srand((unsigned) time(NULL));
 
-  read_output_snaps();
   read_snap_list();
 
   for(i = 0; i < Snaplistlen; i++)
@@ -56,9 +55,6 @@ void set_units(void)
 
   EnergySNcode = EnergySN / UnitEnergy_in_cgs * Hubble_h;
   EtaSNcode = EtaSN * (UnitMass_in_g / SOLAR_MASS) / Hubble_h;
-  if(ThisTask == 0)
-    printf("\nEnergySNcode*EtaSNcode= %g\n", EnergySNcode * EtaSNcode);
-
   // convert some physical input parameters to internal units 
   Hubble = HUBBLE * UnitTime_in_s;
 
@@ -67,33 +63,6 @@ void set_units(void)
 
 }
 
-
-
-void read_output_snaps(void)
-{
-  int i;
-
-  char buf[1000];
-  FILE *fd;
-
-  sprintf(buf, "%s", FileWithOutputSnaps);
-
-  if(!(fd = fopen(buf, "r")))
-  {
-    printf("file `%s' not found.\n", buf);
-    exit(1);
-  }
-
-  for(i = 0; i < NOUT; i++)
-  {
-    if(fscanf(fd, " %d ", &ListOutputSnaps[i]) != 1)
-    {
-      printf("I/O error in file '%s'\n", buf);
-      exit(1);
-    }
-  }
-  fclose(fd);
-}
 
 
 
@@ -107,7 +76,7 @@ void read_snap_list(void)
   if(!(fd = fopen(fname, "r")))
   {
     printf("can't read output list in file '%s'\n", fname);
-    ABORT(1);
+    ABORT(0);
   }
 
   Snaplistlen = 0;
@@ -122,8 +91,10 @@ void read_snap_list(void)
 
   fclose(fd);
 
+  #ifdef MPI
   if(ThisTask == 0)
-    printf("found %d defined times in snaplist.\n", Snaplistlen);
+  #endif
+    printf("found %d defined times in snaplist\n", Snaplistlen);
 }
 
 

@@ -73,9 +73,10 @@ void read_cooling_functions(void)
     fclose(fd);
   }
 
+#ifdef MPI
   if(ThisTask == 0)
-    printf("cooling functions read.\n\n");
-
+    printf("cooling functions read\n\n");
+#endif
 }
 
 

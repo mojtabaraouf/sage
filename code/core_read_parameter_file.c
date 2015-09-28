@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 #include "core_allvars.h"
 #include "core_proto.h"
@@ -17,37 +18,23 @@ void read_parameter_file(char *fname)
 {
   FILE *fd;
   char buf[400], buf1[400], buf2[400], buf3[400];
-  int i, j, nt = 0;
+  int i, j, nt = 0, done;
   int id[MAXTAGS];
   void *addr[MAXTAGS];
   char tag[MAXTAGS][50];
   int errorFlag = 0;
 
-  if(ThisTask == 0)
-  {
-    // Print out the neceassary Makefile flags to allow us to identify what properties should be in the output binary files. 
-    printf ("\nMakefile flags:\n\n");
-
-#ifdef MILLENNIUM
-    printf("\tMILLENNIUM flag selected\n");
-#endif
-
-#ifdef BOLSHOI
-    printf("\tBOLSHOI flag selected\n");
-#endif
-   
-  }
-
+#ifdef MPI
   if(ThisTask == 0)
     printf("\nreading parameter file:\n\n");
-	
+#endif
   
   strcpy(tag[nt], "FileNameGalaxies");
   addr[nt] = FileNameGalaxies;
   id[nt++] = STRING;
 
-  strcpy(tag[nt], "FileWithOutputSnaps");
-  addr[nt] = FileWithOutputSnaps;
+  strcpy(tag[nt], "TreeName");
+  addr[nt] = TreeName;
   id[nt++] = STRING;
 
   strcpy(tag[nt], "OutputDir");
@@ -69,10 +56,6 @@ void read_parameter_file(char *fname)
   strcpy(tag[nt], "SimulationDir");
   addr[nt] = SimulationDir;
   id[nt++] = STRING;
-
-  strcpy(tag[nt], "FilesPerSnapshot");
-  addr[nt] = &FilesPerSnapshot;
-  id[nt++] = INT;
   
   strcpy(tag[nt], "FileWithSnapList");
   addr[nt] = FileWithSnapList;
@@ -225,6 +208,10 @@ void read_parameter_file(char *fname)
   strcpy(tag[nt], "ThresholdSatDisruption");
   addr[nt] = &ThresholdSatDisruption;
   id[nt++] = DOUBLE;
+    
+    strcpy(tag[nt], "NumOutputs");
+    addr[nt] = &NOUT;
+    id[nt++] = INT;
 
   if((fd = fopen(fname, "r")))
   {
@@ -235,7 +222,7 @@ void read_parameter_file(char *fname)
       if(sscanf(buf, "%s%s%s", buf1, buf2, buf3) < 2)
         continue;
 
-      if(buf1[0] == '%')
+      if(buf1[0] == '%' || buf1[0] == '-')
         continue;
 
       for(i = 0, j = -1; i < nt; i++)
@@ -248,7 +235,9 @@ void read_parameter_file(char *fname)
 
       if(j >= 0)
       {
+#ifdef MPI
         if(ThisTask == 0)
+#endif
           printf("%35s\t%10s\n", buf1, buf2);
 
         switch (id[j])
@@ -293,7 +282,52 @@ void read_parameter_file(char *fname)
     }
   }
 
-  if(errorFlag)
-    ABORT(1);
+    assert(!errorFlag);
+    printf("\n");
+    
+    assert(LastSnapShotNr+1 > 0 && LastSnapShotNr+1 < ABSOLUTEMAXSNAPS);
+    MAXSNAPS = LastSnapShotNr + 1;
+    
+    if(!(NOUT == -1 || (NOUT > 0 && NOUT <= ABSOLUTEMAXSNAPS)))
+    printf("NumOutputs must be -1 or between 1 and %i\n", ABSOLUTEMAXSNAPS);
+    assert(NOUT == -1 || (NOUT > 0 && NOUT <= ABSOLUTEMAXSNAPS));
+    
+    // read in the output snapshot list
+    if(NOUT == -1)
+    {
+        NOUT = MAXSNAPS;
+        for (i=NOUT-1; i>=0; i--)
+        ListOutputSnaps[i] = i;
+        printf("all %i snapshots selected for output\n", NOUT);
+    }
+    else
+    {
+        printf("%i snapshots selected for output: ", NOUT);
+        // reopen the parameter file
+        fd = fopen(fname, "r");
+        
+        done = 0;
+        while(!feof(fd) && !done)
+        {
+            // scan down to find the line with the snapshots
+            fscanf(fd, "%s", buf);
+            if(strcmp(buf, "->") == 0)
+            {
+                // read the snapshots into ListOutputSnaps
+                for (i=0; i<NOUT; i++)
+                {
+                    fscanf(fd, "%d", &ListOutputSnaps[i]);
+                    printf("%i ", ListOutputSnaps[i]);
+                }
+                done = 1;
+            }
+        }
+        
+        fclose(fd);
+        assert(done);
+        
+        printf("\n");
+    }
+
 
 }

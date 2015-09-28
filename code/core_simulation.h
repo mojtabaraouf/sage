@@ -1,17 +1,4 @@
 
-#ifdef MILLENNIUM
-#define  MAXSNAPS  64
-#endif
-
-#ifdef BOLSHOI
-#define  MAXSNAPS  181
-#endif
-
-#ifdef GIGGLEZ
-#define  MAXSNAPS  117    //GiggleZ_MR
-#endif
-
-
 struct halo_data
 {
   // merger tree pointers 
@@ -23,7 +10,7 @@ struct halo_data
 
   // properties of halo 
   int Len;
-  float M_Mean200, Mvir, M_TopHat;  // Mean 200 values (Mvir=M_Crit200)
+  float M_Mean200, Mvir, M_TopHat;  // for Millennium, Mvir=M_Crit200
   float Pos[3];
   float Vel[3];
   float VelDisp;
@@ -31,7 +18,7 @@ struct halo_data
   float Spin[3];
   long long MostBoundID;
 
-  // original position in subfind output 
+  // original position in simulation tree files 
   int SnapNum;
   int FileNr;
   int SubhaloIndex;

@@ -2,11 +2,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-#include <time.h>
+//#include <time.h>
 #include <signal.h>
 #include <unistd.h>
 #include <sys/stat.h>
+
+#ifdef MPI
 #include <mpi.h>
+#endif
+
 #include <assert.h>
 
 #include "core_allvars.h"
@@ -33,7 +37,11 @@ void termination_handler(int signum)
 
 void myexit(int signum)
 {
+#ifdef MPI
   printf("Task: %d\tnode: %s\tis exiting.\n\n\n", ThisTask, ThisNode);
+#else
+    printf("Exiting\n\n\n");
+#endif
   exit(signum);
 }
 
@@ -41,15 +49,18 @@ void myexit(int signum)
 
 void bye()
 {
+#ifdef MPI
   MPI_Finalize();
   free(ThisNode);
-
+#endif
+    
   if(exitfail)
   {
     unlink(bufz0);
-
+#ifdef MPI
     if(ThisTask == 0 && gotXCPU == 1)
       printf("Received XCPU, exiting. But we'll be back.\n");
+#endif
   }
 }
 
@@ -62,8 +73,9 @@ int main(int argc, char **argv)
 
   struct stat filestatus;
   FILE *fd;
-  time_t start, current;
+  //time_t start, current;
 
+#ifdef MPI
   MPI_Init(&argc, &argv);
   MPI_Comm_rank(MPI_COMM_WORLD, &ThisTask);
   MPI_Comm_size(MPI_COMM_WORLD, &NTask);
@@ -74,12 +86,13 @@ int main(int argc, char **argv)
   if (nodeNameLen >= MPI_MAX_PROCESSOR_NAME) 
   {
     printf("Node name string not long enough!...\n");
-    ABORT(701);
+    ABORT(0);
   }
+#endif
 
   if(argc != 2)
   {
-    printf("\n  usage: L-Galaxies <parameterfile>\n\n");
+    printf("\n  usage: DARK SAGE <parameterfile>\n\n");
     ABORT(1);
   }
 
@@ -98,61 +111,75 @@ int main(int argc, char **argv)
   for(i=1; i<31; i++)
 	DiscBinEdge[i] = 5e-6*2e7*(CM_PER_MPC/UnitLength_in_cm)/UnitVelocity_in_cm_per_s *pow(1.4, i);
 
-  /* a small delay so that processors dont use the same file */
-  time(&start);
-  do
-    time(&current);
-  while(difftime(current, start) < 5.0 * ThisTask);
+//  /* a small delay so that processors dont use the same file */
+//  time(&start);
+//  do
+//    time(&current);
+//  while(difftime(current, start) < 5.0 * ThisTask);
 
+#ifdef MPI
+  for(filenr = FirstFile+ThisTask; filenr <= LastFile; filenr += NTask)
+#else
   for(filenr = FirstFile; filenr <= LastFile; filenr++)
+#endif
   {
-    sprintf(bufz0, "%s/treedata/trees_%03d.%d", SimulationDir, LastSnapShotNr, filenr);
+      sprintf(bufz0, "%s/%s.%d", SimulationDir, TreeName, filenr);
     if(!(fd = fopen(bufz0, "r")))
-      continue;  // tree file does not exist, move along
+      {
+          printf("-- missing tree %s ... skipping\n", bufz0);
+          continue;  // tree file does not exist, move along
+      }
     else
       fclose(fd);
 
     sprintf(bufz0, "%s/%s_z%1.3f_%d", OutputDir, FileNameGalaxies, ZZ[ListOutputSnaps[0]], filenr);
-    if(stat(bufz0, &filestatus) == 0)	 // seems to exist, move along
-      continue;
+      if(stat(bufz0, &filestatus) == 0)
+      {
+          printf("-- output for tree %s already exists ... skipping\n", bufz0);
+          continue;  // output seems to already exist, dont overwrite, move along
+      }
 
     if((fd = fopen(bufz0, "w")))
       fclose(fd);
 
+      FileNum = filenr;
     load_tree_table(filenr);
 
-    for(tree = 0; tree < Ntrees; tree++)
-    {
-      
-      if(gotXCPU)
-        ABORT(5);
-
-      if(tree % 10000 == 0)
+      for(tree = 0; tree < Ntrees; tree++)
       {
-        printf("\ttask: %d\tnode: %s\tfile: %i\ttree: %i of %i\n", ThisTask, ThisNode, filenr, tree, Ntrees);
-        fflush(stdout);
+          
+          assert(!gotXCPU);
+          
+          if(tree % 10000 == 0)
+          {
+#ifdef MPI
+              printf("\ttask: %d\tnode: %s\tfile: %i\ttree: %i of %i\n", ThisTask, ThisNode, filenr, tree, Ntrees);
+#else
+              printf("\tfile: %i\ttree: %i of %i\n", filenr, tree, Ntrees);
+#endif
+              fflush(stdout);
+          }
+          
+          TreeID = tree;
+          load_tree(filenr, tree);
+          
+          gsl_rng_set(random_generator, filenr * 100000 + tree);
+          NumGals = 0;
+          GalaxyCounter = 0;
+          for(halonr = 0; halonr < TreeNHalos[tree]; halonr++)
+          if(HaloAux[halonr].DoneFlag == 0)
+          construct_galaxies(halonr, tree);
+          
+          save_galaxies(filenr, tree);
+          free_galaxies_and_tree();
       }
-
-      load_tree(filenr, tree);
-
-      gsl_rng_set(random_generator, filenr * 100000 + tree);
-      NumGals = 0;
-      GalaxyCounter = 0;
-      for(halonr = 0; halonr < TreeNHalos[tree]; halonr++)
-        if(HaloAux[halonr].DoneFlag == 0)
-        construct_galaxies(halonr, tree);
-
-      save_galaxies(filenr, tree);
-      free_galaxies_and_tree();
-    }
-
-    finalize_galaxy_file(filenr);
-    free_tree_table();
-
-    printf("\ndone file %d\n\n", filenr);
+      
+      finalize_galaxy_file(filenr);
+      free_tree_table();
+      
+      printf("\ndone file %d\n\n", filenr);
   }
-
-  exitfail = 0;
-  return 0;
+    
+    exitfail = 0;
+    return 0;
 }
-

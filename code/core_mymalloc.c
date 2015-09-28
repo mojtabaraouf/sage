@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
+#include <assert.h>
 
 #include "core_allvars.h"
 #include "core_proto.h"
@@ -56,8 +57,7 @@ void *mymalloc(size_t n)
 
 void myfree(void *p)
 {
-  if(Nblocks == 0)
-    ABORT(1);
+    assert(Nblocks > 0);
 
   if(p != Table[Nblocks - 1])
   {

@@ -24,14 +24,6 @@ INCL   =	./code/core_allvars.h  \
 			./Makefile
 
 
-OPT += -DNOUT=18	      # This sets the number of galaxy output times
-
-OPT += -DMILLENNIUM         # Millennium simulation trees
-# OPT += -DBOLSHOI            # Bolshoi simulation trees
-# OPT += -DGIGGLEZ						# GiggleZ simulation trees
-
-# OPT += -DMINIMIZE_IO        # tree files will be preloaded, galaxy data will be written in one go
-
 SYSTYPE = "mac"
 # SYSTYPE = "green"
 # SYSTYPE = "gstar"

@@ -12,10 +12,10 @@ do {                                                                \
 } while(0)
 
 #define  STEPS 10         // Number of integration intervals between two snapshots 
-#define  MAXGALFAC 10     
+#define  MAXGALFAC 1
 #define  ALLOCPARAMETER 10.0
 #define  MAX_NODE_NAME_LEN 50
-
+#define  ABSOLUTEMAXSNAPS 1000
 
 #define  GRAVITY     6.672e-8
 #define  SOLAR_MASS  1.989e33
@@ -215,26 +215,27 @@ extern int    FoF_MaxGals;
 
 extern int    GalaxyCounter;     // unique galaxy ID for main progenitor line in tree
 
-extern int    FilesPerSnapshot;
 extern int    LastSnapShotNr;
 
 extern char   OutputDir[512];
 extern char   FileNameGalaxies[512];
+extern char   TreeName[512];
 extern char   SimulationDir[512];
-extern char   FileWithOutputSnaps[512];
 extern char   FileWithSnapList[512];
 
 extern int    TotHalos;
-extern int    TotGalaxies[NOUT];
-extern int    *TreeNgals[NOUT];
+extern int    TotGalaxies[ABSOLUTEMAXSNAPS];
+extern int    *TreeNgals[ABSOLUTEMAXSNAPS];
 
 extern int    *FirstHaloInSnap;
 
 extern int    *TreeNHalos;
 extern int    *TreeFirstHalo;
 
+#ifdef MPI
 extern int ThisTask, NTask, nodeNameLen;
 extern char *ThisNode;
+#endif
 
 extern double Omega;
 extern double OmegaLambda;
@@ -290,25 +291,23 @@ extern double UnitLength_in_cm,
   Hubble,
   a0, ar;
 
-extern int    ListOutputSnaps[NOUT];
+extern int    ListOutputSnaps[ABSOLUTEMAXSNAPS];
 
-extern double ZZ[MAXSNAPS];
-extern double AA[MAXSNAPS];
-extern double Age[MAXSNAPS];
+extern double ZZ[ABSOLUTEMAXSNAPS];
+extern double AA[ABSOLUTEMAXSNAPS];
+extern double Age[ABSOLUTEMAXSNAPS];
 
+extern int    MAXSNAPS;
+extern int    NOUT;
 extern int    Snaplistlen;
 
 extern gsl_rng *random_generator;
 
+extern int TreeID;
+extern int FileNum;
+
 double DiscBinEdge[31];
 
-
-#ifdef MINIMIZE_IO
-extern char *ptr_treedata, *ptr_galaxydata, *ptr_galsnapdata[NOUT];
-extern size_t offset_auxdata, offset_treedata, offset_dbids;
-extern size_t offset_galaxydata, maxstorage_galaxydata, filled_galaxydata;
-extern size_t offset_galsnapdata[NOUT], maxstorage_galsnapdata[NOUT], filled_galsnapdata[NOUT];
-#endif
 
 
 #endif  // #ifndef ALLVARS_H
