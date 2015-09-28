@@ -245,7 +245,6 @@ extern double EnergySNcode, EnergySN;
 extern double EtaSNcode, EtaSN;
 
 // recipe flags 
-extern int    PopSynthModelOn;
 extern int    ReionizationOn;
 extern int    SupernovaRecipeOn;
 extern int    DiskInstabilityOn;
