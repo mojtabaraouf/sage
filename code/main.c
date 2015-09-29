@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
-//#include <time.h>
+#include <time.h>
 #include <signal.h>
 #include <unistd.h>
 #include <sys/stat.h>
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
 
   struct stat filestatus;
   FILE *fd;
-  //time_t start, current;
+  time_t start, current;
 
 #ifdef MPI
   MPI_Init(&argc, &argv);
@@ -111,12 +111,15 @@ int main(int argc, char **argv)
   for(i=1; i<31; i++)
 	DiscBinEdge[i] = 5e-6*2e7*(CM_PER_MPC/UnitLength_in_cm)/UnitVelocity_in_cm_per_s *pow(1.4, i);
 
-//  /* a small delay so that processors dont use the same file */
-//  time(&start);
-//  do
-//    time(&current);
-//  while(difftime(current, start) < 5.0 * ThisTask);
-
+#ifdef MPI
+  /* a small delay so that processors dont use the same file */
+    printf("Small delay for processors\n");
+  time(&start);
+  do
+    time(&current);
+  while(difftime(current, start) < 100.0 * ThisTask);
+#endif
+    
 #ifdef MPI
   for(filenr = FirstFile+ThisTask; filenr <= LastFile; filenr += NTask)
 #else

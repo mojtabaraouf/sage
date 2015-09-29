@@ -24,6 +24,8 @@ INCL   =	./code/core_allvars.h  \
 			./Makefile
 
 
+#OPT += -DMPI
+
 SYSTYPE = "mac"
 # SYSTYPE = "green"
 # SYSTYPE = "gstar"
