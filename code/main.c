@@ -6,7 +6,6 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sys/stat.h>
-
 #ifdef MPI
 #include <mpi.h>
 #endif
@@ -73,7 +72,9 @@ int main(int argc, char **argv)
 
   struct stat filestatus;
   FILE *fd;
+#ifdef MPI
   time_t start, current;
+#endif
 
 #ifdef MPI
   MPI_Init(&argc, &argv);
@@ -88,6 +89,7 @@ int main(int argc, char **argv)
     printf("Node name string not long enough!...\n");
     ABORT(0);
   }
+
 #endif
 
   if(argc != 2)
@@ -105,6 +107,7 @@ int main(int argc, char **argv)
 
   read_parameter_file(argv[1]);
   init();
+    srand(getpid() % 1000);
 
   // Define the specific-angular-momentum bins used to collect disc mass
   DiscBinEdge[0] = 0.0;
@@ -112,12 +115,12 @@ int main(int argc, char **argv)
 	DiscBinEdge[i] = 5e-6*2e7*(CM_PER_MPC/UnitLength_in_cm)/UnitVelocity_in_cm_per_s *pow(1.4, i);
 
 #ifdef MPI
-  /* a small delay so that processors dont use the same file */
+  // A small delay so that processors don't use the same file
     printf("Small delay for processors\n");
   time(&start);
   do
     time(&current);
-  while(difftime(current, start) < 100.0 * ThisTask);
+  while(difftime(current, start) < 5.0 * ThisTask);
 #endif
     
 #ifdef MPI
@@ -127,6 +130,11 @@ int main(int argc, char **argv)
 #endif
   {
       sprintf(bufz0, "%s/%s.%d", SimulationDir, TreeName, filenr);
+      
+      // Sleep for case of running with MPI without actually enabling MPI, so processors don't do the same job!
+      const unsigned int random_sleep_time = (100000ULL*rand())/RAND_MAX;
+      printf("random_sleep_time = %u ns pid = %zu\n", random_sleep_time,getpid());
+      usleep(random_sleep_time);
     if(!(fd = fopen(bufz0, "r")))
       {
           printf("-- missing tree %s ... skipping\n", bufz0);
