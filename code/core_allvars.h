@@ -39,11 +39,11 @@ struct GALAXY_OUTPUT
   int   Type;
   long long   GalaxyIndex;
   int   HaloIndex;
-  int   FOFHaloIndex;
+  int SimulationHaloIndex;
   int   TreeIndex;
-  
+    
   int   SnapNum;
-  int   CentralGal;
+  long long CentralGalaxyIndex;
   double CentralMvir;
 
   int   mergeType;  //0=none; 1=minor merger; 2=major merger; 3=disk instability; 4=disrupt to ICS

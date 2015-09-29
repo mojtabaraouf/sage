@@ -8,6 +8,10 @@
 #include "core_allvars.h"
 #include "core_proto.h"
 
+
+#define TREE_MUL_FAC        (1000000000LL)
+#define FILENR_MUL_FAC      (100000000000000LL)
+
 // keep a static file handle to remove the need to do constant seeking.
 FILE* save_fd[ABSOLUTEMAXSNAPS] = { 0 };
 
@@ -92,16 +96,23 @@ void save_galaxies(int filenr, int tree)
 void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GALAXY_OUTPUT *o)
 {
   int j, step;
-
-  o->Type = g->Type;
-  o->GalaxyIndex = g->GalaxyNr + 1e6 * tree + 1e12 * filenr;
-  o->HaloIndex = g->HaloNr;
-  o->FOFHaloIndex = Halo[g->HaloNr].FirstHaloInFOFgroup;
-  o->TreeIndex = tree;
+    
   o->SnapNum = g->SnapNum;
+  o->Type = g->Type;
+    
+    assert( g->GalaxyNr < TREE_MUL_FAC ); // breaking tree size assumption
+    assert(tree < FILENR_MUL_FAC/TREE_MUL_FAC);
+    o->GalaxyIndex = g->GalaxyNr + TREE_MUL_FAC * tree + FILENR_MUL_FAC * filenr;
+    assert( (o->GalaxyIndex - g->GalaxyNr - TREE_MUL_FAC*tree)/FILENR_MUL_FAC == filenr );
+    assert( (o->GalaxyIndex - g->GalaxyNr -FILENR_MUL_FAC*filenr) / TREE_MUL_FAC == tree );
+    assert( o->GalaxyIndex - TREE_MUL_FAC*tree - FILENR_MUL_FAC*filenr == g->GalaxyNr );
+    
+    o->CentralGalaxyIndex = HaloGal[HaloAux[Halo[g->HaloNr].FirstHaloInFOFgroup].FirstGalaxy].GalaxyNr + TREE_MUL_FAC * tree + FILENR_MUL_FAC * filenr;
+    
+    o->HaloIndex = g->HaloNr;
+    o->TreeIndex = tree;
+    o->SimulationHaloIndex = Halo[g->HaloNr].SubhaloIndex;
 
-  o->CentralGal = g->CentralGal;
-  o->CentralMvir = get_virial_mass(Halo[g->HaloNr].FirstHaloInFOFgroup);
 
   o->mergeType = g->mergeType;
   o->mergeIntoID = g->mergeIntoID;
@@ -119,6 +130,7 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
 
   o->Len = g->Len;
   o->Mvir = g->Mvir;
+  o->CentralMvir = get_virial_mass(Halo[g->HaloNr].FirstHaloInFOFgroup);
   o->Rvir = get_virial_radius(g->HaloNr);  //output the actual Rvir, not the maximum Rvir
   o->Vvir = get_virial_velocity(g->HaloNr);  //output the actual Vvir, not the maximum Vvir
   o->Vmax = g->Vmax;
@@ -236,4 +248,6 @@ void finalize_galaxy_file(int filenr)
     
 }
 
+#undef TREE_MUL_FAC
+#undef FILENR_MUL_FAC
 
