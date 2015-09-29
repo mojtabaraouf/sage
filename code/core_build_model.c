@@ -224,7 +224,7 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
           {
             // a satellite with subhalo
               Gal[ngal].mergeType = 0;
-              Gel[ngal].mergeIntoID = -1;
+              Gal[ngal].mergeIntoID = -1;
               
             if(Gal[ngal].Type == 0)  // remember the infall properties before becoming a subhalo
             {
