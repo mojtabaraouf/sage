@@ -10,7 +10,7 @@
 
 
 #define TREE_MUL_FAC        (1000000000LL)
-#define FILENR_MUL_FAC      (100000000000000LL)
+#define FILENR_MUL_FAC      (1000000000000000LL)
 
 // keep a static file handle to remove the need to do constant seeking.
 FILE* save_fd[ABSOLUTEMAXSNAPS] = { 0 };

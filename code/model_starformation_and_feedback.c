@@ -123,19 +123,20 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	    if(stars<1e-8)
 	    {
 	      stars = 1e-8;
-		  reheated_mass = Gal[p].DiscGas[i] - (1-RecycleFraction)*stars;
+		  reheated_mass = Gal[p].DiscGas[i] - stars; // Used to have (1-RecycleFraction)* in front of stars here, but changed philosophy
 	    }
 	
 	    ejected_mass = (FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) / (Gal[centralgal].Vvir * Gal[centralgal].Vvir) - FeedbackReheatingEpsilon) * stars;
 	    if(ejected_mass < 0.0)
 	        ejected_mass = 0.0;
 	
-		assert(RecycleFraction*stars+reheated_mass < 1.001*Gal[p].DiscGas[i]);
+		assert(stars+reheated_mass < 1.001*Gal[p].DiscGas[i]);
 	  }
 
 	  else
 	  {
-		reheated_mass = RecycleFraction * stars;
+		//reheated_mass = RecycleFraction * stars;
+          reheated_mass = 0.0;
 		ejected_mass = 0.0;
 	  }
 	}  
@@ -181,19 +182,20 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	// Inject new metals from SN II
 	if(SupernovaRecipeOn == 1 && stars>1e-9)
 	{
-	  if(stars>1e-8)
+	  if(stars>=1e-8)
 	  {
-	    Gal[p].DiscGasMetals[i] += Yield * stars;
-	    Gal[p].MetalsColdGas += Yield * stars;
+	    Gal[p].DiscGasMetals[i] += Yield * stars*(1.0 - get_metallicity(NewStars[i],NewStarsMetals[i]));
+	    Gal[p].MetalsColdGas += Yield * stars*(1.0 - get_metallicity(NewStars[i],NewStarsMetals[i]));
   	  }
-	  else
-	  {
-		if(Gal[centralgal].HotGas>0.0)
-			Gal[centralgal].MetalsHotGas += Yield * stars;
-		else
-			Gal[centralgal].MetalsEjectedMass += Yield * stars;
-	  }
+//	  else
+//	  {
+//		if(Gal[centralgal].HotGas>0.0)
+//			Gal[centralgal].MetalsHotGas += Yield * stars;
+//		else
+//			Gal[centralgal].MetalsEjectedMass += Yield * stars;
+//	  }
 	}
+    if(Gal[p].DiscGasMetals[i] > Gal[p].DiscGas[i]) printf("DiscGas, Metals = %e, %e\n", Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
 	assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
 	if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 	assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);

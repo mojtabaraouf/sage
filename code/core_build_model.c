@@ -62,15 +62,15 @@ void construct_galaxies(int halonr, int tree)
 
     while(fofhalo >= 0)
     {
-	  if(Gal[ngal].HotGas != Gal[ngal].HotGas || Gal[ngal].HotGas < 0)
-	  {
-	    printf("HotGas CONSTRUCT 1...%e\n", Gal[ngal].HotGas);
-	    printf("ColdGas CONSTRUCT 1...%e\n", Gal[ngal].ColdGas);
-	    printf("Stars CONSTRUCT 1...%e\n", Gal[ngal].StellarMass);
-	    printf("DiscGas CONSTRUCT 1...%e\n", Gal[ngal].DiscGas[0]);
-		printf("%d\t%d\n", ngal, halonr);
-	    ABORT(1);
-	  }
+//	  if(Gal[ngal].HotGas != Gal[ngal].HotGas || Gal[ngal].HotGas < 0)
+//	  {
+//	    printf("HotGas CONSTRUCT 1...%e\n", Gal[ngal].HotGas);
+//	    printf("ColdGas CONSTRUCT 1...%e\n", Gal[ngal].ColdGas);
+//	    printf("Stars CONSTRUCT 1...%e\n", Gal[ngal].StellarMass);
+//	    printf("DiscGas CONSTRUCT 1...%e\n", Gal[ngal].DiscGas[0]);
+//		printf("%d\t%d\n", ngal, halonr);
+//	    ABORT(1);
+//	  }
       ngal = join_galaxies_of_progenitors(fofhalo, ngal);
       fofhalo = Halo[fofhalo].NextHaloInFOFgroup;
     }
@@ -509,6 +509,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
   offset = 0;
   for(p = 0, currenthalo = -1; p < ngal; p++)
   {
+    
 	assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
     if(Gal[p].HaloNr != currenthalo)
     {
@@ -516,7 +517,17 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
       HaloAux[currenthalo].FirstGalaxy = NumGals;
       HaloAux[currenthalo].NGalaxies = 0;
     }
-
+      
+      if(Gal[p].HotGas != Gal[p].HotGas || Gal[p].HotGas < 0 || Gal[p].ColdGas != Gal[p].ColdGas || Gal[p].ColdGas < 0 || Gal[p].StellarMass != Gal[p].StellarMass)
+      {
+          printf("HotGas EVOLVE 1...%e\n", Gal[p].HotGas);
+          printf("ColdGas EVOLVE 1...%e\n", Gal[p].ColdGas);
+          printf("Stars EVOLVE 1...%e\n", Gal[p].StellarMass);
+          printf("DiscGas EVOLVE 1...%e\n", Gal[p].DiscGas[0]);
+          printf("%d\t%d\n", p, currenthalo);
+          ABORT(1);
+      }
+      
     // Merged galaxies won't be output. So go back through its history and find it
     // in the previous timestep. Then copy the current merger info there.
     offset = 0;

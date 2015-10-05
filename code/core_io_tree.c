@@ -31,7 +31,7 @@ void load_tree_table(int filenr)
 
   myfread(&Ntrees, 1, sizeof(int), load_fd);
   myfread(&totNHalos, 1, sizeof(int), load_fd);
-
+    
   TreeNHalos = mymalloc(sizeof(int) * Ntrees);
   TreeFirstHalo = mymalloc(sizeof(int) * Ntrees);
 

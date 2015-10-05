@@ -212,13 +212,26 @@ double get_disc_gas(int p)
 		DiscGasSum += Gal[p].DiscGas[l];
 		DiscMetalsSum += Gal[p].DiscGasMetals[l];
 	}
+    
+    if((Gal[p].ColdGas < 1e-15 && Gal[p].ColdGas!=0.0) || (DiscGasSum < 1e-15 && DiscGasSum!=0.0))
+    {
+        printf("get_disc_gas initial DiscGasSum, ColdGas = %e, %e\n", DiscGasSum, Gal[p].ColdGas);
+        Gal[p].ColdGas = 0.0;
+        Gal[p].MetalsColdGas = 0.0;
+        for(l=0; l<30; l++)
+        {
+            Gal[p].DiscGas[l] = 0.0;
+            Gal[p].DiscGasMetals[l] = 0.0;
+        }
+        DiscGasSum = 0.0;
+    }
 
 	if(DiscGasSum>1.001*Gal[p].ColdGas || DiscGasSum<Gal[p].ColdGas/1.001)
 	{
 		printf("get_disc_gas report ... DiscSum, ColdGas =  %e, %e\n", DiscGasSum, Gal[p].ColdGas);
 		printf("get_disc_gas report ... MetalsSum, ColdMetals =  %e, %e\n", DiscMetalsSum, Gal[p].MetalsColdGas);
 		
-		if(Gal[p].ColdGas<=0.0)
+		if(Gal[p].ColdGas<=1e-15)
 		{
 			for(l=0; l<30; l++)
 				Gal[p].DiscGas[l] = 0.0; // Sometimes a tiny non-zero difference can creep in (probably due to projecting discs).  This just takes care of that.
@@ -226,7 +239,7 @@ double get_disc_gas(int p)
 			Gal[p].ColdGas = 0.0;
 		}
         
-        if(Gal[p].ColdGas<=0.0 || Gal[p].MetalsColdGas<=0.0)
+        if(Gal[p].ColdGas<=1e-15 || Gal[p].MetalsColdGas<=0.0)
         {
             for(l=0; l<30; l++)
                 Gal[p].DiscGasMetals[l] = 0.0;

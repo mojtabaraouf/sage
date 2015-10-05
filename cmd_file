@@ -6,12 +6,12 @@
 # 2 - Edit Makefile and type 'make'
 
 # 3 - Enter input parameter file's path here:
-set input_path = "./input/millennium.par"
+#set input_path = "./input/millennium.par"
 #set input_path = "./input/bolshoi.par"
-#set input_path = "./input/gigglez.par"
+set input_path = "./input/gigglez.par"
 
 # 4 - Enter SAGE executable file's path here:
-set exec_path        = "./sage"
+set exec_path        = "./darksage"
 
 # 5 - Close this file and type 'chmod u+x cmd_file' (only if it is the 1st time you run cmd_file)
 

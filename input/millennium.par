@@ -64,10 +64,10 @@ RadioModeEfficiency			0.05    ;AGN radio mode efficiency (AGNrecipeOn>0) -- 2.0e
 QuasarModeEfficiency		0.005	;AGN quasar mode wind heating efficiency (AGNrecipeOn>0)
 BlackHoleGrowthRate			0.1     ;fraction of cold gas added to the BH during mergers (AGNrecipeOn>0)
 
-H2FractionFactor            0.75   ;Controls the normalisation of the H2/HI ratio calculation. 1.0 would be the same as Fu et al. (2010).
+H2FractionFactor            1.0   ;Controls the normalisation of the H2/HI ratio calculation. 1.0 would be the same as Fu et al. (2010).
 H2FractionExponent          0.92   ;Also controls the H2/HI ratio calculation. 0.92 would be the same as Fu et al. (2010).
-QStarMin                    1.0    ;threshold Toomre Q value for stellar instabilities
-QGasMin                     1.0    ;threshold Toomre Q value for gas instabilities
+QStarMin                    0.2    ;threshold Toomre Q value for stellar instabilities
+QGasMin                     4.0    ;threshold Toomre Q value for gas instabilities
 GasSinkRate                 0.1    ;fraction of gas that sinks in instabilities (the rest leads to a starburst)
 DegPerTdyn                  5.0    ;degrees the gas disc precesses to come in line with stars per dynamical time
 

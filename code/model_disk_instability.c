@@ -12,7 +12,7 @@
 void check_disk_instability(int p, int centralgal, double time, double dt, int step)
 {
 	// New treatment of instabilities based on the Toomre Q parameter
-	double Q_star, Q_gas, Sigma_star, Sigma_gas, area, radius, V_rot;
+	double Q_star, Q_gas, Sigma_star, Sigma_gas, area, radius, V_rot, Q_gas_min;
 	double unstable_gas, unstable_stars, metallicity, stars, stars_sum, gas_sink;
 	double NewStars[30], NewStarsMetals[30];
 	int i;
@@ -36,10 +36,15 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 		Sigma_gas = Gal[p].DiscGas[i] * 1e10*SOLAR_MASS / area;
 		radius = pow((DiscBinEdge[i]*DiscBinEdge[i] + DiscBinEdge[i+1]*DiscBinEdge[i+1])/2.0, 0.5)/V_rot * CM_PER_MPC;
 		Q_gas = pow(V_rot*1e5, 2.0) / (M_PI * GRAVITY * radius * Sigma_gas);
+        
+        if(Gal[p].StellarMass>0.0)
+            Q_gas_min = QGasMin * (1.0 - (Gal[p].SecularBulgeMass+Gal[p].ClassicalBulgeMass)/Gal[p].StellarMass);
+        else
+            Q_gas_min = QGasMin;
 		
-		if(Q_gas<QGasMin)
+		if(Q_gas<Q_gas_min)
 		{
-			unstable_gas = Gal[p].DiscGas[i] - pow(V_rot*1e5, 2.0)*area / (M_PI * GRAVITY * radius * 1e10*SOLAR_MASS * QGasMin);
+			unstable_gas = Gal[p].DiscGas[i] - pow(V_rot*1e5, 2.0)*area / (M_PI * GRAVITY * radius * 1e10*SOLAR_MASS * Q_gas_min);
 			metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
 			
 			if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
@@ -122,13 +127,17 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, double metallicity, int centralgal, int direct_to_BH)
 {
 	double gas_sink, gas_sf;
-	double stars, reheated_mass, ejected_mass, stars_sum, Sigma_0gas, fac, area;
+	double stars, reheated_mass, ejected_mass, Sigma_0gas, fac, area;
+    double metallicity_new;
 	
     if(unstable_gas > Gal[p].DiscGas[i])
         unstable_gas = Gal[p].DiscGas[i];
 
+    double GasOrig = Gal[p].DiscGas[i];
+    double GasMetalsOrig = Gal[p].DiscGasMetals[i];
+    
 	// Let gas sink -- I may well want to change this formula
-	gas_sink = BlackHoleGrowthRate * unstable_gas / (1.0 + pow(280.0 / V_rot, 2.0));
+	gas_sink = GasSinkRate * unstable_gas / (1.0 + pow(280.0 / V_rot, 2.0));
     Gal[p].DiscGas[i] -= gas_sink;
     Gal[p].DiscGasMetals[i] -= metallicity * gas_sink;
 
@@ -169,7 +178,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 				if(gas_sf >= 1e-8)
 				{
 		    		stars = 1e-8;
-					reheated_mass = gas_sf - (1-RecycleFraction)*stars;
+					reheated_mass = gas_sf - stars; // Previously had (1-RecycleFration)* in front of stars, which would have ensured all the unstable gas was removed in some way, but this would be inconsistent with what's done for the case that stars>1e-8.
 				}
 				else
 				{
@@ -190,31 +199,38 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 			reheated_mass = 0.0;// not a great treatment right now
 			ejected_mass = 0.0;
 		}
-		
-		stars_sum += stars;
-		
+				
 	    update_from_star_formation(p, stars, metallicity, i);
 	
 		if(reheated_mass > Gal[p].DiscGas[i] && reheated_mass < 1.01*Gal[p].DiscGas[i])
 		  reheated_mass = Gal[p].DiscGas[i];
 		
-		metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
+		metallicity_new = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
 		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
-	    update_from_feedback(p, centralgal, reheated_mass, ejected_mass, metallicity, i);
+	    update_from_feedback(p, centralgal, reheated_mass, ejected_mass, metallicity_new, i);
 	
 		// Update metals from SN II feedback
-		if(stars <= 1e-8)
-		{
-			if(Gal[centralgal].HotGas > 0.0)
-				Gal[centralgal].MetalsHotGas += Yield * stars;
-			else
-				Gal[centralgal].MetalsEjectedMass += Yield * stars;
+//		if(stars <= 1e-8)
+//		{
+//			if(Gal[centralgal].HotGas > 0.0)
+//				Gal[centralgal].MetalsHotGas += Yield * stars;
+//			else
+//				Gal[centralgal].MetalsEjectedMass += Yield * stars;
+//		}
+//		else
+        if(stars > 1e-8)
+        {
+			Gal[p].DiscGasMetals[i] += Yield * stars*(1-metallicity);
+	    	Gal[p].MetalsColdGas += Yield * stars*(1-metallicity);
 		}
-		else
-		{
-			Gal[p].DiscGasMetals[i] += Yield * stars;
-	    	Gal[p].MetalsColdGas += Yield * stars;
-		}
+
+        if(Gal[p].DiscGasMetals[i] > Gal[p].DiscGas[i])
+        {
+            printf("i, DiscGasOrig, DiscGasMetalsOrig = %d, %e, %e\n", i, GasOrig, GasMetalsOrig);
+            printf("DiscGas, Metals, %e, %e\n", Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
+            printf("unstable_gas, gas_sf = %e, %e\n", unstable_gas, gas_sf);
+            printf("stars formed, reheated_mass = %e, %e\n", stars, reheated_mass);
+        }
 		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
 	}
 	

@@ -290,6 +290,10 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 	assert(Gal[p].ColdGas == Gal[p].ColdGas);
 		
 	DiscGasSum_new = get_disc_gas(p);
+    if(DiscGasSum > 1.001*DiscGasSum_new || DiscGasSum < DiscGasSum_new/1.001)
+    {
+        printf("DiscSum, New, cosangle = %e, %e, %e\n", DiscGasSum, DiscGasSum_new, cos_angle_disc_new);
+    }
 	assert(DiscGasSum <= 1.001*DiscGasSum_new && DiscGasSum >= DiscGasSum_new/1.001);
 	assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
 	for(i=0; i<30; i++) assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);	

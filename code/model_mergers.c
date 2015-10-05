@@ -129,7 +129,7 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 
   add_galaxies_together(merger_centralgal, p, mass_ratio, disc_mass_ratio, centralgal, dt, PostRetroGas);
   
-    for(i=0; i<30; i++) assert(disc_mass_ratio[i] < 1.0);
+    for(i=0; i<30; i++) assert(disc_mass_ratio[i] <= 1.0);
     
   DiscGasSum = get_disc_gas(merger_centralgal);
   assert(DiscGasSum <= 1.001*Gal[merger_centralgal].ColdGas && DiscGasSum >= Gal[merger_centralgal].ColdGas/1.001);
@@ -137,7 +137,7 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
   assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
   for(i=29; i>=0; i--) assert(Gal[merger_centralgal].DiscGasMetals[i] <= Gal[merger_centralgal].DiscGas[i]);
 
-    for(i=0; i<30; i++) assert(disc_mass_ratio[i] < 1.0);
+    for(i=0; i<30; i++) assert(disc_mass_ratio[i] <= 1.0);
 
   collisional_starburst_recipe(disc_mass_ratio, merger_centralgal, centralgal, time, dt, halonr, 0, step, mass_ratio);
   for(i=29; i>=0; i--) assert(Gal[merger_centralgal].DiscGasMetals[i] <= Gal[merger_centralgal].DiscGas[i]);
@@ -924,8 +924,8 @@ void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_central
 	{
 	  if(stars>1e-8)
 	  {
-	    Gal[merger_centralgal].DiscGasMetals[k] += Yield * stars;
-	    Gal[merger_centralgal].MetalsColdGas += Yield * stars;
+	    Gal[merger_centralgal].DiscGasMetals[k] += Yield * stars*(1-get_metallicity(NewStars[k],NewStarsMetals[k]));
+	    Gal[merger_centralgal].MetalsColdGas += Yield * stars*(1-get_metallicity(NewStars[k],NewStarsMetals[k]));
   	  }
 		// 	  else
 		// Gal[merger_centralgal].MetalsHotGas += Yield * stars;

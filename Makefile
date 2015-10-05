@@ -1,4 +1,4 @@
-EXEC   = sage 
+EXEC   = darksage
 
 OBJS   = 	./code/main.o \
 			./code/core_read_parameter_file.o \
