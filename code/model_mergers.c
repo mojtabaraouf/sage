@@ -161,7 +161,7 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 	if(PostRetroGas[i] < Gal[merger_centralgal].DiscGas[i])
 	{
 		unstable_gas = Gal[merger_centralgal].DiscGas[i] - PostRetroGas[i];
-		stars = deal_with_unstable_gas(unstable_gas, merger_centralgal, i, Gal[merger_centralgal].Vvir, metallicity, centralgal, 0);
+		stars = deal_with_unstable_gas(unstable_gas, merger_centralgal, i, Gal[merger_centralgal].Vvir, metallicity, centralgal, 0, get_annulus_radius(merger_centralgal,i), get_annulus_radius(merger_centralgal,i+1));
 		Gal[merger_centralgal].StellarMass += (1 - RecycleFraction) * stars;
 		Gal[merger_centralgal].MetalsStellarMass += (1 - RecycleFraction) * metallicity * stars;
 		Gal[merger_centralgal].ClassicalBulgeMass += (1 - RecycleFraction) * stars;
@@ -820,6 +820,7 @@ void disrupt_satellite_to_ICS(int centralgal, int gal)
 void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_centralgal, int centralgal, double time, double dt, int halonr, int mode, int step, double mass_ratio)
 {
  double stars, reheated_mass, ejected_mass, fac, metallicity, CentralVvir, eburst, Sigma_0gas, area, stars_sum;
+ double r_inner, r_outer;
  double NewStars[30], NewStarsMetals[30];
  int k;
 
@@ -861,10 +862,9 @@ void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_central
 	{
 	  if(stars>1e-8)
 	  {
-		if(Gal[merger_centralgal].Vvir > 0.0)
-		  area = M_PI * (pow(DiscBinEdge[k+1]/Gal[merger_centralgal].Vvir, 2.0) - pow(DiscBinEdge[k]/Gal[merger_centralgal].Vvir, 2.0));
-		else
-		  area = M_PI * (pow(DiscBinEdge[k+1]/Gal[merger_centralgal].Vmax, 2.0) - pow(DiscBinEdge[k]/Gal[merger_centralgal].Vmax, 2.0));
+        r_inner = get_annulus_radius(merger_centralgal, k);
+        r_outer = get_annulus_radius(merger_centralgal, k+1);
+        area = M_PI * (r_outer*r_outer - r_inner*r_inner);
 		Sigma_0gas = 2.1 * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
         reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[merger_centralgal].DiscGas[k]/area/1.3);
 		

@@ -3,8 +3,8 @@
 %------------------------------------------
 
 FileNameGalaxies       model
-%OutputDir              ./output/results/gigglez
-OutputDir           /Volumes/AdamDrive/Swinburne/SAGE_disc_runs/102
+OutputDir              ./output/results/gigglez
+%OutputDir           /Volumes/AdamDrive/Swinburne/SAGE_disc_runs/102
 
 FirstFile					0
 LastFile					7
@@ -14,10 +14,10 @@ LastFile					7
 %----- Snapshot output list ---------------
 %------------------------------------------
 
-NumOutputs        10   ; sets the desired number of galaxy outputs; use -1 for all outputs
+NumOutputs        7   ; sets the desired number of galaxy outputs; use -1 for all outputs
 
 % List your output snapshots after the arrow, highest to lowest (ignored when NumOutputs=-1).
--> 58 53 48 44 40 32 27 23 19 16
+-> 58 53 40 27 19 16 8
 
 
 %------------------------------------------
@@ -44,7 +44,7 @@ PartMass			0.09395545
 SFprescription				0		;0: H2 mid-plane pressure; 1: as 0 but all gas for low H2 fraction; 2: metallicity dependence from Krumholz
 AGNrecipeOn					2		;0: switch off; 1: empirical model; 2: Bondi-Hoyle model; 3: cold cloud accretion model
 SupernovaRecipeOn			1		;0: switch off
-ReionizationOn				0		;0: switch off
+ReionizationOn				1		;0: switch off
 DiskInstabilityOn			1		;0: switch off; 1: bulge and BH growth through instabilities w. instability starbursts
 GasPrecessionOn             1       ;0: switch off; 1: gas discs will precess to naturally come in line with stellar discs
 
@@ -61,21 +61,21 @@ FeedbackEjectionEfficiency	0.6 	;mixing efficiency of SN energy with hot gas to 
 
 ReIncorporationFactor		0.15     ;fraction of ejected mass reincorporated per dynamical time to hot
 
-RadioModeEfficiency			0.05    ;AGN radio mode efficiency (AGNrecipeOn>0) -- 2.0e-3 / 1.0
-QuasarModeEfficiency		0.005	;AGN quasar mode wind heating efficiency (AGNrecipeOn>0)
+RadioModeEfficiency			0.1    ;AGN radio mode efficiency (AGNrecipeOn>0) -- 2.0e-3 / 1.0
+QuasarModeEfficiency		0.001	;AGN quasar mode wind heating efficiency (AGNrecipeOn>0)
 BlackHoleGrowthRate			0.1     ;fraction of cold gas added to the BH during mergers (AGNrecipeOn>0)
 
 H2FractionFactor            1.0   ;Controls the normalisation of the H2/HI ratio calculation. 1.0 would be the same as Fu et al. (2010).
 H2FractionExponent          0.92   ;Also controls the H2/HI ratio calculation. 0.92 would be the same as Fu et al. (2010).
 QStarMin                    0.2    ;threshold Toomre Q value for stellar instabilities
-QGasMin                     4.0    ;threshold Toomre Q value for gas instabilities
+QGasMin                     3.0    ;threshold Toomre Q value for gas instabilities
 GasSinkRate                 0.1    ;fraction of gas that sinks in instabilities (the rest leads to a starburst)
 DegPerTdyn                  5.0    ;degrees the gas disc precesses to come in line with stars per dynamical time
 
 ThreshMajorMerger			0.3		;major merger when mass ratio greater than this
 ThresholdSatDisruption		1.0		;Mvir-to-baryonic mass ratio threshold for satellite merger or disruption
 
-Yield						0.025	;fraction of SF mass produced as metals
+Yield						0.02	;fraction of SF mass produced as metals
 RecycleFraction				0.43	;fraction of SF mass instantaneously recycled back to cold
 FracZleaveDisk				0.0		;fraction of metals produced directly to hot component
 

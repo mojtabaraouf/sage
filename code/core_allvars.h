@@ -33,6 +33,8 @@ do {                                                                \
 #define  SEC_PER_MEGAYEAR   3.155e13
 #define  SEC_PER_YEAR       3.155e7
 
+#define  r0   2.92e-3 // Radius where rotation curve becomes flat
+
 
 struct GALAXY_OUTPUT  
 {

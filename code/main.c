@@ -107,12 +107,12 @@ int main(int argc, char **argv)
 
   read_parameter_file(argv[1]);
   init();
-    srand(getpid() % 1000);
+    srand(pow(getpid() % 100, 2.0)); // Seed with last 3 digits will be too similar when numbers approach 1000
 
   // Define the specific-angular-momentum bins used to collect disc mass
   DiscBinEdge[0] = 0.0;
   for(i=1; i<31; i++)
-	DiscBinEdge[i] = 5e-6*2e7*(CM_PER_MPC/UnitLength_in_cm)/UnitVelocity_in_cm_per_s *pow(1.4, i);
+	DiscBinEdge[i] = 5e-4*2e7*(CM_PER_MPC/UnitLength_in_cm)/UnitVelocity_in_cm_per_s *pow(1.2, i);
 
 #ifdef MPI
   // A small delay so that processors don't use the same file
@@ -132,9 +132,9 @@ int main(int argc, char **argv)
       sprintf(bufz0, "%s/%s.%d", SimulationDir, TreeName, filenr);
       
       // Sleep for case of running with MPI without actually enabling MPI, so processors don't do the same job!
-      const unsigned int random_sleep_time = (100000ULL*rand())/RAND_MAX;
-      printf("random_sleep_time = %u ns pid = %zu\n", random_sleep_time,getpid());
-      usleep(random_sleep_time);
+      const unsigned int sleep_time = (10000ULL*(getpid() % 100));
+      //printf("random_sleep_time = %u ns pid = %zu\n", random_sleep_time,getpid());
+      usleep(sleep_time);
     if(!(fd = fopen(bufz0, "r")))
       {
           printf("-- missing tree %s ... skipping\n", bufz0);
@@ -158,8 +158,8 @@ int main(int argc, char **argv)
 
       
       // Set manual limit to number of trees read in
-//      if(Ntrees > 20000)
-//          Ntrees = 20000;
+      if(Ntrees > 20000)
+          Ntrees = 20000;
       
       for(tree = 0; tree < Ntrees; tree++)
       {

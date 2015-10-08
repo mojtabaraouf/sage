@@ -12,8 +12,9 @@
 void check_disk_instability(int p, int centralgal, double time, double dt, int step)
 {
 	// New treatment of instabilities based on the Toomre Q parameter
-	double Q_star, Q_gas, Sigma_star, Sigma_gas, area, radius, V_rot, Q_gas_min;
+	double Q_star, Q_gas, V_rot, Q_gas_min;
 	double unstable_gas, unstable_stars, metallicity, stars, stars_sum, gas_sink;
+    double r_inner, r_outer, r_av, v_outer;
 	double NewStars[30], NewStarsMetals[30];
 	int i;
 	
@@ -32,10 +33,12 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	
 	for(i=29; i>=0; i--)
 	{
-		area = M_PI * (pow(DiscBinEdge[i+1]/V_rot, 2.0) - pow(DiscBinEdge[i]/V_rot, 2.0)) * pow(CM_PER_MPC, 2.0);
-		Sigma_gas = Gal[p].DiscGas[i] * 1e10*SOLAR_MASS / area;
-		radius = pow((DiscBinEdge[i]*DiscBinEdge[i] + DiscBinEdge[i+1]*DiscBinEdge[i+1])/2.0, 0.5)/V_rot * CM_PER_MPC;
-		Q_gas = pow(V_rot*1e5, 2.0) / (M_PI * GRAVITY * radius * Sigma_gas);
+        r_inner = get_annulus_radius(p, i);
+        r_outer = get_annulus_radius(p, i+1);
+        v_outer = DiscBinEdge[i+1] / r_outer;
+        
+        // Q_gas assumes c_s=17 km/s.  Would have UnitLength_in_cm once more on both denominator and numerator for human-reading, but redundant.f
+        Q_gas = 1.7e6 * v_outer*UnitVelocity_in_cm_per_s * (r_outer*r_outer - r_inner*r_inner)*UnitLength_in_cm / (GRAVITY * Gal[p].DiscGas[i]*UnitMass_in_g * r_outer);
         
         if(Gal[p].StellarMass>0.0)
             Q_gas_min = QGasMin * (1.0 - (Gal[p].SecularBulgeMass+Gal[p].ClassicalBulgeMass)/Gal[p].StellarMass);
@@ -44,14 +47,14 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 		
 		if(Q_gas<Q_gas_min)
 		{
-			unstable_gas = Gal[p].DiscGas[i] - pow(V_rot*1e5, 2.0)*area / (M_PI * GRAVITY * radius * 1e10*SOLAR_MASS * Q_gas_min);
+            unstable_gas = Gal[p].DiscGas[i]*(1.0 - Q_gas/Q_gas_min);
 			metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
 			
 			if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 			assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
 			assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
 			
-			stars = deal_with_unstable_gas(unstable_gas, p, i, V_rot, metallicity, centralgal, 0);
+			stars = deal_with_unstable_gas(unstable_gas, p, i, V_rot, metallicity, centralgal, 0, r_inner, r_outer);
 			
 			if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 			assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
@@ -93,14 +96,16 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	// Deal with stellar instabilities
 	for(i=29; i>=0; i--)
 	{
-		area = M_PI * (pow(DiscBinEdge[i+1]/V_rot, 2.0) - pow(DiscBinEdge[i]/V_rot, 2.0)) * pow(CM_PER_MPC, 2.0);
-		Sigma_star = Gal[p].DiscStars[i] * 1e10*SOLAR_MASS / area;
-		radius = pow((DiscBinEdge[i]*DiscBinEdge[i] + DiscBinEdge[i+1]*DiscBinEdge[i+1])/2.0, 0.5)/V_rot * CM_PER_MPC;
-		Q_star = 0.21*exp(-radius/(2*Gal[p].DiskScaleRadius*CM_PER_MPC)) * pow(V_rot*1e5, 2.0) / (GRAVITY * radius * Sigma_star);
+        r_inner = get_annulus_radius(p, i);
+        r_outer = get_annulus_radius(p, i+1);
+        v_outer = DiscBinEdge[i+1] / r_outer;
+        r_av = pow((r_inner*r_inner+r_outer*r_outer)/2.0, 0.5);
+        
+        Q_star = 0.66 * V_rot*UnitVelocity_in_cm_per_s * v_outer*UnitVelocity_in_cm_per_s * (r_outer*r_outer - r_inner*r_inner)*UnitLength_in_cm * exp(-r_av/(2*Gal[p].DiskScaleRadius)) / (GRAVITY * Gal[p].DiscStars[i]*UnitMass_in_g * r_outer);
 		
 		if(Q_star<QStarMin)
 		{
-			unstable_stars = Gal[p].DiscStars[i] - 0.21*pow(V_rot*1e5, 2.0)*area*exp(-radius/(2*Gal[p].DiskScaleRadius*CM_PER_MPC)) / (GRAVITY * 1e10*SOLAR_MASS * radius * QStarMin);
+			unstable_stars = Gal[p].DiscStars[i] * (1.0 - Q_star/QStarMin);
 			metallicity = get_metallicity(Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 			assert(Gal[p].DiscStarsMetals[i]<=Gal[p].DiscStars[i]);
 			Gal[p].DiscStars[i] -= unstable_stars;
@@ -124,7 +129,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 		assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);}
 }
 
-double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, double metallicity, int centralgal, int direct_to_BH)
+double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, double metallicity, int centralgal, int direct_to_BH, double r_inner, double r_outer)
 {
 	double gas_sink, gas_sf;
 	double stars, reheated_mass, ejected_mass, Sigma_0gas, fac, area;
@@ -161,7 +166,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 	{
 		if(SupernovaRecipeOn == 1)
 		{
-			area = M_PI * (pow(DiscBinEdge[i+1]/V_rot, 2.0) - pow(DiscBinEdge[i]/V_rot, 2.0));
+			area = M_PI * (r_outer*r_outer - r_inner*r_inner);
 			Sigma_0gas = 2.1 * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
             reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3);
 						
@@ -189,7 +194,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 		    }
 			else
 			{
-				ejected_mass = (FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) / (V_rot * V_rot) - FeedbackReheatingEpsilon) * stars;
+				ejected_mass = (FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) / (V_rot * V_rot) - FeedbackReheatingEpsilon) * stars;  // Maybe change V_rot to standard Vvir?
 			    if(ejected_mass < 0.0)
 			        ejected_mass = 0.0;
 			}
@@ -242,14 +247,16 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 void precess_gas(int p, double dt, int halonr)
 {
     int i;
-    double tdyn, deg_ann, deg, DiscGasSum, NewDisc[30], NewDiscMetals[30];
+    double tdyn, deg_ann, deg, DiscGasSum, DiscStarSum, NewDisc[30], NewDiscMetals[30];
     
     double cos_angle_gas_stars = Gal[p].SpinStars[0]*Gal[p].SpinGas[0] + Gal[p].SpinStars[1]*Gal[p].SpinGas[1] + Gal[p].SpinStars[2]*Gal[p].SpinGas[2];
         
     DiscGasSum = get_disc_gas(p);
     assert(DiscGasSum <= 1.001*Gal[p].ColdGas || DiscGasSum >= Gal[p].ColdGas/1.001);
     
-    if(cos_angle_gas_stars<1.0 && DiscGasSum>0.0 && Gal[p].StellarMass>0.0)
+    DiscStarSum = get_disc_stars(p);
+    
+    if(cos_angle_gas_stars<1.0 && DiscGasSum>0.0 && DiscStarSum>0.0)
     {
         deg = 0.0;
         for(i=0; i<30; i++)

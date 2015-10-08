@@ -98,7 +98,7 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
 void strip_from_satellite(int halonr, int centralgal, int gal)
 {
   double reionization_modifier, strippedGas, strippedGasMetals, metallicity;
-  double r_gal2, v_gal2, rho_IGM, Sigma_gas, Sigma_star, area;
+  double r_gal2, v_gal2, rho_IGM, Sigma_gas, area;//, Sigma_star
   int i, j;
   
   assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
@@ -129,14 +129,15 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
   }
   
 	// Ram pressure stripping of cold gas
-	r_gal2 = (pow(Gal[gal].Pos[0]-Gal[centralgal].Pos[0], 2.0) + pow(Gal[gal].Pos[1]-Gal[centralgal].Pos[1], 2.0) + pow(Gal[gal].Pos[2]-Gal[centralgal].Pos[2], 2.0)) * pow(CM_PER_MPC/1e3, 2.0);
-	v_gal2 = (pow(Gal[gal].Vel[0]-Gal[centralgal].Vel[0], 2.0) + pow(Gal[gal].Vel[1]-Gal[centralgal].Vel[1], 2.0) + pow(Gal[gal].Vel[2]-Gal[centralgal].Vel[2], 2.0)) * pow(1e5,2.0);
-	rho_IGM = Gal[centralgal].HotGas*1e10*SOLAR_MASS / (4 * M_PI * Gal[centralgal].Rvir*CM_PER_MPC/1e3 * r_gal2);
+	r_gal2 = (pow(Gal[gal].Pos[0]-Gal[centralgal].Pos[0], 2.0) + pow(Gal[gal].Pos[1]-Gal[centralgal].Pos[1], 2.0) + pow(Gal[gal].Pos[2]-Gal[centralgal].Pos[2], 2.0)) * pow(UnitLength_in_cm, 2.0);
+	v_gal2 = (pow(Gal[gal].Vel[0]-Gal[centralgal].Vel[0], 2.0) + pow(Gal[gal].Vel[1]-Gal[centralgal].Vel[1], 2.0) + pow(Gal[gal].Vel[2]-Gal[centralgal].Vel[2], 2.0)) * pow(UnitVelocity_in_cm_per_s, 2.0);
+	rho_IGM = Gal[centralgal].HotGas*UnitMass_in_g / (4 * M_PI * Gal[centralgal].Rvir*UnitLength_in_cm * r_gal2);
 	
-	area = M_PI * (pow(DiscBinEdge[1]/Gal[gal].Vvir, 2.0) - pow(DiscBinEdge[0]/Gal[gal].Vvir, 2.0)) * pow(CM_PER_MPC/1e3, 2.0);
-	Sigma_gas = Gal[gal].DiscGas[0]*1e10*SOLAR_MASS / area;
-    Sigma_star = Gal[gal].DiscStars[0]*1e10*SOLAR_MASS / area;
-	if(rho_IGM*v_gal2 >= 2*M_PI*GRAVITY*Sigma_gas*Sigma_gas && Gal[gal].DiscGas[0] > 0.0)
+	area = M_PI * (pow(get_annulus_radius(gal,1), 2.0) - pow(get_annulus_radius(gal,0), 2.0)) * pow(UnitLength_in_cm, 2.0);
+	Sigma_gas = Gal[gal].DiscGas[0]*UnitMass_in_g / area;
+    //Sigma_star = Gal[gal].DiscStars[0]*UnitMass_in_g / area;
+    
+	if(rho_IGM*v_gal2 >= 2*M_PI*GRAVITY*Sigma_gas*Sigma_gas && Gal[gal].DiscGas[0] > 0.0) // I don't think this assumption the Sigma gas will always be less in outer annuli is right, especially after mergers
 	{
         //printf("LHS, RHS of RPS = %e, %e at z = %e\n", rho_IGM*v_gal2, 2*M_PI*GRAVITY*Sigma_gas*Sigma_gas, ZZ[Halo[halonr].SnapNum]);
 		Gal[centralgal].HotGas += Gal[gal].ColdGas;
@@ -153,8 +154,8 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
 	{
 		for(i=1; i<30; i++)
 		{
-			area = M_PI * (pow(DiscBinEdge[i+1]/Gal[gal].Vvir, 2.0) - pow(DiscBinEdge[i]/Gal[gal].Vvir, 2.0)) * pow(CM_PER_MPC/1e3, 2.0);
-			Sigma_gas = Gal[gal].DiscGas[i]*1e10*SOLAR_MASS / area;
+			area = M_PI * (pow(get_annulus_radius(gal,i+1), 2.0) - pow(get_annulus_radius(gal,i), 2.0)) * pow(UnitLength_in_cm, 2.0);
+			Sigma_gas = Gal[gal].DiscGas[i]*UnitMass_in_g / area;
 		
 			if(rho_IGM*v_gal2 >= 2*M_PI*GRAVITY*Sigma_gas*Sigma_gas) // Currently no accounting for gravity of stellar disc
 			{

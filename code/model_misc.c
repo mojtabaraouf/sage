@@ -264,7 +264,14 @@ double get_disc_stars(int p)
     
     DiscStarSum = 0.0;
     for(l=0; l<30; l++)
+    {
+        if(Gal[p].DiscStars[l] < 1e-11)
+        {
+            Gal[p].DiscStars[l] = 0.0;
+            Gal[p].DiscStarsMetals[l] = 0.0;
+        }
         DiscStarSum += Gal[p].DiscStars[l];
+    }
     
     DiscAndBulge = DiscStarSum + Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass;
     
@@ -292,7 +299,7 @@ double get_disc_ang_mom(int p, int type)
 	J_sum = 0.0;
 	if(type==0)
 	{
-		for(l=0; l<30; l++)
+		for(l=0; l<30; l++) // Calculation of average J_sum in bin no longer so straight forward
 			J_sum += Gal[p].DiscGas[l] * pow((pow(DiscBinEdge[l],2.0) + pow(DiscBinEdge[l+1],2.0))/2.0, 0.5);
 	}
 	else if(type==1)
@@ -303,3 +310,31 @@ double get_disc_ang_mom(int p, int type)
 	
 	return J_sum;
 }
+
+
+double get_annulus_radius(int p, int i)
+{
+    double vel, radius;
+    // if i=0, radius=0 --- could add that explicity
+    
+    if(Gal[p].Vvir > 0.0)
+        vel = Gal[p].Vvir;
+    else
+        vel = Gal[p].Vmax;
+    
+    if(vel>0.0)
+    {
+        if(DiscBinEdge[i] >= vel*r0)
+            radius = DiscBinEdge[i]/vel;
+        else
+            radius = sqrt(DiscBinEdge[i] * r0 / vel);
+    }
+    else
+    {
+        printf("Annulus radius set as 0 for i=%d", i);
+        radius = 0.0;
+    }
+
+    return radius;
+}
+
