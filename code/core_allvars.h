@@ -253,6 +253,7 @@ extern int    DiskInstabilityOn;
 extern int    AGNrecipeOn;
 extern int    SFprescription;
 extern int    GasPrecessionOn;
+extern int    RamPressureOn;
 
 // recipe parameters 
 extern double RecycleFraction;

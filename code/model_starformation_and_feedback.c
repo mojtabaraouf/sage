@@ -193,7 +193,8 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
     //printf("NewStarSum, stars_sum*(1-R) = %e, %e\n", NewStarSum, (1-RecycleFraction)*stars_sum);
     
   // Sum stellar discs together
-  combine_stellar_discs(p, NewStars, NewStarsMetals);
+  if(NewStarSum>0.0)
+    combine_stellar_discs(p, NewStars, NewStarsMetals);
     
   for(i=0; i<30; i++){
 	if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
@@ -205,8 +206,11 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
   Gal[p].StarsInSitu += (1-RecycleFraction)*stars_sum;
     
     //printf("StarsPre, stars_sum(1-R), StarsPre+formed, StellarMass = %e, %e, %e, %e\n\n", StarsPre, (1-RecycleFraction)*stars_sum, StarsPre+(1-RecycleFraction)*stars_sum, Gal[p].StellarMass);
-    assert(Gal[p].StellarMass >= (StarsPre + (1-RecycleFraction)*stars_sum)/1.001 && Gal[p].StellarMass <= (StarsPre + (1-RecycleFraction)*stars_sum)*1.001);
-  assert(Gal[p].StellarMass >= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)/1.001 && Gal[p].StellarMass <= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)*1.001);
+  if(Gal[p].StellarMass > 1e-8)
+  {
+      assert(Gal[p].StellarMass >= (StarsPre + (1-RecycleFraction)*stars_sum)/1.001 && Gal[p].StellarMass <= (StarsPre + (1-RecycleFraction)*stars_sum)*1.001);
+      assert(Gal[p].StellarMass >= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)/1.001 && Gal[p].StellarMass <= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)*1.001);
+  }
 
 
   DiscGasSum = get_disc_gas(p);
@@ -396,7 +400,8 @@ void combine_stellar_discs(int p, double NewStars[30], double NewStarsMetals[30]
         sdisc_spin_mag = pow(pow(SDiscNewSpin[0], 2.0) + pow(SDiscNewSpin[1], 2.0) + pow(SDiscNewSpin[2], 2.0), 0.5);
         if(sdisc_spin_mag<0.99 || sdisc_spin_mag>1.01)
         {
-            printf("SpinStars somehow became 0\n");
+            printf("SpinStars somehow became %e\n", sdisc_spin_mag);
+            printf("with J_sdisc, J_new = %e, %e\n", J_sdisc, J_new);
         }
         assert(sdisc_spin_mag >= 0.99 && sdisc_spin_mag <= 1.01);
         

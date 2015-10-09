@@ -117,6 +117,10 @@ void read_parameter_file(char *fname)
   addr[nt] = &GasPrecessionOn;
   id[nt++] = INT;
     
+  strcpy(tag[nt], "RamPressureOn");
+  addr[nt] = &RamPressureOn;
+  id[nt++] = INT;
+    
   strcpy(tag[nt], "BaryonFrac");
   addr[nt] = &BaryonFrac;
   id[nt++] = DOUBLE;

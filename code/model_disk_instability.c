@@ -142,7 +142,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
     double GasMetalsOrig = Gal[p].DiscGasMetals[i];
     
 	// Let gas sink -- I may well want to change this formula
-	gas_sink = GasSinkRate * unstable_gas / (1.0 + pow(280.0 / V_rot, 2.0));
+    gas_sink = GasSinkRate * unstable_gas; // / (1.0 + pow(280.0 / V_rot, 2.0));
     Gal[p].DiscGas[i] -= gas_sink;
     Gal[p].DiscGasMetals[i] -= metallicity * gas_sink;
 

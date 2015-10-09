@@ -58,6 +58,7 @@ int DiskInstabilityOn;
 int AGNrecipeOn;
 int SFprescription;
 int GasPrecessionOn;
+int RamPressureOn;
 
 
 // recipe parameters 
