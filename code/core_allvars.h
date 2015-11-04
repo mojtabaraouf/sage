@@ -33,7 +33,7 @@ do {                                                                \
 #define  SEC_PER_MEGAYEAR   3.155e13
 #define  SEC_PER_YEAR       3.155e7
 
-#define  r0   2.92e-3 // Radius where rotation curve becomes flat
+#define  r0   0.73e-3 // Radius where rotation curve becomes flat
 
 
 struct GALAXY_OUTPUT  
@@ -83,6 +83,17 @@ struct GALAXY_OUTPUT
     double DiscHI[30];
     double DiscH2[30];
 
+    // Instability tracking
+    int TotInstabEvents;
+    int TotInstabEventsGas;
+    int TotInstabEventsStar;
+    int TotInstabAnnuliGas;
+    int TotInstabAnnuliStar;
+    double FirstUnstableAvGas;
+    double FirstUnstableAvStar;
+    double TotSinkGas[30];
+    double TotSinkStar[30];
+    
   // metals
   double MetalsColdGas;
   double MetalsStellarMass;
@@ -158,6 +169,17 @@ struct GALAXY
   double StarsMergeBurst;
     double DiscHI[30];
     double DiscH2[30];
+    
+    // Instability tracking
+    int TotInstabEvents;
+    int TotInstabEventsGas;
+    int TotInstabEventsStar;
+    int TotInstabAnnuliGas;
+    int TotInstabAnnuliStar;
+    int FirstUnstableGas;
+    int FirstUnstableStar;
+    double TotSinkGas[30];
+    double TotSinkStar[30];
 
   // metals
   double MetalsColdGas;

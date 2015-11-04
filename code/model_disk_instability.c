@@ -14,9 +14,10 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	// New treatment of instabilities based on the Toomre Q parameter
 	double Q_star, Q_gas, V_rot, Q_gas_min;
 	double unstable_gas, unstable_stars, metallicity, stars, stars_sum, gas_sink;
-    double r_inner, r_outer, r_av, v_outer;
+    double r_inner, r_outer, r_av, Omega;
 	double NewStars[30], NewStarsMetals[30];
 	int i;
+    int first, first_gas, first_star;
 	
 	for(i=0; i<30; i++){
 		metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
@@ -31,22 +32,46 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	stars_sum = 0.0;
 	gas_sink = -Gal[p].BlackHoleMass;
 	
+    // If first is 1 then that means the first unstable annulus hasn't been found yet
+    first = 1;
+    first_gas = 1;
+    first_star = 1;
+    
 	for(i=29; i>=0; i--)
 	{
         r_inner = get_annulus_radius(p, i);
         r_outer = get_annulus_radius(p, i+1);
-        v_outer = DiscBinEdge[i+1] / r_outer;
         
-        // Q_gas assumes c_s=17 km/s.  Would have UnitLength_in_cm once more on both denominator and numerator for human-reading, but redundant.f
-        Q_gas = 1.7e6 * v_outer*UnitVelocity_in_cm_per_s * (r_outer*r_outer - r_inner*r_inner)*UnitLength_in_cm / (GRAVITY * Gal[p].DiscGas[i]*UnitMass_in_g * r_outer);
-        
-        if(Gal[p].StellarMass>0.0)
-            Q_gas_min = QGasMin * (1.0 - (Gal[p].SecularBulgeMass+Gal[p].ClassicalBulgeMass)/Gal[p].StellarMass);
+        if(r_inner<r0)
+            Omega = V_rot / r0;
+        else if(i>0)
+            Omega = DiscBinEdge[i] / r_inner / r_inner;
         else
+            Omega = DiscBinEdge[i+1] / r_outer / r_outer;
+        
+        // Q_gas assumes c_s=17 km/s.  Would have UnitLength_in_cm once more on both denominator and numerator for human-reading, but redundant
+        Q_gas = 1.7e6 * Omega*UnitVelocity_in_cm_per_s * (r_outer*r_outer - r_inner*r_inner)*UnitLength_in_cm / (GRAVITY * Gal[p].DiscGas[i]*UnitMass_in_g);
+        
+//        if(Gal[p].StellarMass>0.0)
+//            Q_gas_min = QGasMin * (1.0 - (Gal[p].SecularBulgeMass+Gal[p].ClassicalBulgeMass)/Gal[p].StellarMass);
+//        else
             Q_gas_min = QGasMin;
 		
 		if(Q_gas<Q_gas_min)
 		{
+            if(first==1)
+                Gal[p].TotInstabEvents += 1;
+            
+            if(first_gas==1)
+            {
+                Gal[p].FirstUnstableGas += i;
+                Gal[p].TotInstabEventsGas += 1;
+            }
+            
+            first = 0;
+            first_gas = 0;
+            Gal[p].TotInstabAnnuliGas +=1;
+            
             unstable_gas = Gal[p].DiscGas[i]*(1.0 - Q_gas/Q_gas_min);
 			metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
 			
@@ -98,18 +123,38 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	{
         r_inner = get_annulus_radius(p, i);
         r_outer = get_annulus_radius(p, i+1);
-        v_outer = DiscBinEdge[i+1] / r_outer;
         r_av = pow((r_inner*r_inner+r_outer*r_outer)/2.0, 0.5);
         
-        Q_star = 0.66 * V_rot*UnitVelocity_in_cm_per_s * v_outer*UnitVelocity_in_cm_per_s * (r_outer*r_outer - r_inner*r_inner)*UnitLength_in_cm * exp(-r_av/(2*Gal[p].DiskScaleRadius)) / (GRAVITY * Gal[p].DiscStars[i]*UnitMass_in_g * r_outer);
-		
+        if(r_inner<r0)
+            Omega = sqrt(2.0) * V_rot / r0; // Not the actual value of Omega, but serves the equation below to calculate the right Q.
+        else if(i>0)
+            Omega = DiscBinEdge[i] / r_inner / r_inner;
+        else
+            Omega = DiscBinEdge[i+1] / r_outer / r_outer;
+        
+        Q_star = 0.66 * V_rot*UnitVelocity_in_cm_per_s * (r_outer*r_outer - r_inner*r_inner)*UnitLength_in_cm * exp(-r_av/(2*Gal[p].DiskScaleRadius)) * Omega*UnitVelocity_in_cm_per_s / (GRAVITY * Gal[p].DiscStars[i]*UnitMass_in_g);
+        
 		if(Q_star<QStarMin)
 		{
+            if(first==1)
+                Gal[p].TotInstabEvents += 1;
+            
+            if(first_star==1)
+            {
+                Gal[p].FirstUnstableStar += i;
+                Gal[p].TotInstabEventsStar += 1;
+            }
+            
+            first = 0;
+            first_star = 0;
+            Gal[p].TotInstabAnnuliStar +=1;
+            
 			unstable_stars = Gal[p].DiscStars[i] * (1.0 - Q_star/QStarMin);
 			metallicity = get_metallicity(Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 			assert(Gal[p].DiscStarsMetals[i]<=Gal[p].DiscStars[i]);
 			Gal[p].DiscStars[i] -= unstable_stars;
 			Gal[p].DiscStarsMetals[i] = metallicity * Gal[p].DiscStars[i];
+            Gal[p].TotSinkStar[i] = unstable_stars;
 			if(i!=0)
 			{
 				Gal[p].DiscStars[i-1] += unstable_stars;
@@ -142,9 +187,13 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
     double GasMetalsOrig = Gal[p].DiscGasMetals[i];
     
 	// Let gas sink -- I may well want to change this formula
-    gas_sink = GasSinkRate * unstable_gas; // / (1.0 + pow(280.0 / V_rot, 2.0));
+    gas_sink = GasSinkRate * unstable_gas;
+    if(Gal[p].StellarMass > 0.0)
+        gas_sink *= (1.0 - (Gal[p].SecularBulgeMass+Gal[p].ClassicalBulgeMass)/Gal[p].StellarMass); // / (1.0 + pow(280.0 / V_rot, 2.0));
     Gal[p].DiscGas[i] -= gas_sink;
     Gal[p].DiscGasMetals[i] -= metallicity * gas_sink;
+    
+    Gal[p].TotSinkGas[i] += gas_sink;
 
     if(direct_to_BH>0 || i==0)
 	{

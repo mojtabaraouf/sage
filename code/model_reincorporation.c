@@ -28,12 +28,19 @@ void reincorporate_gas(int centralgal, double dt)
     if(reincorporated > Gal[centralgal].EjectedMass)
       reincorporated = Gal[centralgal].EjectedMass;
 
-    metallicity = get_metallicity(Gal[centralgal].EjectedMass, Gal[centralgal].MetalsEjectedMass);
-    assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
-    Gal[centralgal].EjectedMass -= reincorporated;
-    Gal[centralgal].MetalsEjectedMass -= metallicity * reincorporated;
-    Gal[centralgal].HotGas += reincorporated;
-    Gal[centralgal].MetalsHotGas += metallicity * reincorporated;
+    if(reincorporated > 0.0)
+    {
+        metallicity = get_metallicity(Gal[centralgal].EjectedMass, Gal[centralgal].MetalsEjectedMass);
+        assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
+        Gal[centralgal].EjectedMass -= reincorporated;
+        Gal[centralgal].MetalsEjectedMass -= metallicity * reincorporated;
+        Gal[centralgal].HotGas += reincorporated;
+        Gal[centralgal].MetalsHotGas += metallicity * reincorporated;
+    }
+    else if(Gal[centralgal].EjectedMass == 0.0)
+    {
+        Gal[centralgal].MetalsEjectedMass = 0.0;
+    }
   }
   assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 

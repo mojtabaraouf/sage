@@ -46,30 +46,32 @@ SupernovaRecipeOn			1		;0: switch off
 ReionizationOn				0		;0: switch off
 DiskInstabilityOn			1		;0: switch off; 1: bulge and BH growth through instabilities w. instability starbursts
 GasPrecessionOn             1       ;0: switch off; 1: gas discs will precess to naturally come in line with stellar discs
-RamPressureOn               0       ;0: switch off
+RamPressureOn               1       ;0: switch off; 1: cold gas can be stripped from satellites
 
 
 %------------------------------------------
 %----- Parameters of physical model -------
 %------------------------------------------
 
-SfrEfficiency				2.0		;efficiency of SF (SFprescription=0).  Changed definition to original SAGE, just modulates the efficiency.
+SfrEfficiency				1.25
 ClumpingFactor				5.0		;gas clumping factor in Krumholz & Dekel 2011 (SFprescription=1)
 
 FeedbackReheatingEpsilon	6.0		;mass of cold gas reheated due to SF (see Martin 1999) (SupernovaRecipeOn=1)
 FeedbackEjectionEfficiency	0.6 	;mixing efficiency of SN energy with hot gas to unbind and eject some (SupernovaRecipeOn=1)
 
-ReIncorporationFactor		0.15     ;fraction of ejected mass reincorporated per dynamical time to hot
+ReIncorporationFactor		0.075
 
-RadioModeEfficiency			0.03    ;AGN radio mode efficiency (AGNrecipeOn>0) -- 2.0e-3 / 1.0
-QuasarModeEfficiency		0.001	;AGN quasar mode wind heating efficiency (AGNrecipeOn>0)
-BlackHoleGrowthRate			0.05     ;fraction of cold gas added to the BH during mergers (AGNrecipeOn>0)
+RadioModeEfficiency			0.0175
+QuasarModeEfficiency		0.0005
+BlackHoleGrowthRate			0.03     ;fraction of cold gas added to the BH during mergers (AGNrecipeOn>0)
 
 H2FractionFactor            1.0   ;Controls the normalisation of the H2/HI ratio calculation. 1.0 would be the same as Fu et al. (2010).
 H2FractionExponent          0.92   ;Also controls the H2/HI ratio calculation. 0.92 would be the same as Fu et al. (2010).
+
 QStarMin                    1.0    ;threshold Toomre Q value for stellar instabilities
-QGasMin                     0.2    ;threshold Toomre Q value for gas instabilities
-GasSinkRate                 0.01    ;fraction of gas that sinks in instabilities (the rest leads to a starburst)
+QGasMin                     0.45
+GasSinkRate                 0.025
+
 DegPerTdyn                  5.0    ;degrees the gas disc precesses to come in line with stars per dynamical time
 
 ThreshMajorMerger			0.3		;major merger when mass ratio greater than this

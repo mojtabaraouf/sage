@@ -156,6 +156,22 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
   o->StarsInSitu = g->StarsInSitu;
   o->StarsInstability = g->StarsInstability;
   o->StarsMergeBurst = g->StarsMergeBurst;
+
+    o->TotInstabEvents = g->TotInstabEvents;
+    o->TotInstabEventsGas = g->TotInstabEventsGas;
+    o->TotInstabEventsStar = g->TotInstabEventsStar;
+    o->TotInstabAnnuliGas = g->TotInstabAnnuliGas;
+    o->TotInstabAnnuliStar = g->TotInstabAnnuliStar;
+    
+    if(g->TotInstabEventsGas)
+        o->FirstUnstableAvGas = (1.0*g->FirstUnstableGas) / (1.0*g->TotInstabEventsGas);
+    else
+        o->FirstUnstableAvGas = 0.0;
+    
+    if(g->TotInstabEventsStar)
+        o->FirstUnstableAvStar = (1.0*g->FirstUnstableStar) / (1.0*g->TotInstabEventsStar);
+    else
+        o->FirstUnstableAvStar = 0.0;
   
   for(j=0; j<30; j++)
   {
@@ -165,6 +181,8 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
 	o->DiscStarsMetals[j] = g->DiscStarsMetals[j];
       o->DiscHI[j] = g->DiscHI[j];
       o->DiscH2[j] = g->DiscH2[j];
+      o->TotSinkGas[j] = g->TotSinkGas[j];
+      o->TotSinkStar[j] = g->TotSinkStar[j];
   }
 
   o->SfrDisk = 0.0;
