@@ -135,7 +135,8 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
         v_gal2 = (pow(Gal[gal].Vel[0]-Gal[centralgal].Vel[0], 2.0) + pow(Gal[gal].Vel[1]-Gal[centralgal].Vel[1], 2.0) + pow(Gal[gal].Vel[2]-Gal[centralgal].Vel[2], 2.0)) * pow(UnitVelocity_in_cm_per_s, 2.0);
         rho_IGM = Gal[centralgal].HotGas*UnitMass_in_g / (4 * M_PI * Gal[centralgal].Rvir*UnitLength_in_cm * r_gal2);
         
-        area = M_PI * (pow(get_annulus_radius(gal,1), 2.0) - pow(get_annulus_radius(gal,0), 2.0)) * pow(UnitLength_in_cm, 2.0);
+        //area = M_PI * (pow(get_annulus_radius(gal,1), 2.0) - pow(get_annulus_radius(gal,0), 2.0)) * pow(UnitLength_in_cm, 2.0);
+        area = M_PI * (pow(Gal[gal].DiscRadii[1], 2.0) - pow(Gal[gal].DiscRadii[0], 2.0)) * pow(UnitLength_in_cm, 2.0);
         Sigma_gas = Gal[gal].DiscGas[0]*UnitMass_in_g / area;
         //Sigma_star = Gal[gal].DiscStars[0]*UnitMass_in_g / area;
         
@@ -156,7 +157,8 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
         {
             for(i=1; i<30; i++)
             {
-                area = M_PI * (pow(get_annulus_radius(gal,i+1), 2.0) - pow(get_annulus_radius(gal,i), 2.0)) * pow(UnitLength_in_cm, 2.0);
+                //area = M_PI * (pow(get_annulus_radius(gal,i+1), 2.0) - pow(get_annulus_radius(gal,i), 2.0)) * pow(UnitLength_in_cm, 2.0);
+                area = M_PI * (pow(Gal[gal].DiscRadii[i+1], 2.0) - pow(Gal[gal].DiscRadii[i], 2.0)) * pow(UnitLength_in_cm, 2.0);
                 Sigma_gas = Gal[gal].DiscGas[i]*UnitMass_in_g / area;
             
                 if(rho_IGM*v_gal2 >= 2*M_PI*GRAVITY*Sigma_gas*Sigma_gas) // Currently no accounting for gravity of stellar disc

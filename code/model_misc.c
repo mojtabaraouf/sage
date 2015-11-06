@@ -4,6 +4,7 @@
 #include <math.h>
 #include <time.h>
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_sf_bessel.h>
 
 #include "core_allvars.h"
 #include "core_proto.h"
@@ -79,8 +80,10 @@ void init_galaxy(int p, int halonr)
   Gal[p].FirstUnstableGas = 0;
   Gal[p].FirstUnstableStar = 0;
   
+  Gal[p].DiscRadii[0] = 0.0;
   for(j=0; j<30; j++)
   {
+    Gal[p].DiscRadii[j+1] = DiscBinEdge[j+1] / Gal[p].Vvir;
 	Gal[p].DiscGas[j] = 0.0;
 	Gal[p].DiscStars[j] = 0.0;
 	Gal[p].DiscGasMetals[j] = 0.0;
@@ -327,6 +330,8 @@ double get_annulus_radius(int p, int i)
     double vel, radius;
     // if i=0, radius=0 --- could add that explicity
     
+    //printf("Bessel %e, %e\n", gsl_sf_bessel_K0(1e-3), gsl_sf_bessel_K0(1e1));
+    
     if(Gal[p].Vvir > 0.0)
         vel = Gal[p].Vvir;
     else
@@ -348,3 +353,97 @@ double get_annulus_radius(int p, int i)
     return radius;
 }
 
+
+void update_disc_radii(int p)
+{
+    // Calculate the radius corresponding to an annulus edge for a given galaxy.  Calculation is iterative given a generic rotation curve format.
+    int i, j, j_max;
+    double left, right, tol, r_try, j_try, dif;
+    double M_D, R_D, M_B, GG;
+    double rbar, rtilde;
+    double r_0, rho_0, a_H;
+    double v2disc, v2halo, v2bulge;
+    
+    //printf("Entering update_disc_radii\n");
+    
+    tol = 1e-3;
+    j_max = 1000;
+    
+    M_B = Gal[p].SecularBulgeMass + Gal[p].ClassicalBulgeMass;
+    M_D = Gal[p].StellarMass + Gal[p].ColdGas - M_B;
+    R_D = Gal[p].DiskScaleRadius;
+    GG = GRAVITY * UnitMass_in_g * UnitTime_in_s * UnitTime_in_s / pow(UnitLength_in_cm,3.0);
+    
+    r_0 = pow(10.0, 0.66+0.58*log10(Gal[p].Mvir*UnitMass_in_g/(SOLAR_MASS*1e11*Hubble_h))) * (CM_PER_MPC/1e3) / UnitLength_in_cm * Hubble_h;
+    rho_0 = pow(10.0, -23.515 - 0.964*pow(M_D*UnitMass_in_g/(SOLAR_MASS*1e11*Hubble_h),0.31)) / UnitDensity_in_cgs / pow(Hubble_h,2.0);
+    a_H = pow(10.0, (log(M_B*UnitMass_in_g/SOLAR_MASS/Hubble_h)-10.21)/1.13) * (CM_PER_MPC/1e3) / UnitLength_in_cm * Hubble_h;
+    if(a_H > Gal[p].Vvir/40.0) a_H = Gal[p].Vvir/40.0;
+
+    left = 0.0;
+    if(Gal[p].Mvir>0.0)
+    {
+        for(i=1; i<31; i++)
+        {
+            right = 2.0*DiscBinEdge[i] / Gal[p].Vvir;
+            if(right<Gal[p].Rvir) right = Gal[p].Rvir;
+            if(right<8.0*left) right = 8.0*left;
+            
+            for(j=0; j<j_max; j++)
+            {
+                r_try = (left+right)/2.0;
+                
+                // Disc contribution to rotation curve
+                rtilde = r_try / (2.0*R_D);
+                if(rtilde<100) // Need this to prevent underflow errors from Bessel functions (the velocity contribution becomes totally negligible)
+                    v2disc = 0.5*GG*M_D/R_D * pow(rtilde, 2.0) * (gsl_sf_bessel_K0(rtilde)*gsl_sf_bessel_I0(rtilde) - gsl_sf_bessel_K1(rtilde)*gsl_sf_bessel_I1(rtilde));
+                else
+                    v2disc = 0.0;
+                
+                // Halo contribution to rotation curve
+                rbar = r_try / r_0;
+                v2halo = 6.4*GG*rho_0*r_0*r_0/rbar * (log(1+rbar) - atan(rbar) + 0.5*log(1+rbar*rbar));
+                if(v2halo<0 || v2halo!=v2halo) v2halo = 0.0; // Can happen due to precision in the above calculation
+                
+                // Bulge contribution to rotation curve
+                v2bulge = GG*M_B*r_try / pow(r_try+a_H, 2.0);
+                
+                j_try = r_try * sqrt(v2disc+v2halo+v2bulge);
+                if(j_try!=j_try)
+                {
+                    printf("v2disc, v2halo, v2bulge, r_try = %e, %e, %e, %e\n", v2disc, v2halo, v2bulge, r_try);
+                    ABORT(1);
+                }
+                
+                dif = j_try/DiscBinEdge[i] - 1.0;
+                
+                // Found correct r
+                if(fabs(dif) <= tol)
+                {
+                    //printf("completed radius calculation in %d iterations\n", j+1);
+                    break;
+                }
+                
+                // Reset boundaries for next guess
+                if(dif>0)
+                    right = r_try;
+                else
+                    left = r_try;
+                
+                if(j==j_max-1) printf("Max iterations hit for radius calculation with dif = %e\n", dif);
+                
+                if(j==j_max-1 || r_try!=r_try)
+                {
+                    printf("i, rtry, left, right, r[i-1] = %d, %e, %e, %e, %e\n", i, r_try*UnitLength_in_cm/(CM_PER_MPC/1e3)/Hubble_h, left*UnitLength_in_cm/(CM_PER_MPC/1e3)/Hubble_h, right*UnitLength_in_cm/(CM_PER_MPC/1e3)/Hubble_h, Gal[p].DiscRadii[i-1]*UnitLength_in_cm/(CM_PER_MPC/1e3)/Hubble_h);
+                    printf("j_try, DiscBinEdge = %e, %e\n", j_try*UnitLength_in_cm/(CM_PER_MPC/1e3)*UnitVelocity_in_cm_per_s/1e5/Hubble_h, DiscBinEdge[i]*UnitLength_in_cm/(CM_PER_MPC/1e3)*UnitVelocity_in_cm_per_s/1e5/Hubble_h);
+                    printf("v2disc, v2halo, v2bulge = %e, %e, %e\n", v2disc, v2halo, v2bulge);
+                    printf("M_D, M_B, M_vir, R_D, R_vir, V_vir = %e, %e, %e, %e, %e, %e\n\n", M_D/Hubble_h, M_B/Hubble_h, Gal[p].Mvir/Hubble_h, Gal[p].DiskScaleRadius/Hubble_h, Gal[p].Rvir/Hubble_h, Gal[p].Vvir);
+                }
+                
+            }
+            Gal[p].DiscRadii[i] = r_try;
+            left = r_try;
+        }
+    }
+    //printf("Exiting update_disc_radii\n");
+
+}

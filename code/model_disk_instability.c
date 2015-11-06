@@ -14,11 +14,15 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	// New treatment of instabilities based on the Toomre Q parameter
 	double Q_star, Q_gas, V_rot, Q_gas_min;
 	double unstable_gas, unstable_stars, metallicity, stars, stars_sum, gas_sink;
-    double r_inner, r_outer, r_av, Omega;
+    double r_inner, r_outer, r_av, Omega, Kappa, omega_R, c_s;
+    double GG;
 	double NewStars[30], NewStarsMetals[30];
 	int i;
     int first, first_gas, first_star;
 	
+    GG = GRAVITY * UnitMass_in_g * UnitTime_in_s * UnitTime_in_s / pow(UnitLength_in_cm,3.0);
+    c_s = 1.7e6 / UnitVelocity_in_cm_per_s; // Speed of sound assumed for cold gas
+    
 	for(i=0; i<30; i++){
 		metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
 		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);}
@@ -39,18 +43,22 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
     
 	for(i=29; i>=0; i--)
 	{
-        r_inner = get_annulus_radius(p, i);
-        r_outer = get_annulus_radius(p, i+1);
+        //r_inner = get_annulus_radius(p, i);
+        //r_outer = get_annulus_radius(p, i+1);
+        r_inner = Gal[p].DiscRadii[i];
+        r_outer = Gal[p].DiscRadii[i+1];
         
-        if(r_inner<r0)
-            Omega = V_rot / r0;
-        else if(i>0)
+//        if(r_inner<r0)
+//            Omega = V_rot / r0;
+        if(i>0)
             Omega = DiscBinEdge[i] / r_inner / r_inner;
         else
             Omega = DiscBinEdge[i+1] / r_outer / r_outer;
         
         // Q_gas assumes c_s=17 km/s.  Would have UnitLength_in_cm once more on both denominator and numerator for human-reading, but redundant
-        Q_gas = 1.7e6 * Omega*UnitVelocity_in_cm_per_s * (r_outer*r_outer - r_inner*r_inner)*UnitLength_in_cm / (GRAVITY * Gal[p].DiscGas[i]*UnitMass_in_g);
+        //Q_gas = 1.7e6 * Omega*UnitVelocity_in_cm_per_s * (r_outer*r_outer - r_inner*r_inner)*UnitLength_in_cm / (GRAVITY * Gal[p].DiscGas[i]*UnitMass_in_g);
+        
+        Q_gas = c_s * Omega * (r_outer*r_outer - r_inner*r_inner) / GG / Gal[p].DiscGas[i];
         
 //        if(Gal[p].StellarMass>0.0)
 //            Q_gas_min = QGasMin * (1.0 - (Gal[p].SecularBulgeMass+Gal[p].ClassicalBulgeMass)/Gal[p].StellarMass);
@@ -121,18 +129,23 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	// Deal with stellar instabilities
 	for(i=29; i>=0; i--)
 	{
-        r_inner = get_annulus_radius(p, i);
-        r_outer = get_annulus_radius(p, i+1);
+        //r_inner = get_annulus_radius(p, i);
+        //r_outer = get_annulus_radius(p, i+1);
+        r_inner = Gal[p].DiscRadii[i];
+        r_outer = Gal[p].DiscRadii[i+1];
         r_av = pow((r_inner*r_inner+r_outer*r_outer)/2.0, 0.5);
         
-        if(r_inner<r0)
-            Omega = sqrt(2.0) * V_rot / r0; // Not the actual value of Omega, but serves the equation below to calculate the right Q.
-        else if(i>0)
-            Omega = DiscBinEdge[i] / r_inner / r_inner;
+//        if(r_inner<r0)
+//            Omega = sqrt(2.0) * V_rot / r0; // Not the actual value of Omega, but serves the equation below to calculate the right Q.
+        if(i>0)
+            Kappa = sqrt(2.0*DiscBinEdge[i]/pow(r_inner,3.0) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
         else
-            Omega = DiscBinEdge[i+1] / r_outer / r_outer;
+            Kappa = sqrt(2.0*DiscBinEdge[i+1]/pow(r_outer,3.0) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
         
-        Q_star = 0.66 * V_rot*UnitVelocity_in_cm_per_s * (r_outer*r_outer - r_inner*r_inner)*UnitLength_in_cm * exp(-r_av/(2*Gal[p].DiskScaleRadius)) * Omega*UnitVelocity_in_cm_per_s / (GRAVITY * Gal[p].DiscStars[i]*UnitMass_in_g);
+        //Q_star = 0.66 * V_rot*UnitVelocity_in_cm_per_s * (r_outer*r_outer - r_inner*r_inner)*UnitLength_in_cm * exp(-r_av/(2*Gal[p].DiskScaleRadius)) * Omega*UnitVelocity_in_cm_per_s / (GRAVITY * Gal[p].DiscStars[i]*UnitMass_in_g);
+        
+        omega_R = 0.5*Gal[p].Vvir*exp(-r_av/2.0/Gal[p].DiskScaleRadius);
+        Q_star = Kappa * omega_R * 0.935 * (r_outer*r_outer - r_inner*r_inner) / GG / Gal[p].DiscStars[i];
         
 		if(Q_star<QStarMin)
 		{

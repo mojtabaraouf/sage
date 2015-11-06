@@ -62,9 +62,12 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 	assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
       
-    r_inner = get_annulus_radius(p, i);
-    r_outer = get_annulus_radius(p, i+1);
-    area = M_PI * (r_outer*r_outer - r_inner*r_inner);
+    //r_inner = get_annulus_radius(p, i);
+    //r_outer = get_annulus_radius(p, i+1);
+      r_inner = Gal[p].DiscRadii[i];
+      r_outer = Gal[p].DiscRadii[i+1];
+      
+      area = M_PI * (r_outer*r_outer - r_inner*r_inner);
 		
 	if(Gal[p].Vvir>0) // These galaxies (which aren't useful for science) won't have H2 to form stars
 	{
@@ -561,8 +564,9 @@ void update_HI_H2(int p)
     {
         for(i=0; i<30; i++)
         {
-            area = M_PI * (pow(get_annulus_radius(p,i+1), 2.0) - pow(get_annulus_radius(p,i), 2.0));
-
+            //area = M_PI * (pow(get_annulus_radius(p,i+1), 2.0) - pow(get_annulus_radius(p,i), 2.0));
+            area = M_PI * (pow(Gal[p].DiscRadii[i+1],2.0) - pow(Gal[p].DiscRadii[i],2.0));
+            
             if(SFprescription!=2)
             {
                 f_H2_HI = f_H2_const * pow(pow(Gal[p].DiscGas[i]/area, 2.0) + 0.1*Gal[p].DiscGas[i]/area * pow(Gal[p].DiscStars[i]*Gal[p].DiscStars[0], 0.5)/area, H2FractionExponent);

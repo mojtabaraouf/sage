@@ -63,6 +63,9 @@ struct GALAXY_OUTPUT
   double Vvir;
   double Vmax;
   double VelDisp;
+    
+    // Radius of each annulus boundary
+    double DiscRadii[31];
 
   // baryonic reservoirs 
   double ColdGas;
@@ -150,6 +153,9 @@ struct GALAXY
   double Rvir;
   double Vvir;
   double Vmax;
+    
+    // Radius of each annulus boundary
+    double DiscRadii[31];
 
   // baryonic reservoirs 
   double ColdGas;

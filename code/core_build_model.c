@@ -381,7 +381,10 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 	
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 	
-      // determine cooling gas given halo properties 
+        // Update radii of the annuli
+        update_disc_radii(p);
+        
+      // determine cooling gas given halo properties
       coolingGas = cooling_recipe(p, deltaT / STEPS);
       cool_gas_onto_galaxy(p, centralgal, coolingGas, deltaT / STEPS, step);
 
