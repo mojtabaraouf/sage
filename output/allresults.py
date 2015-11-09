@@ -85,10 +85,10 @@ class Results:
                         ('Type'                         , np.int32),
                         ('GalaxyIndex'                  , np.int64),
                         ('HaloIndex'                    , np.int32),
-                        ('FOFHaloIdx'                   , np.int32),
-                        ('TreeIdx'                      , np.int32),
+                        ('SimulationHaloIndex'          , np.int32),
+                        ('TreeIndex'                    , np.int32),
                         ('SnapNum'                      , np.int32),
-                        ('CentralGal'                   , np.int32),
+                        ('CentralGalaxyIndex'           , np.int64), # Changed to 64-bit at run 96
                         ('CentralMvir'                  , np.float64),
                         ('mergeType'                    , np.int32),
                         ('mergeIntoID'                  , np.int32),
@@ -103,6 +103,7 @@ class Results:
                         ('Vvir'                         , np.float64),
                         ('Vmax'                         , np.float64),
                         ('VelDisp'                      , np.float64),
+                        ('DiscRadii'                    , (np.float64, 31)), # Added at run 145
                         ('ColdGas'                      , np.float64),
                         ('StellarMass'                  , np.float64),
                         ('ClassicalBulgeMass'           , np.float64),
@@ -120,6 +121,15 @@ class Results:
                         ('StarsMergeBurst'              , np.float64), #
                         ('DiscHI'                       , (np.float64, 30)), ## This and next introduced at run 69
                         ('DiscH2'                       , (np.float64, 30)), ##
+                        ('TotInstabEvents'              , np.int32), ### This and next few introduced at run 144
+                        ('TotInstabEventsGas'           , np.int32), ###
+                        ('TotInstabEventsStar'          , np.int32), ###
+                        ('TotInstabAnnuliGas'           , np.int32), ###
+                        ('TotInstabAnnuliStar'          , np.int32), ###
+                        ('FirstUnstableAvGas'           , np.float64), ###
+                        ('FirstUnstableAvStar'          , np.float64), ###
+                        ('TotSinkGas'                   , (np.float64, 30)), ###
+                        ('TotSinkStar'                  , (np.float64, 30)), ###
                         ('MetalsColdGas'                , np.float64),
                         ('MetalsStellarMass'            , np.float64),
                         ('ClassicalMetalsBulgeMass'     , np.float64),
