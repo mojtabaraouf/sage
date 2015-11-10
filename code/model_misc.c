@@ -376,8 +376,8 @@ void update_disc_radii(int p)
     
     r_0 = pow(10.0, 0.66+0.58*log10(Gal[p].Mvir*UnitMass_in_g/(SOLAR_MASS*1e11*Hubble_h))) * (CM_PER_MPC/1e3) / UnitLength_in_cm * Hubble_h;
     rho_0 = pow(10.0, -23.515 - 0.964*pow(M_D*UnitMass_in_g/(SOLAR_MASS*1e11*Hubble_h),0.31)) / UnitDensity_in_cgs / pow(Hubble_h,2.0);
-    a_H = pow(10.0, (log(M_B*UnitMass_in_g/SOLAR_MASS/Hubble_h)-10.21)/1.13) * (CM_PER_MPC/1e3) / UnitLength_in_cm * Hubble_h;
-    if(a_H > Gal[p].Vvir/40.0) a_H = Gal[p].Vvir/40.0;
+    a_H = pow(10.0, (log10(M_B*UnitMass_in_g/SOLAR_MASS/Hubble_h)-10.21)/1.13) * (CM_PER_MPC/1e3) / UnitLength_in_cm * Hubble_h;
+    if(a_H > Gal[p].Rvir/40.0) a_H = Gal[p].Rvir/40.0;
 
     left = 0.0;
     if(Gal[p].Mvir>0.0)
@@ -395,7 +395,7 @@ void update_disc_radii(int p)
                 // Disc contribution to rotation curve
                 rtilde = r_try / (2.0*R_D);
                 if(rtilde<100) // Need this to prevent underflow errors from Bessel functions (the velocity contribution becomes totally negligible)
-                    v2disc = 0.5*GG*M_D/R_D * pow(rtilde, 2.0) * (gsl_sf_bessel_K0(rtilde)*gsl_sf_bessel_I0(rtilde) - gsl_sf_bessel_K1(rtilde)*gsl_sf_bessel_I1(rtilde));
+                    v2disc = 2.0*GG*M_D/R_D * pow(rtilde, 2.0) * (gsl_sf_bessel_K0(rtilde)*gsl_sf_bessel_I0(rtilde) - gsl_sf_bessel_K1(rtilde)*gsl_sf_bessel_I1(rtilde));
                 else
                     v2disc = 0.0;
                 

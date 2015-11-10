@@ -112,7 +112,7 @@ int main(int argc, char **argv)
   // Define the specific-angular-momentum bins used to collect disc mass
   DiscBinEdge[0] = 0.0;
   for(i=1; i<31; i++)
-	DiscBinEdge[i] = 5e-5*2e7*(CM_PER_MPC/UnitLength_in_cm)/UnitVelocity_in_cm_per_s *pow(1.3, i);
+	DiscBinEdge[i] = 5e-5*2e7*(CM_PER_MPC/UnitLength_in_cm)/UnitVelocity_in_cm_per_s *pow(1.3, i-1);
 
 #ifdef MPI
   // A small delay so that processors don't use the same file

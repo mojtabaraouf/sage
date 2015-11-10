@@ -500,7 +500,8 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
     Gal[p].Cooling /= deltaT;
     Gal[p].Heating /= deltaT;
     Gal[p].OutflowRate /= deltaT;
-      
+    
+    update_disc_radii(p);
     update_HI_H2(p);
 
     if(p != centralgal)
