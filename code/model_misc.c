@@ -4,7 +4,8 @@
 #include <math.h>
 #include <time.h>
 #include <gsl/gsl_rng.h>
-#include <gsl/gsl_sf_bessel.h>
+#include <gsl/gsl_sf_hyperg.h>
+#include <assert.h>
 
 #include "core_allvars.h"
 #include "core_proto.h"
@@ -359,26 +360,131 @@ void update_disc_radii(int p)
     // Calculate the radius corresponding to an annulus edge for a given galaxy.  Calculation is iterative given a generic rotation curve format.
     int i, j, j_max;
     double left, right, tol, r_try, j_try, dif;
-    double M_D, R_D, M_B, GG;
-    double rbar, rtilde;
-    double r_0, rho_0, a_H;
-    double v2disc, v2halo, v2bulge;
+    double M_D, M_int, M_DM, M_B, M_ICS, M_hot;
+    double z, a, b, c_DM, c, r_s, r_2, alpha, beta, gamma, X, M_DM_tot, rho_s;
+    double a_B, M_B_inf, M_B_tot, a_ICS, M_ICS_inf;
+    double ia, ib, ic, iz, hyper_2F1;
     
-    //printf("Entering update_disc_radii\n");
+    clock_t begin, end, h1, h2;
+    double time_update, time_hyper;
+    
+    begin = clock();
+    
+    double GG = GRAVITY * UnitMass_in_g * UnitTime_in_s * UnitTime_in_s / pow(UnitLength_in_cm,3.0);
+
+    // Try to stably set discs up first
+    M_D = Gal[p].StellarMass + Gal[p].ColdGas - Gal[p].SecularBulgeMass - Gal[p].ClassicalBulgeMass;
+    if(M_D = 0.0)
+    {
+        for(i=1; i<31; i++)
+            Gal[p].DiscRadii[i] = DiscBinEdge[i] / Gal[p].Vvir;
+        return;
+    }
+    
+    
     
     tol = 1e-3;
-    j_max = 1000;
+    j_max = 100;
     
-    M_B = Gal[p].SecularBulgeMass + Gal[p].ClassicalBulgeMass;
-    M_D = Gal[p].StellarMass + Gal[p].ColdGas - M_B;
-    R_D = Gal[p].DiskScaleRadius;
-    GG = GRAVITY * UnitMass_in_g * UnitTime_in_s * UnitTime_in_s / pow(UnitLength_in_cm,3.0);
+    // Determine the distribution of dark matter in the halo =====
+    M_DM_tot = Gal[p].Mvir - Gal[p].HotGas - Gal[p].ColdGas - Gal[p].StellarMass - Gal[p].ICS - Gal[p].BlackHoleMass;
+    if(M_DM_tot < 0)
+    {
+        printf("\nBaryon mass exceeds virial mass\n");
+        printf("M_DM_tot, M_vir = %e, %e\n", M_DM_tot, Gal[p].Mvir);
+        printf("Hot, Cold, Stars, ICS, BH, SatBary = %e, %e, %e, %e, %e, %e\n\n", Gal[p].HotGas, Gal[p].ColdGas, Gal[p].StellarMass, Gal[p].ICS, Gal[p].BlackHoleMass, Gal[p].TotalSatelliteBaryons);
+        //ABORT(1);
+    }
     
-    r_0 = pow(10.0, 0.66+0.58*log10(Gal[p].Mvir*UnitMass_in_g/(SOLAR_MASS*1e11*Hubble_h))) * (CM_PER_MPC/1e3) / UnitLength_in_cm * Hubble_h;
-    rho_0 = pow(10.0, -23.515 - 0.964*pow(M_D*UnitMass_in_g/(SOLAR_MASS*1e11*Hubble_h),0.31)) / UnitDensity_in_cgs / pow(Hubble_h,2.0);
-    a_H = pow(10.0, (log10(M_B*UnitMass_in_g/SOLAR_MASS/Hubble_h)-10.21)/1.13) * (CM_PER_MPC/1e3) / UnitLength_in_cm * Hubble_h;
-    if(a_H > Gal[p].Rvir/40.0) a_H = Gal[p].Rvir/40.0;
+    if(M_DM_tot < 0.0) M_DM_tot = 0.0;
 
+    
+    X = log10(Gal[p].StellarMass/Gal[p].Mvir);
+    if(X>-4.1 && X<-1.3) // Di Cintio et al 2014b
+    {
+        alpha = 2.94 - log10(pow(pow(10.0,X+2.33),-1.08) + pow(pow(10.0,X+2.33),2.29));
+        beta = 4.23 + 1.34*X + 0.26*X*X;
+        gamma = -0.06 + log10(pow(pow(10.0,X+2.56),-0.68) + pow(10.0,X+2.56));
+    }
+    else
+    {
+        alpha = 1.0;
+        beta = 3.0;
+        gamma = 1.0;
+    }
+    
+    z = ZZ[Gal[p].SnapNum];
+    if(z>5.0) z=5.0;
+    a = 0.520 + (0.905-0.520)*exp(-0.617*pow(z,1.21)); // Dutton & Maccio 2014
+    b = -1.01 + 0.026*z; // Dutton & Maccio 2014
+    c_DM = pow(10.0, a+b*log10(Gal[p].Mvir*UnitMass_in_g/(SOLAR_MASS*1e12))); // Dutton & Maccio 2014
+    c = c_DM * (1.0 + 3e-5*exp(3.4*(X+4.5))); // Di Cintio et al 2014b
+    r_2 = Gal[p].Rvir / c; // Di Cintio et al 2014b
+    r_s = pow((2.0-gamma)/(beta-2.0), -1.0/alpha) * r_2; // Di Cintio et al 2014b
+    
+    if(r_s==0)
+    {
+        printf("\nz, a, b = %e, %e, %e\n", z, a, b);
+        printf("M_vir, c_DM, c, r_2, r_s = %e, %e, %e, %e, %e\n", Gal[p].Mvir, c_DM, c, r_2, r_s);
+    }
+    
+    ia = (3.0-gamma)/alpha;
+    ib = (beta-gamma)/alpha;
+    ic = (alpha-gamma+3.0)/alpha;
+    iz = -pow(Gal[p].Rvir/r_s,alpha);
+    
+    if(iz!=iz || fabs(iz)==INFINITY) printf("\niz, Rvir, r_s, alpha = %e, %e, %e, %e\n", iz, Gal[p].Rvir, r_s, alpha);
+    
+    h1 = clock();
+    if(iz>=-1 && iz<1)
+    {
+        //printf("trying -0 %e, %e, %e, %e\n", ia, ib, ic, iz);
+        hyper_2F1 = gsl_sf_hyperg_2F1(ia, ib, ic, iz);
+    }
+    else if(iz<-1)
+    {
+        if(ic-ia<0 || (ic-ia>=0 && ic-ib>=0 && ia*(ic-ib)<ib*(ic-ia)))
+        {
+            //printf("trying -1 %e, %e, %e, %e\n", ia, ib, ic, iz);
+            hyper_2F1 = pow(1.0-iz, -ia) * gsl_sf_hyperg_2F1(ia, ic-ib, ic, iz/(iz-1.0));
+        }
+        else if(ic-ib<0 || (ic-ia>=0 && ic-ib>=0 && ia*(ic-ib)>=ib*(ic-ia)))
+        {
+            //printf("trying -2 %e, %e, %e, %e\n", ia, ib, ic, iz);
+            hyper_2F1 = pow(1.0-iz, -ib) * gsl_sf_hyperg_2F1(ic-ia, ib, ic, iz/(iz-1.0));
+        }
+        else
+            printf("Potential issue");
+    }
+    else
+        printf("Problem with input for hypergeometric function");
+    h2 = clock();
+    time_hyper = (double)(h2-h1)/CLOCKS_PER_SEC;
+    
+    rho_s = M_DM_tot / (4.0*M_PI * pow(Gal[p].Rvir,3.0-gamma) * pow(r_s,gamma) / (3.0-gamma) * hyper_2F1);
+    // ===========================================================
+    
+    //r_0 = pow(10.0, 0.66+0.58*log10(Gal[p].Mvir*UnitMass_in_g/(SOLAR_MASS*1e11*Hubble_h))) * (CM_PER_MPC/1e3) / UnitLength_in_cm * Hubble_h;
+    //rho_0 = pow(10.0, -23.515 - 0.964*pow(M_D*UnitMass_in_g/(SOLAR_MASS*1e11*Hubble_h),0.31)) / UnitDensity_in_cgs / pow(Hubble_h,2.0);
+
+    
+    
+    // Determine distribution for bulge and ICS ==================
+    M_B_tot = Gal[p].SecularBulgeMass + Gal[p].ClassicalBulgeMass;
+    a_B = pow(10.0, (log10(M_B_tot*UnitMass_in_g/SOLAR_MASS/Hubble_h)-10.21)/1.13) * (CM_PER_MPC/1e3) / UnitLength_in_cm * Hubble_h; // Sofue 2015
+    if(a_B > Gal[p].Rvir/40.0) a_B = Gal[p].Rvir/40.0; // Arbitrary upper limit.  May want to motivate/change later.
+    M_B_inf = M_B_tot * pow((Gal[p].Rvir+a_B)/Gal[p].Rvir, 2.0);
+    
+    if(a_B>0.0)
+        a_ICS = 13.0 * a_B; // Gonzalez et al (2005)
+    else if(Gal[p].DiskScaleRadius>0.0)
+        a_ICS = 3.0 * Gal[p].DiskScaleRadius; // This is totally arbitrary and essentially a placeholder
+    else
+        printf("Issue with ICS size");
+    M_ICS_inf = Gal[p].ICS * pow((Gal[p].Rvir+a_ICS)/Gal[p].Rvir, 2.0);
+    // ===========================================================
+
+    M_D = 0.0;
     left = 0.0;
     if(Gal[p].Mvir>0.0)
     {
@@ -387,39 +493,87 @@ void update_disc_radii(int p)
             right = 2.0*DiscBinEdge[i] / Gal[p].Vvir;
             if(right<Gal[p].Rvir) right = Gal[p].Rvir;
             if(right<8.0*left) right = 8.0*left;
+            M_D += Gal[p].DiscStars[i-1] + Gal[p].DiscGas[i-1];
             
             for(j=0; j<j_max; j++)
             {
                 r_try = (left+right)/2.0;
                 
-                // Disc contribution to rotation curve
-                rtilde = r_try / (2.0*R_D);
-                if(rtilde<100) // Need this to prevent underflow errors from Bessel functions (the velocity contribution becomes totally negligible)
-                    v2disc = 2.0*GG*M_D/R_D * pow(rtilde, 2.0) * (gsl_sf_bessel_K0(rtilde)*gsl_sf_bessel_I0(rtilde) - gsl_sf_bessel_K1(rtilde)*gsl_sf_bessel_I1(rtilde));
-                else
-                    v2disc = 0.0;
-                
-                // Halo contribution to rotation curve
-                rbar = r_try / r_0;
-                v2halo = 6.4*GG*rho_0*r_0*r_0/rbar * (log(1+rbar) - atan(rbar) + 0.5*log(1+rbar*rbar));
-                if(v2halo<0 || v2halo!=v2halo) v2halo = 0.0; // Can happen due to precision in the above calculation
-                
-                // Bulge contribution to rotation curve
-                v2bulge = GG*M_B*r_try / pow(r_try+a_H, 2.0);
-                
-                j_try = r_try * sqrt(v2disc+v2halo+v2bulge);
-                if(j_try!=j_try)
+                h1 = clock();
+                iz = -pow(r_try/r_s,alpha);
+                if(iz>=-1 && iz<1)
                 {
-                    printf("v2disc, v2halo, v2bulge, r_try = %e, %e, %e, %e\n", v2disc, v2halo, v2bulge, r_try);
-                    ABORT(1);
+                    //printf("trying 0 %e, %e, %e, %e\n", ia, ib, ic, iz);
+                    hyper_2F1 = gsl_sf_hyperg_2F1(ia, ib, ic, iz);
+                }
+                else if(iz<-1)
+                {
+                    if(ic-ia<0 || (ic-ia>=0 && ic-ib>=0 && ia*(ic-ib)<ib*(ic-ia)))
+                    {
+                        //printf("trying 1 %e, %e, %e, %e\n", ia, ib, ic, iz);
+                        hyper_2F1 = pow(1.0-iz, -ia) * gsl_sf_hyperg_2F1(ia, ic-ib, ic, iz/(iz-1.0));
+                    }
+                    else if(ic-ib<0 || (ic-ia>=0 && ic-ib>=0 && ia*(ic-ib)>=ib*(ic-ia)))
+                    {
+                        //printf("trying 2 %e, %e, %e, %e\n", ia, ib, ic, iz);
+                        hyper_2F1 = pow(1.0-iz, -ib) * gsl_sf_hyperg_2F1(ic-ia, ib, ic, iz/(iz-1.0));
+                    }
+                    else
+                        printf("Potential issue");
+                }
+                else
+                    printf("Problem with input for hypergeometric function");
+                h2 = clock();
+                time_hyper += (double)(h2-h1)/CLOCKS_PER_SEC;
+                
+                // Determine mass contributions and hence total mass internal to r_try
+                M_DM = 4*M_PI * rho_s * pow(r_try,3.0-gamma) * pow(r_s,gamma) / (3.0-gamma) * hyper_2F1;
+                M_B = M_B_inf * pow(r_try/(r_try + a_B), 2.0);
+                M_ICS = M_ICS_inf * pow(r_try/(r_try + a_ICS), 2.0);
+                M_hot = Gal[p].HotGas * r_try / Gal[p].Rvir;
+                M_int = M_DM + M_D + M_B + M_ICS + M_hot + Gal[p].BlackHoleMass;
+                
+                j_try = sqrt(GG*M_int*r_try);
+                dif = j_try/DiscBinEdge[i] - 1.0;
+                
+                if(r_try<1e-6)
+                {
+                    printf("\nLow radius being fitted\n");
+                    printf("i, j, r_try, j_try, BinEdge = %d, %d, %e, %e, %e\n", i, j, r_try, j_try, DiscBinEdge[i]);
+                    printf("M_int, M_DM, M_D, M_B = %e, %e, %e, %e\n", M_int, M_DM, M_D, M_B);
+                    printf("M_ICS, M_hot, M_BH = %e, %e, %e\n", M_ICS, M_hot, Gal[p].BlackHoleMass);
+                    printf("Vcirc, Vvir = %e, %e\n", DiscBinEdge[i]/r_try, Gal[p].Vvir);
+                    printf("Mvir, SM = %e, %e\n", Gal[p].Mvir, Gal[p].StellarMass);
+                    
+                    //if(fabs(dif) <= tol)
+                    //ABORT(1);
                 }
                 
-                dif = j_try/DiscBinEdge[i] - 1.0;
+                if(j_try!=j_try || j_try<=0 || j_try==INFINITY)
+                {
+                    printf("\nj_try has illogical value\n");
+                    printf("j_try, M_int, r_try = %e, %e, %e\n", j_try, M_int, r_try);
+                    printf("M_DM, M_D, M_B, M_ICS, M_Hot, M_BH = %e, %e, %e, %e, %e, %e\n", M_DM, M_D, M_B, M_ICS, M_hot, Gal[p].BlackHoleMass);
+                    printf("M_B_tot, M_B_inf, M_ICS_tot, M_ICS_inf = %e, %e, %e, %e\n", M_B_tot, M_B_inf, Gal[p].ICS, M_ICS_inf);
+                    printf("a_B, a_ICS = %e, %e\n", a_B, a_ICS);
+                    printf("R_vir = %e\n", Gal[p].Rvir);
+                }
+                assert(j_try==j_try && j_try>0.0);
+                
                 
                 // Found correct r
                 if(fabs(dif) <= tol)
                 {
                     //printf("completed radius calculation in %d iterations\n", j+1);
+                    break;
+                }
+                
+                if((right-left)/right <= tol)
+                {
+                    printf("\nBoundaries for finding r(j) hit tolerance\n");
+                    printf("i, rtry, left, right, r[i-1] = %d, %e, %e, %e, %e\n", i, r_try*UnitLength_in_cm/(CM_PER_MPC/1e3)/Hubble_h, left*UnitLength_in_cm/(CM_PER_MPC/1e3)/Hubble_h, right*UnitLength_in_cm/(CM_PER_MPC/1e3)/Hubble_h, Gal[p].DiscRadii[i-1]*UnitLength_in_cm/(CM_PER_MPC/1e3)/Hubble_h);
+                    printf("j_try, DiscBinEdge = %e, %e\n", j_try*UnitLength_in_cm/(CM_PER_MPC/1e3)*UnitVelocity_in_cm_per_s/1e5/Hubble_h, DiscBinEdge[i]*UnitLength_in_cm/(CM_PER_MPC/1e3)*UnitVelocity_in_cm_per_s/1e5/Hubble_h);
+                    printf("M_D, M_B, M_vir, R_D, R_vir, V_vir = %e, %e, %e, %e, %e, %e\n\n", M_D/Hubble_h, M_B/Hubble_h, Gal[p].Mvir/Hubble_h, Gal[p].DiskScaleRadius/Hubble_h, Gal[p].Rvir/Hubble_h, Gal[p].Vvir);
                     break;
                 }
                 
@@ -435,15 +589,20 @@ void update_disc_radii(int p)
                 {
                     printf("i, rtry, left, right, r[i-1] = %d, %e, %e, %e, %e\n", i, r_try*UnitLength_in_cm/(CM_PER_MPC/1e3)/Hubble_h, left*UnitLength_in_cm/(CM_PER_MPC/1e3)/Hubble_h, right*UnitLength_in_cm/(CM_PER_MPC/1e3)/Hubble_h, Gal[p].DiscRadii[i-1]*UnitLength_in_cm/(CM_PER_MPC/1e3)/Hubble_h);
                     printf("j_try, DiscBinEdge = %e, %e\n", j_try*UnitLength_in_cm/(CM_PER_MPC/1e3)*UnitVelocity_in_cm_per_s/1e5/Hubble_h, DiscBinEdge[i]*UnitLength_in_cm/(CM_PER_MPC/1e3)*UnitVelocity_in_cm_per_s/1e5/Hubble_h);
-                    printf("v2disc, v2halo, v2bulge = %e, %e, %e\n", v2disc, v2halo, v2bulge);
+                    //printf("v2disc, v2halo, v2bulge = %e, %e, %e\n", v2disc, v2halo, v2bulge);
                     printf("M_D, M_B, M_vir, R_D, R_vir, V_vir = %e, %e, %e, %e, %e, %e\n\n", M_D/Hubble_h, M_B/Hubble_h, Gal[p].Mvir/Hubble_h, Gal[p].DiskScaleRadius/Hubble_h, Gal[p].Rvir/Hubble_h, Gal[p].Vvir);
                 }
                 
             }
             Gal[p].DiscRadii[i] = r_try;
             left = r_try;
+            //if(DiscBinEdge[i]/r_try > Gal[p].Vvir) printf("Vcirc, Vvir = %e, %e\n", DiscBinEdge[i]/r_try, Gal[p].Vvir);
         }
     }
     //printf("Exiting update_disc_radii\n");
+    
+    end = clock();
+    time_update = (double)(end - begin) / CLOCKS_PER_SEC;
+    printf("Update time v hyper --- %e, %e, %e\n", time_update, time_hyper, time_hyper/time_update);
 
 }

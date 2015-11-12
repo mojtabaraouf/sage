@@ -382,7 +382,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 	
         // Update radii of the annuli
-        update_disc_radii(p);
+        if(Gal[p].Mvir > 0 && Gal[p].Rvir > 0) update_disc_radii(p);
         
       // determine cooling gas given halo properties
       coolingGas = cooling_recipe(p, deltaT / STEPS);
@@ -501,8 +501,11 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
     Gal[p].Heating /= deltaT;
     Gal[p].OutflowRate /= deltaT;
     
-    update_disc_radii(p);
-    update_HI_H2(p);
+    if(Gal[p].Mvir > 0 && Gal[p].Rvir > 0)
+    {
+        update_disc_radii(p);
+        update_HI_H2(p);
+    }
 
     if(p != centralgal)
 		Gal[centralgal].TotalSatelliteBaryons += (Gal[p].StellarMass + Gal[p].BlackHoleMass + Gal[p].ColdGas + Gal[p].HotGas);
