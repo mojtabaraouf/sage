@@ -48,13 +48,19 @@ DiskInstabilityOn			1		;0: switch off; 1: bulge and BH growth through instabilit
 GasPrecessionOn             1       ;0: switch off; 1: gas discs will precess to naturally come in line with stellar discs
 RamPressureOn               1       ;0: switch off; 1: cold gas can be stripped from satellites
 
+%------------------------------------------
+%----- Set the binning for discs ----------
+%------------------------------------------
+
+FirstBin                    1.0     ; Measured in kpc/h km/s
+ExponentBin                 1.4     ; The factor in spec ang mom between bins
+
 
 %------------------------------------------
 %----- Parameters of physical model -------
 %------------------------------------------
 
 SfrEfficiency				1.25
-ClumpingFactor				5.0		;gas clumping factor in Krumholz & Dekel 2011 (SFprescription=1)
 
 FeedbackReheatingEpsilon	6.0		;mass of cold gas reheated due to SF (see Martin 1999) (SupernovaRecipeOn=1)
 FeedbackEjectionEfficiency	0.6 	;mixing efficiency of SN energy with hot gas to unbind and eject some (SupernovaRecipeOn=1)
@@ -86,6 +92,8 @@ Reionization_zr				7.0		;using the analytic fit of Kravtsov et al. 2004 (Reioniz
 
 EnergySN					1.0e51	;energy per supernova
 EtaSN						5.0e-3	;supernova efficiency
+
+ClumpingFactor				5.0		;gas clumping factor in Krumholz & Dekel 2011 (SFprescription=1)
 
 
 %------------------------------------------

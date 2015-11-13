@@ -16,14 +16,14 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	double unstable_gas, unstable_stars, metallicity, stars, stars_sum, gas_sink;
     double r_inner, r_outer, r_av, Omega, Kappa, omega_R, c_s;
     double GG;
-	double NewStars[30], NewStarsMetals[30];
+	double NewStars[NBINS], NewStarsMetals[NBINS];
 	int i;
     int first, first_gas, first_star;
 	
     GG = GRAVITY * UnitMass_in_g * UnitTime_in_s * UnitTime_in_s / pow(UnitLength_in_cm,3.0);
     c_s = 1.7e6 / UnitVelocity_in_cm_per_s; // Speed of sound assumed for cold gas
     
-	for(i=0; i<30; i++){
+	for(i=0; i<NBINS; i++){
 		metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
 		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);}
 	
@@ -112,7 +112,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	// Merge new-star disc with previous stellar disc
 	if(stars_sum>0.0)
 	{
-		for(i=0; i<30; i++) assert(NewStarsMetals[i] <= NewStars[i]);
+		for(i=0; i<NBINS; i++) assert(NewStarsMetals[i] <= NewStars[i]);
 		combine_stellar_discs(p, NewStars, NewStarsMetals);
 		Gal[p].SfrDisk[step] += stars_sum / dt; // Some of these stars may quickly be transferred to the bulge, so simply updating SfrDisk might be crude
         Gal[p].StarsInstability += (1-RecycleFraction)*stars_sum;
@@ -120,7 +120,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 
 	}
     
-	for(i=0; i<30; i++){
+	for(i=0; i<NBINS; i++){
 		if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 		assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
 		metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
@@ -182,7 +182,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 		}
 	}
 	
-	for(i=0; i<30; i++){
+	for(i=0; i<NBINS; i++){
 		if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 		assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);}
 }
@@ -309,7 +309,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 void precess_gas(int p, double dt, int halonr)
 {
     int i;
-    double tdyn, deg_ann, deg, DiscGasSum, DiscStarSum, NewDisc[30], NewDiscMetals[30];
+    double tdyn, deg_ann, deg, DiscGasSum, DiscStarSum, NewDisc[NBINS], NewDiscMetals[NBINS];
     
     double cos_angle_gas_stars = Gal[p].SpinStars[0]*Gal[p].SpinGas[0] + Gal[p].SpinStars[1]*Gal[p].SpinGas[1] + Gal[p].SpinStars[2]*Gal[p].SpinGas[2];
         
@@ -321,7 +321,7 @@ void precess_gas(int p, double dt, int halonr)
     if(cos_angle_gas_stars<1.0 && DiscGasSum>0.0 && DiscStarSum>0.0)
     {
         deg = 0.0;
-        for(i=0; i<30; i++)
+        for(i=0; i<NBINS; i++)
         {
             tdyn = pow((pow(DiscBinEdge[i],2.0)+pow(DiscBinEdge[i+1],2.0))/2.0, 0.5) / Gal[p].Vvir / Gal[p].Vvir;
             if(tdyn!=tdyn) printf("tdyn = %e\n", tdyn);
@@ -337,7 +337,7 @@ void precess_gas(int p, double dt, int halonr)
         project_disc(Gal[p].DiscGas, cos_angle_precess, p, NewDisc);
         project_disc(Gal[p].DiscGasMetals, cos_angle_precess, p, NewDiscMetals);
         
-        for(i=0; i<30; i++)
+        for(i=0; i<NBINS; i++)
         {
             Gal[p].DiscGas[i] = NewDisc[i];
             Gal[p].DiscGasMetals[i] = NewDiscMetals[i];
@@ -413,7 +413,7 @@ void precess_gas(int p, double dt, int halonr)
 //     // add excess stars to the bulge
 //     if(unstable_stars > 0.0)
 //     {
-//       for(j=0; j<30; j++)
+//       for(j=0; j<NBINS; j++)
 // 	  {
 // 		metallicity = get_metallicity(Gal[p].DiscStars[j], Gal[p].DiscStarsMetals[j]);
 // 	    ring_fraction = Gal[p].DiscStars[j] / (star_fraction*diskmass);
@@ -450,7 +450,7 @@ void precess_gas(int p, double dt, int halonr)
 //       //unstable_gas = unstable_gas - (GasBeforeBH - Gal[p].ColdGas); // Update the unstable gas after BH accretion
 //       if(DiscGasSum>0 && unstable_gas>0)
 // 	  {
-// 	    for(j=0; j<30; j++)
+// 	    for(j=0; j<NBINS; j++)
 // 	    {	
 // 		  assert(Gal[p].DiscGasMetals[j]<=Gal[p].DiscGas[j]);
 // 		  metallicity = get_metallicity(Gal[p].DiscGas[j], Gal[p].DiscGasMetals[j]);

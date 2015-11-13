@@ -40,7 +40,7 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 double dmax(double x, double y);
 double do_reionization(int centralgal, double Zcurr);
 double do_AGN_heating(double coolingGas, int centralgal, double dt, double x, double rcool);
-void collisional_starburst_recipe(double disc_mass_ratio[30], int merger_centralgal, int centralgal, double time, double dt, int halonr, int mode, int step, double mass_ratio);
+void collisional_starburst_recipe(double disc_mass_ratio[NBINS], int merger_centralgal, int centralgal, double time, double dt, int halonr, int mode, int step, double mass_ratio);
 void update_from_star_formation(int p, double stars, double metallicity, int i);
 void update_from_feedback(int p, int centralgal, double reheated_mass, double ejected_mass, double metallicity, int i);
 void make_bulge_from_burst(int p);
@@ -49,9 +49,9 @@ double grow_black_hole(int merger_centralgal, double* disc_mass_ratio);
 void check_disk_instability(int p, int centralgal, double time, double dt, int step);
 
 // Adam's functions
-void retrograde_gas_collision(int p, double RetroGas[30], double cos_angle_halo_new, double cos_angle_disc_new, double J_disc, double J_cool);
-void combine_stellar_discs(int p, double NewStars[30], double NewStarsMetals[30]);
-void project_disc(double DiscMass[30], double cos_angle, int p, double *NewDisc);
+void retrograde_gas_collision(int p, double RetroGas[NBINS], double cos_angle_halo_new, double cos_angle_disc_new, double J_disc, double J_cool);
+void combine_stellar_discs(int p, double NewStars[NBINS], double NewStarsMetals[NBINS]);
+void project_disc(double DiscMass[NBINS], double cos_angle, int p, double *NewDisc);
 double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, double metallicity, int centralgal, int direct_to_BH, double r_inner, double r_outer);
 double get_disc_gas(int halonr);
 double get_disc_stars(int halonr);

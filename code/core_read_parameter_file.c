@@ -60,7 +60,15 @@ void read_parameter_file(char *fname)
   strcpy(tag[nt], "FileWithSnapList");
   addr[nt] = FileWithSnapList;
   id[nt++] = STRING;
-
+    
+  strcpy(tag[nt], "FirstBin");
+  addr[nt] = &FirstBin;
+  id[nt++] = DOUBLE;
+    
+  strcpy(tag[nt], "ExponentBin");
+  addr[nt] = &ExponentBin;
+  id[nt++] = DOUBLE;
+    
   strcpy(tag[nt], "ThreshMajorMerger");
   addr[nt] = &ThreshMajorMerger;
   id[nt++] = DOUBLE;

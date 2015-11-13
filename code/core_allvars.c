@@ -60,6 +60,9 @@ int SFprescription;
 int GasPrecessionOn;
 int RamPressureOn;
 
+// binning information
+double FirstBin;
+double BinExponent;
 
 // recipe parameters 
 double RecycleFraction;
