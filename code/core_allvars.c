@@ -62,7 +62,7 @@ int RamPressureOn;
 
 // binning information
 double FirstBin;
-double BinExponent;
+double ExponentBin;
 
 // recipe parameters 
 double RecycleFraction;

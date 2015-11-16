@@ -135,15 +135,15 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
   assert(DiscGasSum <= 1.01*Gal[merger_centralgal].ColdGas && DiscGasSum >= Gal[merger_centralgal].ColdGas/1.01);
   DiscGasSum = get_disc_gas(p);
   assert(DiscGasSum <= 1.01*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.01);
-  for(i=29; i>=0; i--) assert(Gal[merger_centralgal].DiscGasMetals[i] <= Gal[merger_centralgal].DiscGas[i]);
+  for(i=NBINS-1; i>=0; i--) assert(Gal[merger_centralgal].DiscGasMetals[i] <= Gal[merger_centralgal].DiscGas[i]);
 
     for(i=0; i<NBINS; i++) assert(disc_mass_ratio[i] <= 1.0);
 
   collisional_starburst_recipe(disc_mass_ratio, merger_centralgal, centralgal, time, dt, halonr, 0, step, mass_ratio);
-  for(i=29; i>=0; i--) assert(Gal[merger_centralgal].DiscGasMetals[i] <= Gal[merger_centralgal].DiscGas[i]);
+  for(i=NBINS-1; i>=0; i--) assert(Gal[merger_centralgal].DiscGasMetals[i] <= Gal[merger_centralgal].DiscGas[i]);
 
   double BHaccrete = grow_black_hole(merger_centralgal, disc_mass_ratio);
-  for(i=29; i>=0; i--) assert(Gal[merger_centralgal].DiscGasMetals[i] <= Gal[merger_centralgal].DiscGas[i]);
+  for(i=NBINS-1; i>=0; i--) assert(Gal[merger_centralgal].DiscGasMetals[i] <= Gal[merger_centralgal].DiscGas[i]);
 
   if(AGNrecipeOn>0)
 	quasar_mode_wind(p, BHaccrete);
@@ -153,7 +153,7 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 
   // Check whether any retrograde gas is left over
   double unstable_gas, metallicity, stars;
-  for(i=29; i>=0; i--)
+  for(i=NBINS-1; i>=0; i--)
   {
 	metallicity = get_metallicity(Gal[merger_centralgal].DiscGas[i], Gal[merger_centralgal].DiscGasMetals[i]);
 	assert(Gal[merger_centralgal].DiscGasMetals[i] <= Gal[merger_centralgal].DiscGas[i]);

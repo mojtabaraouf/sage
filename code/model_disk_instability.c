@@ -41,7 +41,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
     first_gas = 1;
     first_star = 1;
     
-	for(i=29; i>=0; i--)
+	for(i=NBINS-1; i>=0; i--)
 	{
         //r_inner = get_annulus_radius(p, i);
         //r_outer = get_annulus_radius(p, i+1);
@@ -127,7 +127,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);}
 	
 	// Deal with stellar instabilities
-	for(i=29; i>=0; i--)
+	for(i=NBINS-1; i>=0; i--)
 	{
         //r_inner = get_annulus_radius(p, i);
         //r_outer = get_annulus_radius(p, i+1);

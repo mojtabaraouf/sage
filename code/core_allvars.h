@@ -275,7 +275,7 @@ extern double EtaSNcode, EtaSN;
 
 // binning information
 extern double   FirstBin;
-extern double   BinExponent;
+extern double   ExponentBin;
 
 // recipe flags 
 extern int    ReionizationOn;

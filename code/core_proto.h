@@ -58,7 +58,7 @@ double get_disc_stars(int halonr);
 double get_disc_ang_mom(int halonr, int type);
 void precess_gas(int p, double dt, int halonr);
 void update_HI_H2(int p);
-double get_annulus_radius(int p, int i);
+//double get_annulus_radius(int p, int i);
 void update_disc_radii(int p);
 //
 

@@ -260,10 +260,11 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 				OldDisc[k] = 0.0;
 				OldDiscMetals[k] = 0.0;
 			}
-			if(i!=29)
+			if(i!=NBINS-1)
 			{
-				if(j!=29){
+				if(j!=NBINS-1){
 					ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (DiscBinEdge[j+1]-DiscBinEdge[j]), 2.0);
+                    if(ratio_last_bin>1.0) printf("ratio_last_bin is %e\n", ratio_last_bin);
 					assert(ratio_last_bin<=1.0);}
 				else if(high_bound < Gal[p].Rvir/Gal[p].Vvir){
 					ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (Gal[p].Rvir/Gal[p].Vvir-DiscBinEdge[j]), 2.0);
@@ -316,7 +317,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
               printf("r_inner, r_outer, DiskScaleRadius = %e, %e, %e\n", r_inner, r_outer, Gal[p].DiskScaleRadius);
               printf("DiscRadii, cos_angle = %e, %e\n", Gal[p].DiscRadii[i+1], fabs(cos_angle_halo_new));}
 
-		if(coolingGasBin + coolingGasBinSum > coolingGas || i==29)
+		if(coolingGasBin + coolingGasBinSum > coolingGas || i==NBINS-1)
 		  coolingGasBin = coolingGas - coolingGasBinSum;
 		
         if(Gal[p].DiscGasMetals[i]>Gal[p].DiscGas[i])
@@ -355,7 +356,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
           
 		coolingGasBin = (Gal[p].HotGas / Gal[p].DiskScaleRadius) * (exp(-r_inner/Gal[p].DiskScaleRadius)*(r_inner + Gal[p].DiskScaleRadius) - exp(-r_outer/Gal[p].DiskScaleRadius)*(r_outer + Gal[p].DiskScaleRadius));
 		assert(coolingGasBin>=0.0);
-		if(coolingGasBin + coolingGasBinSum > coolingGas || i==29)
+		if(coolingGasBin + coolingGasBinSum > coolingGas || i==NBINS-1)
 		  coolingGasBin = coolingGas - coolingGasBinSum;
 
 		Gal[p].DiscGas[i] += coolingGasBin;
@@ -456,9 +457,9 @@ void retrograde_gas_collision(int p, double RetroGas[NBINS], double cos_angle_ha
 	// 		OldDiscMetals[k] = 0.0;
 	// 	}
 	// 	
-	// 	if(i!=29)
+	// 	if(i!=NBINS-1)
 	// 	{
-	// 		if(j!=29){
+	// 		if(j!=NBINS-1){
 	// 			ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (DiscBinEdge[j+1]-DiscBinEdge[j]), 2.0);
 	// 			assert(ratio_last_bin<=1.0);}
 	// 		else if(high_bound < Gal[p].Rvir/Gal[p].Vvir){

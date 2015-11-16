@@ -530,9 +530,9 @@ void project_disc(double DiscMass[NBINS], double cos_angle, int p, double *NewDi
 			NewDisc[i] += DiscMass[k];
 			DiscMass[k] = 0.0;
 		}
-		if(i!=29)
+		if(i!=NBINS-1)
 		{
-			if(j!=29){
+			if(j!=NBINS-1){
 				ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (DiscBinEdge[j+1]-DiscBinEdge[j]), 2.0);
 				assert(ratio_last_bin<=1.0);}
 			else if(high_bound < Gal[p].Rvir/Gal[p].Vvir){

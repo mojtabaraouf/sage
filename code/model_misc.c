@@ -326,33 +326,33 @@ double get_disc_ang_mom(int p, int type)
 }
 
 
-double get_annulus_radius(int p, int i)
-{
-    double vel, radius;
-    // if i=0, radius=0 --- could add that explicity
-    
-    //printf("Bessel %e, %e\n", gsl_sf_bessel_K0(1e-3), gsl_sf_bessel_K0(1e1));
-    
-    if(Gal[p].Vvir > 0.0)
-        vel = Gal[p].Vvir;
-    else
-        vel = Gal[p].Vmax;
-    
-    if(vel>0.0)
-    {
-        if(DiscBinEdge[i] >= vel*r0)
-            radius = DiscBinEdge[i]/vel;
-        else
-            radius = sqrt(DiscBinEdge[i] * r0 / vel);
-    }
-    else
-    {
-        printf("Annulus radius set as 0 for i=%d", i);
-        radius = 0.0;
-    }
-
-    return radius;
-}
+//double get_annulus_radius(int p, int i)
+//{
+//    double vel, radius;
+//    // if i=0, radius=0 --- could add that explicity
+//    
+//    //printf("Bessel %e, %e\n", gsl_sf_bessel_K0(1e-3), gsl_sf_bessel_K0(1e1));
+//    
+//    if(Gal[p].Vvir > 0.0)
+//        vel = Gal[p].Vvir;
+//    else
+//        vel = Gal[p].Vmax;
+//    
+//    if(vel>0.0)
+//    {
+//        if(DiscBinEdge[i] >= vel*r0)
+//            radius = DiscBinEdge[i]/vel;
+//        else
+//            radius = sqrt(DiscBinEdge[i] * r0 / vel);
+//    }
+//    else
+//    {
+//        printf("Annulus radius set as 0 for i=%d", i);
+//        radius = 0.0;
+//    }
+//
+//    return radius;
+//}
 
 
 void update_disc_radii(int p)
@@ -361,7 +361,7 @@ void update_disc_radii(int p)
     int i, j, j_max;
     double left, right, tol, r_try, j_try, dif;
     double M_D, M_int, M_DM, M_B, M_ICS, M_hot;
-    double z, a, b, c_DM, c, r_2, alpha, beta, gamma, X, M_DM_tot, rho_s, rho_const;
+    double z, a, b, c_DM, c, r_2, X, M_DM_tot, rho_const;
     double a_B, M_B_inf, M_B_tot, a_ICS, M_ICS_inf;
     
     double GG = GRAVITY * UnitMass_in_g * UnitTime_in_s * UnitTime_in_s / pow(UnitLength_in_cm,3.0);
@@ -371,7 +371,10 @@ void update_disc_radii(int p)
     if(M_D = 0.0)
     {
         for(i=1; i<NBINS+1; i++)
+        {
             Gal[p].DiscRadii[i] = DiscBinEdge[i] / Gal[p].Vvir;
+            printf("i early %d\n", i);
+        }
         return;
     }
     
@@ -411,10 +414,12 @@ void update_disc_radii(int p)
 
     M_D = 0.0;
     left = 0.0;
+    
     if(Gal[p].Mvir>0.0)
     {
         for(i=1; i<NBINS+1; i++)
         {
+            printf("i at start is %i, %d\n", i, i);
             right = 2.0*DiscBinEdge[i] / Gal[p].Vvir;
             if(right<Gal[p].Rvir) right = Gal[p].Rvir;
             if(right<8.0*left) right = 8.0*left;
@@ -424,7 +429,6 @@ void update_disc_radii(int p)
             {
                 r_try = (left+right)/2.0;
                 
-                // Determine mass contributions and hence total mass internal to r_try
                 M_DM = rho_const * (log((r_try+r_2)/r_2) - r_try/(r_try+r_2));
                 M_B = M_B_inf * pow(r_try/(r_try + a_B), 2.0);
                 M_ICS = M_ICS_inf * pow(r_try/(r_try + a_ICS), 2.0);
@@ -442,24 +446,81 @@ void update_disc_radii(int p)
                     printf("M_B_tot, M_B_inf, M_ICS_tot, M_ICS_inf = %e, %e, %e, %e\n", M_B_tot, M_B_inf, Gal[p].ICS, M_ICS_inf);
                     printf("a_B, a_ICS = %e, %e\n", a_B, a_ICS);
                     printf("R_vir = %e\n", Gal[p].Rvir);
+                    ABORT(1);
                 }
-                assert(j_try==j_try && j_try>0.0);
                 
-                // Found correct r
                 if(fabs(dif) <= tol || (right-left)/right <= tol)
                     break;
                 
-                // Reset boundaries for next guess
                 if(dif>0)
                     right = r_try;
                 else
                     left = r_try;
-                
-                if(j==j_max-1) printf("Max iterations hit for radius calculation with dif = %e\n", dif);
             }
-
             Gal[p].DiscRadii[i] = r_try;
             left = r_try;
         }
+        
+        
+//        M_D = 0.0;
+//        left = 0.0;
+//        for(i=1; i<NBINS+1; i++)
+//        {
+//            //assert(i<31);
+//            //printf("NBINS+1 in model_misc %i\n", (int)(NBINS+1));
+//            right = 2.0*DiscBinEdge[i] / Gal[p].Vvir;
+//            if(right<Gal[p].Rvir) right = Gal[p].Rvir;
+//            if(right<8.0*left) right = 8.0*left;
+//            M_D += Gal[p].DiscStars[i-1] + Gal[p].DiscGas[i-1];
+//            printf("i at start is %i, %d\n", i, i);
+//            //assert(i<31);
+//            
+//            for(j=0; j<j_max; j++)
+//            {
+//                r_try = (left+right)/2.0;
+//                //printf("i, j, left, r_try, right = %i, %d, %e, %e, %e\n", i, j, left, r_try, right);
+//                assert(i<NBINS+1);
+//
+//                assert(r_try<10);
+//                
+//                // Determine mass contributions and hence total mass internal to r_try
+//                M_DM = rho_const * (log((r_try+r_2)/r_2) - r_try/(r_try+r_2));
+//                M_B = M_B_inf * pow(r_try/(r_try + a_B), 2.0);
+//                M_ICS = M_ICS_inf * pow(r_try/(r_try + a_ICS), 2.0);
+//                M_hot = Gal[p].HotGas * r_try / Gal[p].Rvir;
+//                M_int = M_DM + M_D + M_B + M_ICS + M_hot + Gal[p].BlackHoleMass;
+//                
+//                j_try = sqrt(GG*M_int*r_try);
+//                dif = j_try/DiscBinEdge[i] - 1.0;
+//                
+////                if(j_try!=j_try || j_try<=0 || j_try==INFINITY)
+////                {
+////                    printf("\nj_try has illogical value\n");
+////                    printf("j_try, M_int, r_try = %e, %e, %e\n", j_try, M_int, r_try);
+////                    printf("M_DM, M_D, M_B, M_ICS, M_Hot, M_BH = %e, %e, %e, %e, %e, %e\n", M_DM, M_D, M_B, M_ICS, M_hot, Gal[p].BlackHoleMass);
+////                    printf("M_B_tot, M_B_inf, M_ICS_tot, M_ICS_inf = %e, %e, %e, %e\n", M_B_tot, M_B_inf, Gal[p].ICS, M_ICS_inf);
+////                    printf("a_B, a_ICS = %e, %e\n", a_B, a_ICS);
+////                    printf("R_vir = %e\n", Gal[p].Rvir);
+////                    ABORT(1);
+////                }
+//                assert(j_try==j_try && j_try>0.0 && j_try!=INFINITY);
+//                
+//                // Found correct r
+//                if(fabs(dif) <= tol || (right-left)/right <= tol)
+//                    break;
+//                
+//                // Reset boundaries for next guess
+//                if(dif>0)
+//                    right = r_try;
+//                else
+//                    left = r_try;
+//                
+//                //if(j==j_max-1) printf("Max iterations hit for radius calculation with dif = %e\n", dif);
+//            }
+//
+//            Gal[p].DiscRadii[i] = r_try;
+//            left = r_try;
+//            //printf("i at end is %i\n", i);
+//        }
     }
 }
