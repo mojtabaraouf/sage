@@ -33,8 +33,7 @@ do {                                                                \
 #define  SEC_PER_MEGAYEAR   3.155e13
 #define  SEC_PER_YEAR       3.155e7
 
-#define  r0   0.73e-3 // Radius where rotation curve becomes flat
-
+#define N_BINS 30
 
 struct GALAXY_OUTPUT  
 {
@@ -65,7 +64,7 @@ struct GALAXY_OUTPUT
   double VelDisp;
     
     // Radius of each annulus boundary
-    double DiscRadii[31];
+    double DiscRadii[N_BINS+1];
 
   // baryonic reservoirs 
   double ColdGas;
@@ -76,15 +75,15 @@ struct GALAXY_OUTPUT
   double EjectedMass;
   double BlackHoleMass;
   double ICS;
-  double DiscGas[30];
-  double DiscStars[30];
+  double DiscGas[N_BINS];
+  double DiscStars[N_BINS];
   double SpinStars[3];
   double SpinGas[3];
   double StarsInSitu;
   double StarsInstability;
   double StarsMergeBurst;
-    double DiscHI[30];
-    double DiscH2[30];
+    double DiscHI[N_BINS];
+    double DiscH2[N_BINS];
 
     // Instability tracking
     int TotInstabEvents;
@@ -94,8 +93,8 @@ struct GALAXY_OUTPUT
     int TotInstabAnnuliStar;
     double FirstUnstableAvGas;
     double FirstUnstableAvStar;
-    double TotSinkGas[30];
-    double TotSinkStar[30];
+    double TotSinkGas[N_BINS];
+    double TotSinkStar[N_BINS];
     
   // metals
   double MetalsColdGas;
@@ -105,8 +104,8 @@ struct GALAXY_OUTPUT
   double MetalsHotGas;
   double MetalsEjectedMass;
   double MetalsICS;
-  double DiscGasMetals[30];
-  double DiscStarsMetals[30];
+  double DiscGasMetals[N_BINS];
+  double DiscStarsMetals[N_BINS];
 
   // to calculate magnitudes
   double SfrDisk;
@@ -155,7 +154,7 @@ struct GALAXY
   double Vmax;
     
     // Radius of each annulus boundary
-    double DiscRadii[31];
+    double DiscRadii[N_BINS+1];
 
   // baryonic reservoirs 
   double ColdGas;
@@ -166,15 +165,15 @@ struct GALAXY
   double EjectedMass;
   double BlackHoleMass;
   double ICS;
-  double DiscGas[30];
-  double DiscStars[30];
+  double DiscGas[N_BINS];
+  double DiscStars[N_BINS];
   double SpinStars[3];
   double SpinGas[3];
   double StarsInSitu;
   double StarsInstability;
   double StarsMergeBurst;
-    double DiscHI[30];
-    double DiscH2[30];
+    double DiscHI[N_BINS];
+    double DiscH2[N_BINS];
     
     // Instability tracking
     int TotInstabEvents;
@@ -184,8 +183,8 @@ struct GALAXY
     int TotInstabAnnuliStar;
     int FirstUnstableGas;
     int FirstUnstableStar;
-    double TotSinkGas[30];
-    double TotSinkStar[30];
+    double TotSinkGas[N_BINS];
+    double TotSinkStar[N_BINS];
 
   // metals
   double MetalsColdGas;
@@ -195,8 +194,8 @@ struct GALAXY
   double MetalsHotGas;
   double MetalsEjectedMass;
   double MetalsICS;
-  double DiscGasMetals[30];
-  double DiscStarsMetals[30];
+  double DiscGasMetals[N_BINS];
+  double DiscStarsMetals[N_BINS];
 
   // to calculate magnitudes
   double SfrDisk[STEPS];
@@ -340,7 +339,7 @@ extern gsl_rng *random_generator;
 extern int TreeID;
 extern int FileNum;
 
-double DiscBinEdge[31];
+double DiscBinEdge[N_BINS+1];
 
 
 

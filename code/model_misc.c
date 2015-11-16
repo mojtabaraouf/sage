@@ -82,7 +82,7 @@ void init_galaxy(int p, int halonr)
   Gal[p].FirstUnstableStar = 0;
   
   Gal[p].DiscRadii[0] = 0.0;
-  for(j=0; j<30; j++)
+  for(j=0; j<N_BINS; j++)
   {
     Gal[p].DiscRadii[j+1] = DiscBinEdge[j+1] / Gal[p].Vvir;
 	Gal[p].DiscGas[j] = 0.0;
@@ -221,7 +221,7 @@ double get_disc_gas(int p)
 	int l;
 	
 	DiscGasSum = DiscMetalsSum = 0.0;
-	for(l=0; l<30; l++)
+	for(l=0; l<N_BINS; l++)
 	{
 		DiscGasSum += Gal[p].DiscGas[l];
 		DiscMetalsSum += Gal[p].DiscGasMetals[l];
@@ -232,7 +232,7 @@ double get_disc_gas(int p)
         printf("get_disc_gas initial DiscGasSum, ColdGas = %e, %e\n", DiscGasSum, Gal[p].ColdGas);
         Gal[p].ColdGas = 0.0;
         Gal[p].MetalsColdGas = 0.0;
-        for(l=0; l<30; l++)
+        for(l=0; l<N_BINS; l++)
         {
             Gal[p].DiscGas[l] = 0.0;
             Gal[p].DiscGasMetals[l] = 0.0;
@@ -247,7 +247,7 @@ double get_disc_gas(int p)
 		
 		if(Gal[p].ColdGas<=1e-15)
 		{
-			for(l=0; l<30; l++)
+			for(l=0; l<N_BINS; l++)
 				Gal[p].DiscGas[l] = 0.0; // Sometimes a tiny non-zero difference can creep in (probably due to projecting discs).  This just takes care of that.
 			DiscGasSum = 0.0;
 			Gal[p].ColdGas = 0.0;
@@ -255,7 +255,7 @@ double get_disc_gas(int p)
         
         if(Gal[p].ColdGas<=1e-15 || Gal[p].MetalsColdGas<=0.0)
         {
-            for(l=0; l<30; l++)
+            for(l=0; l<N_BINS; l++)
                 Gal[p].DiscGasMetals[l] = 0.0;
             DiscMetalsSum = 0.0;
             Gal[p].MetalsColdGas = 0.0;
@@ -277,7 +277,7 @@ double get_disc_stars(int p)
     int l;
     
     DiscStarSum = 0.0;
-    for(l=0; l<30; l++)
+    for(l=0; l<N_BINS; l++)
     {
         if(Gal[p].DiscStars[l] < 1e-11)
         {
@@ -296,7 +296,7 @@ double get_disc_stars(int p)
             Gal[p].StellarMass = DiscAndBulge; // If difference is small, just set the numbers to be the same to prevent small errors from blowing up
         if(Gal[p].StellarMass <= Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass)
         {
-            for(l=0; l<30; l++)
+            for(l=0; l<N_BINS; l++)
                 Gal[p].DiscStars[l] = 0.0;
             DiscStarSum = 0.0;
         }
@@ -313,12 +313,12 @@ double get_disc_ang_mom(int p, int type)
 	J_sum = 0.0;
 	if(type==0)
 	{
-		for(l=0; l<30; l++) // Calculation of average J_sum in bin no longer so straight forward
+		for(l=0; l<N_BINS; l++) // Calculation of average J_sum in bin no longer so straight forward
 			J_sum += Gal[p].DiscGas[l] * pow((pow(DiscBinEdge[l],2.0) + pow(DiscBinEdge[l+1],2.0))/2.0, 0.5);
 	}
 	else if(type==1)
 	{
-		for(l=0; l<30; l++)
+		for(l=0; l<N_BINS; l++)
 			J_sum += Gal[p].DiscStars[l] * pow((pow(DiscBinEdge[l],2.0) + pow(DiscBinEdge[l+1],2.0))/2.0, 0.5);
 	}
 	
@@ -326,33 +326,33 @@ double get_disc_ang_mom(int p, int type)
 }
 
 
-double get_annulus_radius(int p, int i)
-{
-    double vel, radius;
-    // if i=0, radius=0 --- could add that explicity
-    
-    //printf("Bessel %e, %e\n", gsl_sf_bessel_K0(1e-3), gsl_sf_bessel_K0(1e1));
-    
-    if(Gal[p].Vvir > 0.0)
-        vel = Gal[p].Vvir;
-    else
-        vel = Gal[p].Vmax;
-    
-    if(vel>0.0)
-    {
-        if(DiscBinEdge[i] >= vel*r0)
-            radius = DiscBinEdge[i]/vel;
-        else
-            radius = sqrt(DiscBinEdge[i] * r0 / vel);
-    }
-    else
-    {
-        printf("Annulus radius set as 0 for i=%d", i);
-        radius = 0.0;
-    }
-
-    return radius;
-}
+//double get_annulus_radius(int p, int i)
+//{
+//    double vel, radius;
+//    // if i=0, radius=0 --- could add that explicity
+//    
+//    //printf("Bessel %e, %e\n", gsl_sf_bessel_K0(1e-3), gsl_sf_bessel_K0(1e1));
+//    
+//    if(Gal[p].Vvir > 0.0)
+//        vel = Gal[p].Vvir;
+//    else
+//        vel = Gal[p].Vmax;
+//    
+//    if(vel>0.0)
+//    {
+//        if(DiscBinEdge[i] >= vel*r0)
+//            radius = DiscBinEdge[i]/vel;
+//        else
+//            radius = sqrt(DiscBinEdge[i] * r0 / vel);
+//    }
+//    else
+//    {
+//        printf("Annulus radius set as 0 for i=%d", i);
+//        radius = 0.0;
+//    }
+//
+//    return radius;
+//}
 
 
 void update_disc_radii(int p)
@@ -361,16 +361,16 @@ void update_disc_radii(int p)
     int i, j, j_max;
     double left, right, tol, r_try, j_try, dif;
     double M_D, M_int, M_DM, M_B, M_ICS, M_hot;
-    double z, a, b, c_DM, c, r_s, r_2, X, M_DM_tot, rho_const;
+    double z, a, b, c_DM, c, r_2, X, M_DM_tot, rho_const;
     double a_B, M_B_inf, M_B_tot, a_ICS, M_ICS_inf;
     
     double GG = GRAVITY * UnitMass_in_g * UnitTime_in_s * UnitTime_in_s / pow(UnitLength_in_cm,3.0);
 
     // Try to stably set discs up first -- this might no longer be necessary with NFW treatment
     M_D = Gal[p].StellarMass + Gal[p].ColdGas - Gal[p].SecularBulgeMass - Gal[p].ClassicalBulgeMass;
-    if(M_D = 0.0)
+    if(M_D == 0.0)
     {
-        for(i=1; i<31; i++)
+        for(i=1; i<N_BINS+1; i++)
             Gal[p].DiscRadii[i] = DiscBinEdge[i] / Gal[p].Vvir;
         return;
     }
@@ -414,7 +414,7 @@ void update_disc_radii(int p)
     left = 0.0;
     if(Gal[p].Mvir>0.0)
     {
-        for(i=1; i<31; i++)
+        for(i=1; i<N_BINS+1; i++)
         {
             right = 2.0*DiscBinEdge[i] / Gal[p].Vvir;
             if(right<Gal[p].Rvir) right = Gal[p].Rvir;

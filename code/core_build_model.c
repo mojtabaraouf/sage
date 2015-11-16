@@ -347,7 +347,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
     // Loop over all galaxies in the halo 
     for(p = 0; p < ngal; p++)
     {
-		for(i=0; i<30; i++) 
+		for(i=0; i<N_BINS; i++) 
 		{
 			if (Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i])
 				printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
@@ -406,7 +406,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
-		for(i=0; i<30; i++) 
+		for(i=0; i<N_BINS; i++) 
 		{
 			if (Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i])
 				printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
@@ -423,7 +423,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
     for(p = 0; p < ngal; p++)
     {
 	
-		for(i=0; i<30; i++) 
+		for(i=0; i<N_BINS; i++) 
 		{
 			if (Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i])
 				printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);

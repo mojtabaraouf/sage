@@ -147,7 +147,7 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
             Gal[centralgal].MetalsHotGas += Gal[gal].MetalsColdGas;
             Gal[gal].ColdGas = 0.0;
             Gal[gal].MetalsColdGas = 0.0;
-            for(i=0; i<30; i++)
+            for(i=0; i<N_BINS; i++)
             {
                 Gal[gal].DiscGas[i] = 0.0;
                 Gal[gal].DiscGasMetals[i] = 0.0;
@@ -155,7 +155,7 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
         }
         else if(Gal[gal].ColdGas > 0.0)
         {
-            for(i=1; i<30; i++)
+            for(i=1; i<N_BINS; i++)
             {
                 //area = M_PI * (pow(get_annulus_radius(gal,i+1), 2.0) - pow(get_annulus_radius(gal,i), 2.0)) * pow(UnitLength_in_cm, 2.0);
                 area = M_PI * (pow(Gal[gal].DiscRadii[i+1], 2.0) - pow(Gal[gal].DiscRadii[i], 2.0)) * pow(UnitLength_in_cm, 2.0);
@@ -164,7 +164,7 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
                 if(rho_IGM*v_gal2 >= 2*M_PI*GRAVITY*Sigma_gas*Sigma_gas) // Currently no accounting for gravity of stellar disc
                 {
                     //printf("LHS, RHS of RPS = %e, %e\n", rho_IGM*v_gal2, 2*M_PI*GRAVITY*Sigma_gas*Sigma_gas);
-                    for(j=i; j<30; j++)
+                    for(j=i; j<N_BINS; j++)
                     {
                         Gal[centralgal].HotGas += Gal[gal].DiscGas[i];
                         Gal[centralgal].MetalsHotGas += Gal[gal].DiscGasMetals[i];
