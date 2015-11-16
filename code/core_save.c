@@ -136,7 +136,7 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
   o->Vmax = g->Vmax;
   o->VelDisp = Halo[g->HaloNr].VelDisp;
     
-    for(j=0; j<NBINS+1; j++)
+    for(j=0; j<31; j++)
     o->DiscRadii[j] = g->DiscRadii[j];
     
   o->ColdGas = g->ColdGas;
@@ -176,7 +176,7 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
     else
         o->FirstUnstableAvStar = 0.0;
   
-  for(j=0; j<NBINS; j++)
+  for(j=0; j<30; j++)
   {
 	o->DiscGas[j] = g->DiscGas[j];
 	o->DiscStars[j] = g->DiscStars[j];

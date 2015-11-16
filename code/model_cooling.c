@@ -169,7 +169,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
   double metallicity, coolingGasBin, coolingGasBinSum, DiscGasSum, DiscGasSum_new, cos_angle_disc_new, cos_angle_halo_new, ratio_last_bin, high_bound, disc_spin_mag, J_disc, J_cool;
   double r_inner, r_outer;
   double HaloSpin[3], DiscNewSpin[3];
-  double OldDisc[NBINS], OldDiscMetals[NBINS], RetroGas[NBINS];
+  double OldDisc[30], OldDiscMetals[30], RetroGas[30];
   int i, j, k, j_old;
 
   // Check that Cold Gas has been treated properly prior to this function
@@ -231,14 +231,14 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 	if(cos_angle_disc_new != 1.0)
 	{
 		// Project current disc to new orientation -- I have a function to shorten code here
-		for(i=0; i<NBINS; i++)
+		for(i=0; i<30; i++)
 		{
 			OldDisc[i] = Gal[p].DiscGas[i];
 			OldDiscMetals[i] = Gal[p].DiscGasMetals[i];
 		}
 		j_old = 0;
 	
-		for(i=0; i<NBINS; i++)
+		for(i=0; i<30; i++)
 		{
 			high_bound = DiscBinEdge[i+1] / fabs(cos_angle_disc_new);
 			j = j_old;
@@ -246,7 +246,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 			while(DiscBinEdge[j]<=high_bound)
 			{
 				j++;
-				if(j==NBINS) break;
+				if(j==30) break;
 			} 
 			j -= 1;
 			
@@ -260,11 +260,10 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 				OldDisc[k] = 0.0;
 				OldDiscMetals[k] = 0.0;
 			}
-			if(i!=NBINS-1)
+			if(i!=29)
 			{
-				if(j!=NBINS-1){
+				if(j!=29){
 					ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (DiscBinEdge[j+1]-DiscBinEdge[j]), 2.0);
-                    if(ratio_last_bin>1.0) printf("ratio_last_bin is %e\n", ratio_last_bin);
 					assert(ratio_last_bin<=1.0);}
 				else if(high_bound < Gal[p].Rvir/Gal[p].Vvir){
 					ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (Gal[p].Rvir/Gal[p].Vvir-DiscBinEdge[j]), 2.0);
@@ -298,11 +297,11 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
     }
 	assert(DiscGasSum <= 1.001*DiscGasSum_new && DiscGasSum >= DiscGasSum_new/1.001);
 	assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
-	for(i=0; i<NBINS; i++) assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);	
+	for(i=0; i<30; i++) assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);	
 	
     if(coolingGas < Gal[p].HotGas)
     {
-	  for(i=0; i<NBINS; i++)
+	  for(i=0; i<30; i++)
       {
           
         //r_inner = get_annulus_radius(p, i) / fabs(cos_angle_halo_new);
@@ -317,7 +316,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
               printf("r_inner, r_outer, DiskScaleRadius = %e, %e, %e\n", r_inner, r_outer, Gal[p].DiskScaleRadius);
               printf("DiscRadii, cos_angle = %e, %e\n", Gal[p].DiscRadii[i+1], fabs(cos_angle_halo_new));}
 
-		if(coolingGasBin + coolingGasBinSum > coolingGas || i==NBINS-1)
+		if(coolingGasBin + coolingGasBinSum > coolingGas || i==29)
 		  coolingGasBin = coolingGas - coolingGasBinSum;
 		
         if(Gal[p].DiscGasMetals[i]>Gal[p].DiscGas[i])
@@ -343,11 +342,11 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
       Gal[p].MetalsHotGas -= metallicity * coolingGas;
 	  assert(Gal[p].ColdGas == Gal[p].ColdGas);
 	  assert(Gal[p].MetalsHotGas <= Gal[p].HotGas);
-	  for(i=0; i<NBINS; i++) assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
+	  for(i=0; i<30; i++) assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
     }
     else
     {
-	  for(i=0; i<NBINS; i++)
+	  for(i=0; i<30; i++)
       {
           //r_inner = get_annulus_radius(p, i) / fabs(cos_angle_halo_new);
           //r_outer = get_annulus_radius(p, i+1) / fabs(cos_angle_halo_new);
@@ -356,7 +355,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
           
 		coolingGasBin = (Gal[p].HotGas / Gal[p].DiskScaleRadius) * (exp(-r_inner/Gal[p].DiskScaleRadius)*(r_inner + Gal[p].DiskScaleRadius) - exp(-r_outer/Gal[p].DiskScaleRadius)*(r_outer + Gal[p].DiskScaleRadius));
 		assert(coolingGasBin>=0.0);
-		if(coolingGasBin + coolingGasBinSum > coolingGas || i==NBINS-1)
+		if(coolingGasBin + coolingGasBinSum > coolingGas || i==29)
 		  coolingGasBin = coolingGas - coolingGasBinSum;
 
 		Gal[p].DiscGas[i] += coolingGasBin;
@@ -374,7 +373,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
       Gal[p].HotGas = 0.0;
       Gal[p].MetalsHotGas = 0.0;
 	  assert(Gal[p].ColdGas == Gal[p].ColdGas);
-	  for(i=0; i<NBINS; i++) assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
+	  for(i=0; i<30; i++) assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
     }
 			
     // Set spin of new disc
@@ -391,15 +390,15 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 }
 
 
-void retrograde_gas_collision(int p, double RetroGas[NBINS], double cos_angle_halo_new, double cos_angle_disc_new, double J_disc, double J_cool)
+void retrograde_gas_collision(int p, double RetroGas[30], double cos_angle_halo_new, double cos_angle_disc_new, double J_disc, double J_cool)
 {
 	double J_sum, J_retro, bin_ratio;
-	double NewDisc[NBINS];
-	double NewDiscMetals[NBINS];
+	double NewDisc[30];
+	double NewDiscMetals[30];
 	int i;
 	
 	//, RetroSum,  high_bound, ratio_last_bin;
-	//double OldDisc[NBINS], OldDiscMetals[NBINS];
+	//double OldDisc[30], OldDiscMetals[30];
 	//int i, j, j_old, k;
 	
 	J_sum = J_disc*fabs(cos_angle_disc_new) + J_cool*fabs(cos_angle_halo_new);
@@ -416,12 +415,12 @@ void retrograde_gas_collision(int p, double RetroGas[NBINS], double cos_angle_ha
 	// Change the bin edges by the ratio of what the ang mom should be to the actual current ang mom
 	bin_ratio = (J_sum - 2.0*J_retro) / J_sum;
 	
-	for(i=0; i<NBINS; i++) assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
+	for(i=0; i<30; i++) assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
 	
 	project_disc(Gal[p].DiscGas, bin_ratio, p, NewDisc);
 	project_disc(Gal[p].DiscGasMetals, bin_ratio, p, NewDiscMetals);
 	
-	for(i=0; i<NBINS; i++)
+	for(i=0; i<30; i++)
 	{
 		Gal[p].DiscGas[i] = NewDisc[i];
 		Gal[p].DiscGasMetals[i] = NewDiscMetals[i];
@@ -429,21 +428,21 @@ void retrograde_gas_collision(int p, double RetroGas[NBINS], double cos_angle_ha
 	}
 	
 	// Project the smaller bins back to the original bins
-	// for(i=0; i<NBINS; i++)
+	// for(i=0; i<30; i++)
 	// {
 	// 	OldDisc[i] = Gal[p].DiscGas[i];
 	// 	OldDiscMetals[i] = Gal[p].DiscGasMetals[i];
 	// }
 	// j_old = 0;
 	// 
-	// for(i=0; i<NBINS; i++)
+	// for(i=0; i<30; i++)
 	// {
 	// 	high_bound = DiscBinEdge[i+1] / bin_ratio;
 	// 	j = j_old;
 	// 	while(DiscBinEdge[j]<=high_bound)
 	// 	{
 	// 		j++;
-	// 		if(j==NBINS) break;
+	// 		if(j==30) break;
 	// 	} 
 	// 	j -= 1;
 	// 	
@@ -457,9 +456,9 @@ void retrograde_gas_collision(int p, double RetroGas[NBINS], double cos_angle_ha
 	// 		OldDiscMetals[k] = 0.0;
 	// 	}
 	// 	
-	// 	if(i!=NBINS-1)
+	// 	if(i!=29)
 	// 	{
-	// 		if(j!=NBINS-1){
+	// 		if(j!=29){
 	// 			ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (DiscBinEdge[j+1]-DiscBinEdge[j]), 2.0);
 	// 			assert(ratio_last_bin<=1.0);}
 	// 		else if(high_bound < Gal[p].Rvir/Gal[p].Vvir){
