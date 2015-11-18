@@ -42,6 +42,8 @@ void init_galaxy(int p, int halonr)
     Gal[p].Vel[j] = Halo[halonr].Vel[j];
 	Gal[p].SpinStars[j] = Halo[halonr].Spin[j] / pow(pow(Halo[halonr].Spin[0], 2.0) + pow(Halo[halonr].Spin[1], 2.0) + pow(Halo[halonr].Spin[2], 2.0), 0.5);
 	Gal[p].SpinGas[j] = Halo[halonr].Spin[j] / pow(pow(Halo[halonr].Spin[0], 2.0) + pow(Halo[halonr].Spin[1], 2.0) + pow(Halo[halonr].Spin[2], 2.0), 0.5);
+    Gal[p].SpinClassicalBulge[j] = 0.0;
+    Gal[p].SpinSecularBulge[j] = 0.0;
   }
 
   Gal[p].Len = Halo[halonr].Len;
@@ -223,6 +225,12 @@ double get_disc_gas(int p)
 	DiscGasSum = DiscMetalsSum = 0.0;
 	for(l=0; l<N_BINS; l++)
 	{
+        if(Gal[p].DiscGas[l] < 1e-20) // Negligible gas content is negligible
+        {
+            Gal[p].DiscGas[l] = 0.0;
+            Gal[p].DiscGasMetals[l] = 0.0;
+        }
+        
 		DiscGasSum += Gal[p].DiscGas[l];
 		DiscMetalsSum += Gal[p].DiscGasMetals[l];
 	}
@@ -279,7 +287,7 @@ double get_disc_stars(int p)
     DiscStarSum = 0.0;
     for(l=0; l<N_BINS; l++)
     {
-        if(Gal[p].DiscStars[l] < 1e-11)
+        if(Gal[p].DiscStars[l] < 1e-11) // This would be less than a single star in an aperture.  Not likely.
         {
             Gal[p].DiscStars[l] = 0.0;
             Gal[p].DiscStarsMetals[l] = 0.0;

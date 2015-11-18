@@ -16,8 +16,8 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	double unstable_gas, unstable_stars, metallicity, stars, stars_sum, gas_sink;
     double r_inner, r_outer, r_av, Omega, Kappa, omega_R, c_s;
     double GG;
-	double NewStars[N_BINS], NewStarsMetals[N_BINS];
-	int i;
+	double NewStars[N_BINS], NewStarsMetals[N_BINS], spinmag;
+	int i, s;
     int first, first_gas, first_star;
 	
     GG = GRAVITY * UnitMass_in_g * UnitTime_in_s * UnitTime_in_s / pow(UnitLength_in_cm,3.0);
@@ -176,8 +176,15 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 			}
 			else
 			{
+                for(s=0; s<3; s++)
+                    Gal[p].SpinSecularBulge[s] = Gal[p].SpinSecularBulge[s]*Gal[p].SecularBulgeMass + Gal[p].SpinStars[s]*unstable_stars;
+                
 				Gal[p].SecularBulgeMass += unstable_stars;
 				Gal[p].SecularMetalsBulgeMass += metallicity * unstable_stars;
+                
+                spinmag = pow(pow(Gal[p].SpinSecularBulge[0],2.0)+pow(Gal[p].SpinSecularBulge[1],2.0)+pow(Gal[p].SpinSecularBulge[2],2.0),0.5);
+                for(s=0; s<3; s++)
+                    Gal[p].SpinSecularBulge[s] /= spinmag;
 			}
 		}
 	}

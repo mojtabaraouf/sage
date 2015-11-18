@@ -380,9 +380,6 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
         strip_from_satellite(halonr, centralgal, p);
 	
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
-	
-        // Update radii of the annuli
-        if(Gal[p].Mvir > 0 && Gal[p].Rvir > 0) update_disc_radii(p);
         
       // determine cooling gas given halo properties
       coolingGas = cooling_recipe(p, deltaT / STEPS);
@@ -397,6 +394,8 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 
+        // Update radii of the annuli
+        if(Gal[p].Mvir > 0 && Gal[p].Rvir > 0) update_disc_radii(p);
 	
 	  // stars form and then explode! 
       starformation_and_feedback(p, centralgal, time, deltaT / STEPS, halonr, step);

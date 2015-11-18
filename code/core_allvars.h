@@ -79,6 +79,8 @@ struct GALAXY_OUTPUT
   double DiscStars[N_BINS];
   double SpinStars[3];
   double SpinGas[3];
+  double SpinSecularBulge[3];
+  double SpinClassicalBulge[3];
   double StarsInSitu;
   double StarsInstability;
   double StarsMergeBurst;
@@ -169,6 +171,8 @@ struct GALAXY
   double DiscStars[N_BINS];
   double SpinStars[3];
   double SpinGas[3];
+  double SpinSecularBulge[3];
+  double SpinClassicalBulge[3];
   double StarsInSitu;
   double StarsInstability;
   double StarsMergeBurst;
@@ -340,7 +344,7 @@ extern int TreeID;
 extern int FileNum;
 
 double DiscBinEdge[N_BINS+1];
-
+int RetroCount, ProCount;
 
 
 #endif  // #ifndef ALLVARS_H

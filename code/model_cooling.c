@@ -171,6 +171,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
   double HaloSpin[3], DiscNewSpin[3];
   double OldDisc[N_BINS], OldDiscMetals[N_BINS], RetroGas[N_BINS];
   int i, j, k, j_old;
+  double jfrac1, jfrac2;
 
   // Check that Cold Gas has been treated properly prior to this function
   DiscGasSum = get_disc_gas(p);
@@ -224,6 +225,8 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 		cos_angle_disc_new = 1.0;
 		cos_angle_halo_new = 1.0;
 		J_disc = 0.0;
+        for(i=0; i<3; i++)
+            DiscNewSpin[i] = Halo[Gal[p].HaloNr].Spin[i] / pow(pow(Halo[Gal[p].HaloNr].Spin[0], 2.0) + pow(Halo[Gal[p].HaloNr].Spin[1], 2.0) + pow(Halo[Gal[p].HaloNr].Spin[2], 2.0), 0.5);
 	}
 	
     assert(Gal[p].ColdGas == Gal[p].ColdGas);
@@ -303,13 +306,15 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
     {
 	  for(i=0; i<N_BINS; i++)
       {
+//          r_inner = Gal[p].DiscRadii[i] / fabs(cos_angle_halo_new);
+//          r_outer = Gal[p].DiscRadii[i+1] / fabs(cos_angle_halo_new);
+//          
+//		coolingGasBin = (coolingGas / Gal[p].DiskScaleRadius) * (exp(-r_inner/Gal[p].DiskScaleRadius)*(r_inner + Gal[p].DiskScaleRadius) - exp(-r_outer/Gal[p].DiskScaleRadius)*(r_outer + Gal[p].DiskScaleRadius));
           
-        //r_inner = get_annulus_radius(p, i) / fabs(cos_angle_halo_new);
-        //r_outer = get_annulus_radius(p, i+1) / fabs(cos_angle_halo_new);
-          r_inner = Gal[p].DiscRadii[i] / fabs(cos_angle_halo_new);
-          r_outer = Gal[p].DiscRadii[i+1] / fabs(cos_angle_halo_new);
+          jfrac1 = DiscBinEdge[i] / (Gal[p].Vvir * Gal[p].DiskScaleRadius);
+          jfrac2 = DiscBinEdge[i+1] / (Gal[p].Vvir * Gal[p].DiskScaleRadius);
           
-		coolingGasBin = (coolingGas / Gal[p].DiskScaleRadius) * (exp(-r_inner/Gal[p].DiskScaleRadius)*(r_inner + Gal[p].DiskScaleRadius) - exp(-r_outer/Gal[p].DiskScaleRadius)*(r_outer + Gal[p].DiskScaleRadius));
+          coolingGasBin = coolingGas * ((jfrac1+1.0)*exp(-jfrac1) - (jfrac2+1.0)*exp(-jfrac2));
           
           if(coolingGasBin!=coolingGasBin){
               printf("i, coolingGas, coolingGasBin = %d, %e, %e\n", i, coolingGas, coolingGasBin);
@@ -348,13 +353,17 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
     {
 	  for(i=0; i<N_BINS; i++)
       {
-          //r_inner = get_annulus_radius(p, i) / fabs(cos_angle_halo_new);
-          //r_outer = get_annulus_radius(p, i+1) / fabs(cos_angle_halo_new);
-          r_inner = Gal[p].DiscRadii[i] / fabs(cos_angle_halo_new);
-          r_outer = Gal[p].DiscRadii[i+1] / fabs(cos_angle_halo_new);
+//          r_inner = Gal[p].DiscRadii[i] / fabs(cos_angle_halo_new);
+//          r_outer = Gal[p].DiscRadii[i+1] / fabs(cos_angle_halo_new);
+//          
+//		coolingGasBin = (Gal[p].HotGas / Gal[p].DiskScaleRadius) * (exp(-r_inner/Gal[p].DiskScaleRadius)*(r_inner + Gal[p].DiskScaleRadius) - exp(-r_outer/Gal[p].DiskScaleRadius)*(r_outer + Gal[p].DiskScaleRadius));
+
+        jfrac1 = DiscBinEdge[i] / (Gal[p].Vvir * Gal[p].DiskScaleRadius);
+        jfrac2 = DiscBinEdge[i+1] / (Gal[p].Vvir * Gal[p].DiskScaleRadius);
           
-		coolingGasBin = (Gal[p].HotGas / Gal[p].DiskScaleRadius) * (exp(-r_inner/Gal[p].DiskScaleRadius)*(r_inner + Gal[p].DiskScaleRadius) - exp(-r_outer/Gal[p].DiskScaleRadius)*(r_outer + Gal[p].DiskScaleRadius));
-		assert(coolingGasBin>=0.0);
+        coolingGasBin = Gal[p].HotGas * ((jfrac1+1.0)*exp(-jfrac1) - (jfrac2+1.0)*exp(-jfrac2));
+          
+        assert(coolingGasBin>=0.0);
 		if(coolingGasBin + coolingGasBinSum > coolingGas || i==N_BINS-1)
 		  coolingGasBin = coolingGas - coolingGasBinSum;
 

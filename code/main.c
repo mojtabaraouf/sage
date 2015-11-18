@@ -116,6 +116,8 @@ int main(int argc, char **argv)
         DiscBinEdge[i] = FirstBin*(CM_PER_MPC/UnitLength_in_cm/1e3)/(UnitVelocity_in_cm_per_s/1e5) *pow(ExponentBin, i-1);
         //printf("Bin edge %d = %e\n", i, DiscBinEdge[i]);
     }
+    RetroCount = 0;
+    ProCount = 0;
 #ifdef MPI
   // A small delay so that processors don't use the same file
     printf("Small delay for processors\n");
@@ -194,7 +196,7 @@ int main(int argc, char **argv)
       
       finalize_galaxy_file(filenr);
       free_tree_table();
-      
+      printf("\nPro v retro = %d, %d", ProCount, RetroCount);
       printf("\ndone file %d\n\n", filenr);
   }
     

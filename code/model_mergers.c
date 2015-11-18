@@ -43,8 +43,8 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
   double mi, ma, mass_ratio, central_bulge_fraction;
   double R1, R2, Eini1, Eini2, Eorb, Erad;
   double disc_mass_ratio[N_BINS], PostRetroGas[N_BINS];
-  double DiscGasSum;
-  int i;
+  double DiscGasSum, spinmag;
+  int i, s;
 
 	for(i=0; i<N_BINS; i++) 
 	{
@@ -158,25 +158,51 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 	metallicity = get_metallicity(Gal[merger_centralgal].DiscGas[i], Gal[merger_centralgal].DiscGasMetals[i]);
 	assert(Gal[merger_centralgal].DiscGasMetals[i] <= Gal[merger_centralgal].DiscGas[i]);
 	
-	if(PostRetroGas[i] < Gal[merger_centralgal].DiscGas[i])
+	if(PostRetroGas[i] < 0.99*Gal[merger_centralgal].DiscGas[i])
 	{
 		unstable_gas = Gal[merger_centralgal].DiscGas[i] - PostRetroGas[i];
 		//stars = deal_with_unstable_gas(unstable_gas, merger_centralgal, i, Gal[merger_centralgal].Vvir, metallicity, centralgal, 0, get_annulus_radius(merger_centralgal,i), get_annulus_radius(merger_centralgal,i+1));
         stars = deal_with_unstable_gas(unstable_gas, merger_centralgal, i, Gal[merger_centralgal].Vvir, metallicity, centralgal, 0, Gal[merger_centralgal].DiscRadii[i], Gal[merger_centralgal].DiscRadii[i+1]);
 		Gal[merger_centralgal].StellarMass += (1 - RecycleFraction) * stars;
 		Gal[merger_centralgal].MetalsStellarMass += (1 - RecycleFraction) * metallicity * stars;
-		Gal[merger_centralgal].ClassicalBulgeMass += (1 - RecycleFraction) * stars;
-		Gal[merger_centralgal].ClassicalMetalsBulgeMass += (1 - RecycleFraction) * metallicity * stars;
 		Gal[merger_centralgal].SfrBulge[step] += stars / dt;
         Gal[merger_centralgal].StarsMergeBurst += (1 - RecycleFraction) * stars;
         assert(Gal[merger_centralgal].StellarMass >= (Gal[merger_centralgal].StarsInSitu+Gal[merger_centralgal].StarsInstability+Gal[merger_centralgal].StarsMergeBurst)/1.01 && Gal[merger_centralgal].StellarMass <= (Gal[merger_centralgal].StarsInSitu+Gal[merger_centralgal].StarsInstability+Gal[merger_centralgal].StarsMergeBurst)*1.01);
+        
+        // Add the new stars from the retrograde starburst to the classical bulge
+        for(s=0; s<3; s++)
+        {
+            Gal[merger_centralgal].SpinClassicalBulge[s] = Gal[merger_centralgal].SpinClassicalBulge[s]*Gal[merger_centralgal].ClassicalBulgeMass + Gal[merger_centralgal].SpinGas[s]*(1 - RecycleFraction)*stars;
+            assert(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY);
+        }
+        Gal[merger_centralgal].ClassicalBulgeMass += (1 - RecycleFraction) * stars;
+        Gal[merger_centralgal].ClassicalMetalsBulgeMass += (1 - RecycleFraction) * metallicity * stars;
+        spinmag = pow(pow(Gal[merger_centralgal].SpinClassicalBulge[0],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[1],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[2],2.0),0.5);
+        for(s=0; s<3; s++)
+        {
+            Gal[merger_centralgal].SpinClassicalBulge[s] /= spinmag;
+            
+            if(Gal[merger_centralgal].SpinClassicalBulge[s] != Gal[merger_centralgal].SpinClassicalBulge[s] || Gal[merger_centralgal].SpinClassicalBulge[s] == INFINITY)
+            {
+                printf("CBulgeMass, stars, unstable_gas = %e, %e, %e\n", Gal[merger_centralgal].ClassicalBulgeMass, stars, unstable_gas);
+                printf("PostRetro, DiscGas = %e, %e\n", PostRetroGas[i], Gal[merger_centralgal].DiscGas[i]);
+                printf("s, Spin, spinmag = %d, %e, %e\n", s, Gal[merger_centralgal].SpinClassicalBulge[s], spinmag);
+            }
+            
+            assert(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY);
+        }
+        spinmag = pow(pow(Gal[merger_centralgal].SpinClassicalBulge[0],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[1],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[2],2.0),0.5);
+        if(spinmag<0.99 || spinmag>1.01 || spinmag!=spinmag)
+            printf("spinmag, spin0, spin1, spin2 = %e, %e, %e, %e\n", spinmag, Gal[merger_centralgal].SpinClassicalBulge[0], Gal[merger_centralgal].SpinClassicalBulge[1], Gal[merger_centralgal].SpinClassicalBulge[2]);
+        assert(spinmag>0.99 && spinmag<1.01 && spinmag==spinmag);
+
 
 	}
   }
 
   if(mass_ratio > ThreshMajorMerger)
   {
-    make_bulge_from_burst(merger_centralgal);
+    stars_to_bulge(merger_centralgal, p);
     Gal[merger_centralgal].LastMajorMerger = time;
     Gal[p].mergeType = 2;  // Mark as major merger
   }
@@ -365,8 +391,8 @@ void quasar_mode_wind(int p, float BHaccrete)
 
 void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ratio, int centralgal, double dt, double *PostRetroGas)
 {
-  int step, i;
-  double DiscGasSum, CentralGasOrig;
+  int step, i, s;
+  double DiscGasSum, CentralGasOrig, spinmag;
 
 	CentralGasOrig = get_disc_gas(t);
 	assert(CentralGasOrig <= 1.01*Gal[t].ColdGas && CentralGasOrig >= Gal[t].ColdGas/1.01);
@@ -399,11 +425,11 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 	double sat_sam_mag, cos_angle_sat_disc, sat_sam_max, sat_sam_min;
 	int i_min, i_max, bin_num;
 	
+    sat_sam_mag = pow(sat_sam[0]*sat_sam[0] + sat_sam[1]*sat_sam[1] + sat_sam[2]*sat_sam[2], 0.5);
+      
 	//if(CentralGasOrig > 0.0 && Gal[p].ColdGas > 0.0)
 	if(Gal[p].ColdGas > 0.0)
 	{
-	
-		sat_sam_mag = pow(sat_sam[0]*sat_sam[0] + sat_sam[1]*sat_sam[1] + sat_sam[2]*sat_sam[2], 0.5);
 		cos_angle_sat_disc = (Gal[t].SpinGas[0]*sat_sam[0] + Gal[t].SpinGas[1]*sat_sam[1] + Gal[t].SpinGas[2]*sat_sam[2]) / sat_sam_mag; // Angle between ang mom of satellite and central's disc
 		sat_sam_mag *= fabs(cos_angle_sat_disc); // Project satellite's (gas) angular momentum onto central's disc
 	
@@ -413,6 +439,11 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 		if(sat_sam_min<0.0)
 			sat_sam_min = 0.0;
 		
+        if(cos_angle_sat_disc < 0.0)
+            RetroCount += 1;
+        else
+            ProCount += 1;
+        
 		i_min=0;
 		while(DiscBinEdge[i_min]<=sat_sam_min)
 		{
@@ -518,66 +549,87 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 	
     
 
-	if(Gal[p].StellarMass>0.0)
-	{
-		for(i=0; i<N_BINS; i++) assert(Gal[t].DiscStarsMetals[i] <= Gal[t].DiscStars[i]);
-		sat_sam_mag = pow(sat_sam[0]*sat_sam[0] + sat_sam[1]*sat_sam[1] + sat_sam[2]*sat_sam[2], 0.5);
-		cos_angle_sat_disc = (Gal[t].SpinStars[0]*sat_sam[0] + Gal[t].SpinStars[1]*sat_sam[1] + Gal[t].SpinStars[2]*sat_sam[2]) / sat_sam_mag; // Angle between ang mom of satellite and central's disc
-		sat_sam_mag *= fabs(cos_angle_sat_disc); // Project satellite's (gas) angular momentum onto central's disc
-	
-		// Consider that the satellite will have rotation and hence it will have a distribution of angular momentum to contribute
-		sat_sam_max =  sat_sam_mag  +  Gal[p].Vvir * fabs(cos_angle_sat_disc) * pow(pow(Gal[p].Pos[0]-Gal[t].Pos[0], 2.0) + pow(Gal[p].Pos[1]-Gal[t].Pos[1], 2.0) + pow(Gal[p].Pos[2]-Gal[t].Pos[2], 2.0), 0.5);
-		sat_sam_min = 2.0*sat_sam_mag - sat_sam_max;
-		if(sat_sam_min<0.0)
-			sat_sam_min = 0.0;
-		
-		i_min=0;
-		while(DiscBinEdge[i_min]<=sat_sam_min)
-		{
-			i_min++;
-			if(i_min==N_BINS) break;
-		}
-		i_min -= 1;
-	
-		i_max=i_min;
-		while(DiscBinEdge[i_max]<=sat_sam_max)
-		{
-			i_max++;
-			if(i_max==N_BINS) break;
-		}
-	
-		bin_num = i_max - i_min;
-	
-		for(i=i_min; i<i_max; i++)
-		{
-			Gal[t].DiscStars[i] += Gal[p].StellarMass / bin_num;
-			Gal[t].DiscStarsMetals[i] += Gal[p].MetalsStellarMass / bin_num;
-			assert(Gal[t].DiscStarsMetals[i] <= Gal[t].DiscStars[i]);
-		}
-	
-		// Check if the satellite is a retrograde orbiter and get ready to deal with it -- I'M NOT CONVINCED OF DOING THIS HERE!
-		if(cos_angle_sat_disc<0.0)
-		{
-			double J_retro = sat_sam_mag*Gal[p].StellarMass;
-			double J_sum = get_disc_ang_mom(t, 1);
-			if(J_sum > 2.0*J_retro)
-			{
-				for(i=0; i<N_BINS; i++) assert(Gal[t].DiscStarsMetals[i] <= Gal[t].DiscStars[i]);
-				double NewDisc[N_BINS], NewDiscMetals[N_BINS];
-				project_disc(Gal[t].DiscStars, (J_sum - 2.0*J_retro)/J_sum, t, NewDisc);
-				project_disc(Gal[t].DiscStarsMetals, (J_sum - 2.0*J_retro)/J_sum, t, NewDiscMetals);
-				for(i=0; i<N_BINS; i++)
-				{
-					Gal[t].DiscStars[i] = NewDisc[i];
-					Gal[t].DiscStarsMetals[i] = NewDiscMetals[i];
-					assert(Gal[t].DiscStarsMetals[i] <= Gal[t].DiscStars[i]);
-				}
-			}
-			// Still need to deal with satellite having more ang mom here
-		}
-		
-	}
+//	if(Gal[p].StellarMass>0.0)
+//	{
+//		for(i=0; i<N_BINS; i++) assert(Gal[t].DiscStarsMetals[i] <= Gal[t].DiscStars[i]);
+//		sat_sam_mag = pow(sat_sam[0]*sat_sam[0] + sat_sam[1]*sat_sam[1] + sat_sam[2]*sat_sam[2], 0.5);
+//		cos_angle_sat_disc = (Gal[t].SpinStars[0]*sat_sam[0] + Gal[t].SpinStars[1]*sat_sam[1] + Gal[t].SpinStars[2]*sat_sam[2]) / sat_sam_mag; // Angle between ang mom of satellite and central's disc
+//		sat_sam_mag *= fabs(cos_angle_sat_disc); // Project satellite's (gas) angular momentum onto central's disc
+//	
+//		// Consider that the satellite will have rotation and hence it will have a distribution of angular momentum to contribute
+//		sat_sam_max =  sat_sam_mag  +  Gal[p].Vvir * fabs(cos_angle_sat_disc) * pow(pow(Gal[p].Pos[0]-Gal[t].Pos[0], 2.0) + pow(Gal[p].Pos[1]-Gal[t].Pos[1], 2.0) + pow(Gal[p].Pos[2]-Gal[t].Pos[2], 2.0), 0.5);
+//		sat_sam_min = 2.0*sat_sam_mag - sat_sam_max;
+//		if(sat_sam_min<0.0)
+//			sat_sam_min = 0.0;
+//		
+//		i_min=0;
+//		while(DiscBinEdge[i_min]<=sat_sam_min)
+//		{
+//			i_min++;
+//			if(i_min==N_BINS) break;
+//		}
+//		i_min -= 1;
+//	
+//		i_max=i_min;
+//		while(DiscBinEdge[i_max]<=sat_sam_max)
+//		{
+//			i_max++;
+//			if(i_max==N_BINS) break;
+//		}
+//	
+//		bin_num = i_max - i_min;
+//	
+//		for(i=i_min; i<i_max; i++)
+//		{
+//			Gal[t].DiscStars[i] += Gal[p].StellarMass / bin_num;
+//			Gal[t].DiscStarsMetals[i] += Gal[p].MetalsStellarMass / bin_num;
+//			assert(Gal[t].DiscStarsMetals[i] <= Gal[t].DiscStars[i]);
+//		}
+//	
+//		// Check if the satellite is a retrograde orbiter and get ready to deal with it -- I'M NOT CONVINCED OF DOING THIS HERE!
+//		if(cos_angle_sat_disc<0.0)
+//		{
+//			double J_retro = sat_sam_mag*Gal[p].StellarMass;
+//			double J_sum = get_disc_ang_mom(t, 1);
+//			if(J_sum > 2.0*J_retro)
+//			{
+//				for(i=0; i<N_BINS; i++) assert(Gal[t].DiscStarsMetals[i] <= Gal[t].DiscStars[i]);
+//				double NewDisc[N_BINS], NewDiscMetals[N_BINS];
+//				project_disc(Gal[t].DiscStars, (J_sum - 2.0*J_retro)/J_sum, t, NewDisc);
+//				project_disc(Gal[t].DiscStarsMetals, (J_sum - 2.0*J_retro)/J_sum, t, NewDiscMetals);
+//				for(i=0; i<N_BINS; i++)
+//				{
+//					Gal[t].DiscStars[i] = NewDisc[i];
+//					Gal[t].DiscStarsMetals[i] = NewDiscMetals[i];
+//					assert(Gal[t].DiscStarsMetals[i] <= Gal[t].DiscStars[i]);
+//				}
+//			}
+//			// Still need to deal with satellite having more ang mom here
+//		}
+//	}
 
+      // Now just going to throw stars into the bulge.  Ang mom conservation will average itself out.
+      if(Gal[p].StellarMass>0.0)
+      {
+          
+          for(s=0; s<3; s++)
+              Gal[t].SpinClassicalBulge[s] = Gal[t].SpinClassicalBulge[s]*Gal[t].ClassicalBulgeMass + sat_sam[s]*Gal[p].StellarMass/sat_sam_mag;
+          Gal[t].ClassicalBulgeMass += Gal[p].StellarMass;
+          Gal[t].ClassicalMetalsBulgeMass += Gal[p].MetalsStellarMass;
+          spinmag = pow(pow(Gal[t].SpinClassicalBulge[0],2.0)+pow(Gal[t].SpinClassicalBulge[1],2.0)+pow(Gal[t].SpinClassicalBulge[2],2.0),0.5);
+          for(s=0; s<3; s++)
+          {
+              assert(Gal[t].SpinClassicalBulge[s] == Gal[t].SpinClassicalBulge[s] && Gal[t].SpinClassicalBulge[s] != INFINITY);
+              Gal[t].SpinClassicalBulge[s] /= spinmag;
+          }
+          
+          spinmag = pow(pow(Gal[t].SpinClassicalBulge[0],2.0)+pow(Gal[t].SpinClassicalBulge[1],2.0)+pow(Gal[t].SpinClassicalBulge[2],2.0),0.5);
+          if(spinmag<0.99 || spinmag>1.01 || spinmag!=spinmag)
+              printf("spinmag, spin0, spin1, spin2 = %e, %e, %e, %e\n", spinmag, Gal[t].SpinClassicalBulge[0], Gal[t].SpinClassicalBulge[1], Gal[t].SpinClassicalBulge[2]);
+          assert(spinmag>0.99 && spinmag<1.01 && spinmag==spinmag);
+          
+      }
+      
   }
   else // Major mergers -- still needs work
   {
@@ -769,34 +821,48 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 
 
 
-void make_bulge_from_burst(int p)
+void stars_to_bulge(int t, int p)
 {
   int step, i;
+    double spinmag;
   
   // generate bulge 
-  Gal[p].ClassicalBulgeMass = Gal[p].StellarMass;
-  Gal[p].ClassicalMetalsBulgeMass = Gal[p].MetalsStellarMass;
+  Gal[t].ClassicalBulgeMass = Gal[t].StellarMass;
+  Gal[t].ClassicalMetalsBulgeMass = Gal[t].MetalsStellarMass;
   
-  Gal[p].SecularBulgeMass = 0.0;
-  Gal[p].SecularMetalsBulgeMass = 0.0;
+  Gal[t].SecularBulgeMass = 0.0;
+  Gal[t].SecularMetalsBulgeMass = 0.0;
 
   // Remove stars from the disc annuli
   for(i=0; i<N_BINS; i++)
   {
-	Gal[p].DiscStars[i] = 0.0;
-	Gal[p].DiscStarsMetals[i] = 0.0;
+	Gal[t].DiscStars[i] = 0.0;
+	Gal[t].DiscStarsMetals[i] = 0.0;
   }  
 
   // update the star formation rate 
   for(step = 0; step < STEPS; step++)
   {
-    Gal[p].SfrBulge[step] += Gal[p].SfrDisk[step];
-    Gal[p].SfrBulgeColdGas[step] += Gal[p].SfrDiskColdGas[step];
-    Gal[p].SfrBulgeColdGasMetals[step] += Gal[p].SfrDiskColdGasMetals[step];
-    Gal[p].SfrDisk[step] = 0.0;
-    Gal[p].SfrDiskColdGas[step] = 0.0;
-    Gal[p].SfrDiskColdGasMetals[step] = 0.0;
+    Gal[t].SfrBulge[step] += Gal[t].SfrDisk[step];
+    Gal[t].SfrBulgeColdGas[step] += Gal[t].SfrDiskColdGas[step];
+    Gal[t].SfrBulgeColdGasMetals[step] += Gal[t].SfrDiskColdGasMetals[step];
+    Gal[t].SfrDisk[step] = 0.0;
+    Gal[t].SfrDiskColdGas[step] = 0.0;
+    Gal[t].SfrDiskColdGasMetals[step] = 0.0;
   }
+    
+    // Set spin of new bulge
+    Gal[t].SpinClassicalBulge[0] = (Gal[p].Pos[1]-Gal[t].Pos[1])*(Gal[p].Vel[2]-Gal[t].Vel[2]) - (Gal[p].Pos[2]-Gal[t].Pos[2])*(Gal[p].Vel[1]-Gal[t].Vel[1]);
+    Gal[t].SpinClassicalBulge[1] = (Gal[p].Pos[2]-Gal[t].Pos[2])*(Gal[p].Vel[0]-Gal[t].Vel[0]) - (Gal[p].Pos[0]-Gal[t].Pos[0])*(Gal[p].Vel[2]-Gal[t].Vel[2]);
+    Gal[t].SpinClassicalBulge[2] = (Gal[p].Pos[0]-Gal[t].Pos[0])*(Gal[p].Vel[1]-Gal[t].Vel[1]) - (Gal[p].Pos[1]-Gal[t].Pos[1])*(Gal[p].Vel[0]-Gal[t].Vel[0]);
+    spinmag = pow(pow(Gal[t].SpinClassicalBulge[0],2.0)+pow(Gal[t].SpinClassicalBulge[1],2.0)+pow(Gal[t].SpinClassicalBulge[2],2.0),0.5);
+    for(i=0;i<3;i++)
+    {
+        Gal[t].SpinClassicalBulge[i] /= spinmag;
+        Gal[t].SpinSecularBulge[i] = 0.0;
+    }
+    spinmag = pow(pow(Gal[t].SpinClassicalBulge[0],2.0)+pow(Gal[t].SpinClassicalBulge[1],2.0)+pow(Gal[t].SpinClassicalBulge[2],2.0),0.5);
+    assert(spinmag>0.99 && spinmag<1.01);
 }
 
 void disrupt_satellite_to_ICS(int centralgal, int gal)

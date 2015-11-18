@@ -126,6 +126,8 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
     o->Spin[j] = Halo[g->HaloNr].Spin[j];
     o->SpinStars[j] = g->SpinStars[j];
     o->SpinGas[j] = g->SpinGas[j];
+      o->SpinSecularBulge[j] = g->SpinSecularBulge[j];
+      o->SpinClassicalBulge[j] = g->SpinClassicalBulge[j];
   }
 
   o->Len = g->Len;
