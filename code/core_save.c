@@ -212,7 +212,7 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
   
   if(g->ClassicalBulgeMass + g->SecularBulgeMass > 0.0)
     o->BulgeEffectiveRadius = 
-      ((g->ClassicalBulgeMass * g->ClassicalBulgeRadius) + (g->SecularBulgeMass * 0.2*g->DiskScaleRadius*3.5)) /
+      ((g->ClassicalBulgeMass * g->ClassicalBulgeRadius) + (g->SecularBulgeMass * 0.2*g->DiskScaleRadius)) /
          (g->ClassicalBulgeMass + g->SecularBulgeMass);
   else 
     o->BulgeEffectiveRadius = 0.0;

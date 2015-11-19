@@ -125,8 +125,8 @@ void init_galaxy(int p, int halonr)
 
 double get_disk_radius(int halonr, int p)
 {
-  // See Mo, Shude & White (1998) eq12, and using a Bullock style lambda.
-  double SpinMagnitude, SpinParameter;
+  // See Mo, Mao & White (1998) eq12, and using a Bullock style lambda.
+  double SpinMagnitude, SpinParameter, radius;
   
 	SpinMagnitude = sqrt(Halo[halonr].Spin[0] * Halo[halonr].Spin[0] + 
 		Halo[halonr].Spin[1] * Halo[halonr].Spin[1] + Halo[halonr].Spin[2] * Halo[halonr].Spin[2]);
@@ -135,8 +135,13 @@ double get_disk_radius(int halonr, int p)
   //if(SpinMagnitude > 1.5) SpinMagnitude = 1.5;
   
   SpinParameter = SpinMagnitude / (1.414 * Gal[p].Vvir * Gal[p].Rvir);
+
+  radius = (SpinParameter / 1.414) * Gal[p].Rvir;
     
-  return (SpinParameter / 1.414) * Gal[p].Rvir;
+  if(radius < 0.0 || radius!=radius || radius==INFINITY)
+      radius = 0.0;
+    
+  return radius;
 
 }
 
@@ -372,8 +377,6 @@ void update_disc_radii(int p)
     double z, a, b, c_DM, c, r_2, X, M_DM_tot, rho_const;
     double a_B, M_B_inf, M_B_tot, a_ICS, M_ICS_inf;
     
-    double GG = GRAVITY * UnitMass_in_g * UnitTime_in_s * UnitTime_in_s / pow(UnitLength_in_cm,3.0);
-
     // Try to stably set discs up first -- this might no longer be necessary with NFW treatment
     M_D = Gal[p].StellarMass + Gal[p].ColdGas - Gal[p].SecularBulgeMass - Gal[p].ClassicalBulgeMass;
     if(M_D == 0.0)
@@ -405,14 +408,27 @@ void update_disc_radii(int p)
     
     // Determine distribution for bulge and ICS ==================
     M_B_tot = Gal[p].SecularBulgeMass + Gal[p].ClassicalBulgeMass;
-    a_B = pow(10.0, (log10(M_B_tot*UnitMass_in_g/SOLAR_MASS/Hubble_h)-10.21)/1.13) * (CM_PER_MPC/1e3) / UnitLength_in_cm * Hubble_h; // Sofue 2015
-    if(a_B > Gal[p].Rvir/40.0) a_B = Gal[p].Rvir/40.0; // Arbitrary upper limit.  May want to motivate/change later.
+    //a_B = pow(10.0, (log10(M_B_tot*UnitMass_in_g/SOLAR_MASS/Hubble_h)-10.21)/1.13) * (CM_PER_MPC/1e3) / UnitLength_in_cm * Hubble_h; // Sofue 2015
+    //if(a_B > Gal[p].Rvir/40.0) a_B = Gal[p].Rvir/40.0; // Arbitrary upper limit.  May want to motivate/change later.
+    if(M_B_tot > 0.0)
+        a_B = ((Gal[p].ClassicalBulgeMass * Gal[p].ClassicalBulgeRadius) + (Gal[p].SecularBulgeMass * 0.2*Gal[p].DiskScaleRadius)) / M_B_tot / (1.0 + sqrt(0.5));
+    else
+        a_B = 0.0;
+    
+    if(a_B!=a_B || a_B==INFINITY || a_B<0)
+    {
+        printf("a_B = %e\n", a_B);
+        printf("Secular, Classical masses = %e, %e\n", Gal[p].SecularBulgeMass, Gal[p].ClassicalBulgeMass);
+        printf("Classical, Disk radii = %e, %e\n", Gal[p].ClassicalBulgeRadius, Gal[p].DiskScaleRadius);
+        ABORT(1);
+    }
+    
     M_B_inf = M_B_tot * pow((Gal[p].Rvir+a_B)/Gal[p].Rvir, 2.0);
     
     if(M_B_tot>0.0)
         a_ICS = 13.0 * a_B; // Gonzalez et al (2005)
     else if(Gal[p].DiskScaleRadius>0.0)
-        a_ICS = 3.0 * Gal[p].DiskScaleRadius; // This is totally arbitrary and essentially a placeholder
+        a_ICS = 13.0 * 0.2*Gal[p].DiskScaleRadius; // Feeding Fisher & Drory (2008) relation into Gonzalez et al (2005)
     else if(Gal[p].ICS > 0.0)
         printf("Issue with ICS size\n");
     M_ICS_inf = Gal[p].ICS * pow((Gal[p].Rvir+a_ICS)/Gal[p].Rvir, 2.0);
@@ -439,7 +455,7 @@ void update_disc_radii(int p)
                 M_hot = Gal[p].HotGas * r_try / Gal[p].Rvir;
                 M_int = M_DM + M_D + M_B + M_ICS + M_hot + Gal[p].BlackHoleMass;
                 
-                j_try = sqrt(GG*M_int*r_try);
+                j_try = sqrt(G*M_int*r_try);
                 dif = j_try/DiscBinEdge[i] - 1.0;
                 
                 if(j_try!=j_try || j_try<=0 || j_try==INFINITY)

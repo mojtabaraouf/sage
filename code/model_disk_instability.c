@@ -15,12 +15,10 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	double Q_star, Q_gas, V_rot, Q_gas_min;
 	double unstable_gas, unstable_stars, metallicity, stars, stars_sum, gas_sink;
     double r_inner, r_outer, r_av, Omega, Kappa, omega_R, c_s;
-    double GG;
 	double NewStars[N_BINS], NewStarsMetals[N_BINS], spinmag;
 	int i, s;
     int first, first_gas, first_star;
 	
-    GG = GRAVITY * UnitMass_in_g * UnitTime_in_s * UnitTime_in_s / pow(UnitLength_in_cm,3.0);
     c_s = 1.7e6 / UnitVelocity_in_cm_per_s; // Speed of sound assumed for cold gas
     
 	for(i=0; i<N_BINS; i++){
@@ -58,7 +56,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
         // Q_gas assumes c_s=17 km/s.  Would have UnitLength_in_cm once more on both denominator and numerator for human-reading, but redundant
         //Q_gas = 1.7e6 * Omega*UnitVelocity_in_cm_per_s * (r_outer*r_outer - r_inner*r_inner)*UnitLength_in_cm / (GRAVITY * Gal[p].DiscGas[i]*UnitMass_in_g);
         
-        Q_gas = c_s * Omega * (r_outer*r_outer - r_inner*r_inner) / GG / Gal[p].DiscGas[i];
+        Q_gas = c_s * Omega * (r_outer*r_outer - r_inner*r_inner) / G / Gal[p].DiscGas[i];
         
 //        if(Gal[p].StellarMass>0.0)
 //            Q_gas_min = QGasMin * (1.0 - (Gal[p].SecularBulgeMass+Gal[p].ClassicalBulgeMass)/Gal[p].StellarMass);
@@ -145,7 +143,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
         //Q_star = 0.66 * V_rot*UnitVelocity_in_cm_per_s * (r_outer*r_outer - r_inner*r_inner)*UnitLength_in_cm * exp(-r_av/(2*Gal[p].DiskScaleRadius)) * Omega*UnitVelocity_in_cm_per_s / (GRAVITY * Gal[p].DiscStars[i]*UnitMass_in_g);
         
         omega_R = 0.5*Gal[p].Vvir*exp(-r_av/2.0/Gal[p].DiskScaleRadius);
-        Q_star = Kappa * omega_R * 0.935 * (r_outer*r_outer - r_inner*r_inner) / GG / Gal[p].DiscStars[i];
+        Q_star = Kappa * omega_R * 0.935 * (r_outer*r_outer - r_inner*r_inner) / G / Gal[p].DiscStars[i];
         
 		if(Q_star<QStarMin)
 		{
@@ -316,9 +314,19 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 void precess_gas(int p, double dt, int halonr)
 {
     int i;
-    double tdyn, deg_ann, deg, DiscGasSum, DiscStarSum, NewDisc[N_BINS], NewDiscMetals[N_BINS];
+    double tdyn, deg_ann, deg, DiscGasSum, DiscStarSum, NewDisc[N_BINS], NewDiscMetals[N_BINS], cos_angle_gas_stars;
+    double StarSpin[3];
     
-    double cos_angle_gas_stars = Gal[p].SpinStars[0]*Gal[p].SpinGas[0] + Gal[p].SpinStars[1]*Gal[p].SpinGas[1] + Gal[p].SpinStars[2]*Gal[p].SpinGas[2];
+    // Axis of symmetry assumed to be the bulge in a bulge-dominated system, else it's the disc
+    for(i=0; i<3; i++)
+    {
+        if(Gal[p].ClassicalBulgeMass>0.5*Gal[p].StellarMass)
+            StarSpin[i] = Gal[p].SpinClassicalBulge[i];
+        else
+            StarSpin[i] = Gal[p].SpinStars[i];
+    }
+    
+    cos_angle_gas_stars = StarSpin[0]*Gal[p].SpinGas[0] + StarSpin[1]*Gal[p].SpinGas[1] + StarSpin[2]*Gal[p].SpinGas[2];
         
     DiscGasSum = get_disc_gas(p);
     assert(DiscGasSum <= 1.001*Gal[p].ColdGas || DiscGasSum >= Gal[p].ColdGas/1.001);
@@ -350,17 +358,19 @@ void precess_gas(int p, double dt, int halonr)
             Gal[p].DiscGasMetals[i] = NewDiscMetals[i];
         }
         
-        if(cos_angle_precess == cos_angle_gas_stars && cos_angle_gas_stars >= 0.0)
-            for(i=0; i<3; i++) Gal[p].SpinGas[i] = Gal[p].SpinStars[i];
-        else if(cos_angle_precess == cos_angle_gas_stars && cos_angle_gas_stars < 0.0)
-            for(i=0; i<3; i++) Gal[p].SpinGas[i] = -Gal[p].SpinStars[i];
+        if(cos_angle_precess == fabs(cos_angle_gas_stars) && cos_angle_gas_stars >= 0.0)
+            for(i=0; i<3; i++) Gal[p].SpinGas[i] = StarSpin[i];
+        else if(cos_angle_precess == fabs(cos_angle_gas_stars) && cos_angle_gas_stars < 0.0)
+            for(i=0; i<3; i++) Gal[p].SpinGas[i] = -StarSpin[i];
         else
         {
             double axis[3], axis_mag, NewSpin[3];
             double sin_angle_precess = sin(acos(cos_angle_precess));
-            axis[0] = Gal[p].SpinGas[1]*Gal[p].SpinStars[2] - Gal[p].SpinGas[2]*Gal[p].SpinStars[1];
-            axis[1] = Gal[p].SpinGas[2]*Gal[p].SpinStars[0] - Gal[p].SpinGas[0]*Gal[p].SpinStars[2];
-            axis[2] = Gal[p].SpinGas[0]*Gal[p].SpinStars[1] - Gal[p].SpinGas[1]*Gal[p].SpinStars[0];
+            axis[0] = Gal[p].SpinGas[1]*StarSpin[2] - Gal[p].SpinGas[2]*StarSpin[1];
+            axis[1] = Gal[p].SpinGas[2]*StarSpin[0] - Gal[p].SpinGas[0]*StarSpin[2];
+            axis[2] = Gal[p].SpinGas[0]*StarSpin[1] - Gal[p].SpinGas[1]*StarSpin[0];
+            if(cos_angle_gas_stars < 0.0)
+                for(i=0; i<3; i++) axis[i] *= -1.0;
             axis_mag = pow(pow(axis[0],2.0)+pow(axis[1],2.0)+pow(axis[2],2.0),0.5);
             for(i=0; i<3; i++) axis[i] /= axis_mag;
             double dot = axis[0]*Gal[p].SpinGas[0] + axis[1]*Gal[p].SpinGas[1] + axis[2]*Gal[p].SpinGas[2];
@@ -372,7 +382,7 @@ void precess_gas(int p, double dt, int halonr)
                 if(NewSpin[i]!=NewSpin[i])
                 {
                     printf("angle, cos_angle_precess, cos_angle_gas_stars = %e, %e, %e\n", deg, cos_angle_precess, cos_angle_gas_stars);
-                    printf("SpinStars = %e, %e, %e\n", Gal[p].SpinStars[0], Gal[p].SpinStars[1], Gal[p].SpinStars[2]);
+                    printf("SpinStars = %e, %e, %e\n", StarSpin[0], StarSpin[1], StarSpin[2]);
                     printf("HaloSpin = %e, %e, %e\n", Halo[halonr].Spin[0], Halo[halonr].Spin[1], Halo[halonr].Spin[2]);
                     printf("axis = %e, %e, %e\n", axis[0], axis[1], axis[2]);
                     printf("NewSpin = %e, %e, %e \n", NewSpin[0], NewSpin[1], NewSpin[2]);

@@ -89,12 +89,12 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
   // pre-merger information needed to calculate the final classical bulge radius below
   if( mass_ratio > ThreshMajorMerger || central_bulge_fraction > 0.5)
   {
-    if( central_bulge_fraction > 0.5)
+    if( central_bulge_fraction > 0.5 && Gal[merger_centralgal].ClassicalBulgeRadius > 0.0)
       R1 = Gal[merger_centralgal].ClassicalBulgeRadius;
     else
       R1 = dmax(3.0 * Gal[merger_centralgal].DiskScaleRadius, Gal[merger_centralgal].ClassicalBulgeRadius);
 
-    if(Gal[p].ClassicalBulgeMass / Gal[p].StellarMass > 0.5)
+    if(Gal[p].ClassicalBulgeMass / Gal[p].StellarMass > 0.5 && Gal[p].ClassicalBulgeRadius > 0.0)
       R2 = Gal[p].ClassicalBulgeRadius;
     else
       R2 = dmax(3.0 * Gal[p].DiskScaleRadius, Gal[p].ClassicalBulgeRadius);
@@ -219,11 +219,33 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
   DiscGasSum = get_disc_gas(p);
   assert(DiscGasSum <= 1.01*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.01);
 	
-  if(mass_ratio > ThreshMajorMerger || central_bulge_fraction > 0.5)
+  if(mass_ratio > ThreshMajorMerger || central_bulge_fraction > 0.5 && ma>0.0)
   {
 	// Calculate the post-merger bulge radius
-    Gal[merger_centralgal].ClassicalBulgeRadius = 
-    G * pow(Gal[merger_centralgal].StellarMass + Gal[merger_centralgal].ColdGas, 2.0) / (Eini1 + Eini2 + Eorb + Erad);
+    double Efinal = Eini1 + Eini2 + Eorb + Erad;
+    if(Efinal>0.0)
+        Gal[merger_centralgal].ClassicalBulgeRadius = G * pow(Gal[merger_centralgal].StellarMass + Gal[merger_centralgal].ColdGas, 2.0) / Efinal;
+    else
+        Gal[merger_centralgal].ClassicalBulgeRadius = 0.0;
+      
+      
+    double BR = Gal[merger_centralgal].ClassicalBulgeRadius;
+      
+    if(Gal[merger_centralgal].ClassicalBulgeMass>0.0 && BR <= 0.0)
+    {
+        printf("BulgeMass, BulgeRadius = %e, %e\n", Gal[merger_centralgal].ClassicalBulgeMass, BR);
+        printf("Efinal, centralfraction = %e, %e\n", Efinal, central_bulge_fraction);
+        printf("Disk radii central, sat = %e, %e\n", Gal[merger_centralgal].DiskScaleRadius, Gal[p].DiskScaleRadius);
+        ABORT(0);
+    }
+      
+      if(BR!=BR || BR==INFINITY)
+      {
+          printf("BulgeRadius = %e\n", BR);
+          printf("SM, CGM = %e, %e\n", Gal[merger_centralgal].StellarMass, Gal[merger_centralgal].ColdGas);
+          printf("Eini1, Eini2, Eorb, Erad = %e, %e, %e, %e\n", Eini1, Eini2, Eorb, Erad);
+          ABORT(0);
+      }
   }
 }
 
