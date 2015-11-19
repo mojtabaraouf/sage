@@ -333,7 +333,7 @@ void precess_gas(int p, double dt, int halonr)
     
     DiscStarSum = get_disc_stars(p);
     
-    if(cos_angle_gas_stars<1.0 && DiscGasSum>0.0 && DiscStarSum>0.0)
+    if(fabs(cos_angle_gas_stars)<1.0 && DiscGasSum>0.0 && DiscStarSum>0.0)
     {
         deg = 0.0;
         for(i=0; i<N_BINS; i++)

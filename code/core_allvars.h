@@ -45,47 +45,47 @@ struct GALAXY_OUTPUT
     
   int   SnapNum;
   long long CentralGalaxyIndex;
-  double CentralMvir;
+  float CentralMvir;
 
   int   mergeType;  //0=none; 1=minor merger; 2=major merger; 3=disk instability; 4=disrupt to ICS
   int   mergeIntoID;
   int   mergeIntoSnapNum;
-  double   dT;
+  float   dT;
 
   // properties of subhalo at the last time this galaxy was a central galaaxy 
-  double Pos[3];
-  double Vel[3];
-  double Spin[3];
+  float Pos[3];
+  float Vel[3];
+  float Spin[3];
   int   Len;   
-  double Mvir;
-  double Rvir;
-  double Vvir;
-  double Vmax;
-  double VelDisp;
+  float Mvir;
+  float Rvir;
+  float Vvir;
+  float Vmax;
+  float VelDisp;
     
     // Radius of each annulus boundary
-    double DiscRadii[N_BINS+1];
+    float DiscRadii[N_BINS+1];
 
   // baryonic reservoirs 
-  double ColdGas;
-  double StellarMass;
-  double ClassicalBulgeMass;
-  double SecularBulgeMass;
-  double HotGas;
-  double EjectedMass;
-  double BlackHoleMass;
-  double ICS;
-  double DiscGas[N_BINS];
-  double DiscStars[N_BINS];
-  double SpinStars[3];
-  double SpinGas[3];
-  double SpinSecularBulge[3];
-  double SpinClassicalBulge[3];
-  double StarsInSitu;
-  double StarsInstability;
-  double StarsMergeBurst;
-    double DiscHI[N_BINS];
-    double DiscH2[N_BINS];
+  float ColdGas;
+  float StellarMass;
+  float ClassicalBulgeMass;
+  float SecularBulgeMass;
+  float HotGas;
+  float EjectedMass;
+  float BlackHoleMass;
+  float ICS;
+  float DiscGas[N_BINS];
+  float DiscStars[N_BINS];
+  float SpinStars[3];
+  float SpinGas[3];
+  float SpinSecularBulge[3];
+  float SpinClassicalBulge[3];
+  float StarsInSitu;
+  float StarsInstability;
+  float StarsMergeBurst;
+    float DiscHI[N_BINS];
+    float DiscH2[N_BINS];
 
     // Instability tracking
     int TotInstabEvents;
@@ -93,40 +93,40 @@ struct GALAXY_OUTPUT
     int TotInstabEventsStar;
     int TotInstabAnnuliGas;
     int TotInstabAnnuliStar;
-    double FirstUnstableAvGas;
-    double FirstUnstableAvStar;
-    double TotSinkGas[N_BINS];
-    double TotSinkStar[N_BINS];
+    float FirstUnstableAvGas;
+    float FirstUnstableAvStar;
+    float TotSinkGas[N_BINS];
+    float TotSinkStar[N_BINS];
     
   // metals
-  double MetalsColdGas;
-  double MetalsStellarMass;
-  double ClassicalMetalsBulgeMass;
-  double SecularMetalsBulgeMass;
-  double MetalsHotGas;
-  double MetalsEjectedMass;
-  double MetalsICS;
-  double DiscGasMetals[N_BINS];
-  double DiscStarsMetals[N_BINS];
+  float MetalsColdGas;
+  float MetalsStellarMass;
+  float ClassicalMetalsBulgeMass;
+  float SecularMetalsBulgeMass;
+  float MetalsHotGas;
+  float MetalsEjectedMass;
+  float MetalsICS;
+  float DiscGasMetals[N_BINS];
+  float DiscStarsMetals[N_BINS];
 
   // to calculate magnitudes
-  double SfrDisk;
-  double SfrBulge;
-  double SfrDiskZ;
-  double SfrBulgeZ;
+  float SfrDisk;
+  float SfrBulge;
+  float SfrDiskZ;
+  float SfrBulgeZ;
   
   // misc 
-  double DiskScaleRadius;
-  double BulgeEffectiveRadius;
-  double Cooling;
-  double Heating;
-  double LastMajorMerger;
-  double OutflowRate;
+  float DiskScaleRadius;
+  float BulgeEffectiveRadius;
+  float Cooling;
+  float Heating;
+  float LastMajorMerger;
+  float OutflowRate;
 
   //infall properties
-  double infallMvir;
-  double infallVvir;
-  double infallVmax;
+  float infallMvir;
+  float infallVvir;
+  float infallVmax;
 };
 
 
