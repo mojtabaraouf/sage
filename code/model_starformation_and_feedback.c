@@ -556,10 +556,13 @@ void project_disc(double DiscMass[N_BINS], double cos_angle, int p, double *NewD
 
 void update_HI_H2(int p)
 {
-    double f_H2_const, area, f_H2, f_H2_HI;
+    double area, f_H2, f_H2_HI, Pressure, f_sigma;
+    //double M_B_tot, M_B_inf, a_B, M_B, M_B_0;
     int i;
     
-    f_H2_const = 1.38e-3 * H2FractionFactor * pow((CM_PER_MPC*CM_PER_MPC/1e12 / SOLAR_MASS) * (UnitMass_in_g / UnitLength_in_cm / UnitLength_in_cm), 2.0*H2FractionExponent);
+    //f_H2_const = 1.38e-3 * H2FractionFactor * pow((CM_PER_MPC*CM_PER_MPC/1e12 / SOLAR_MASS) * (UnitMass_in_g / UnitLength_in_cm / UnitLength_in_cm), 2.0*H2FractionExponent);
+    double P_0 = 5.93e-12 / UnitMass_in_g * UnitLength_in_cm * UnitTime_in_s * UnitTime_in_s;
+    
     if(Gal[p].Vvir>0.0)
     {
         for(i=0; i<N_BINS; i++)
@@ -569,7 +572,29 @@ void update_HI_H2(int p)
             
             if(SFprescription!=2)
             {
-                f_H2_HI = f_H2_const * pow(pow(Gal[p].DiscGas[i]/area, 2.0) + 0.1*Gal[p].DiscGas[i]/area * pow(Gal[p].DiscStars[i]*Gal[p].DiscStars[0], 0.5)/area, H2FractionExponent);
+                // Determine bulge stars in each annulus
+//                M_B_tot = Gal[p].SecularBulgeMass + Gal[p].ClassicalBulgeMass;
+//                if(M_B_tot > 0.0)
+//                {
+//                    a_B = ((Gal[p].ClassicalBulgeMass * Gal[p].ClassicalBulgeRadius) + (Gal[p].SecularBulgeMass * 0.2*Gal[p].DiskScaleRadius)) / M_B_tot / (1.0 + sqrt(0.5));
+//                    M_B_inf = M_B_tot * pow((Gal[p].Rvir+a_B)/Gal[p].Rvir, 2.0);
+//                    M_B = M_B_inf * (pow(Gal[p].DiscRadii[i+1]/(Gal[p].DiscRadii[i+1] + a_B), 2.0) - pow(Gal[p].DiscRadii[i]/(Gal[p].DiscRadii[i] + a_B), 2.0));
+//                }
+//                else
+//                    M_B = 0.0;
+//                
+//                if(i==0)
+//                    M_B_0 = M_B;
+                
+                
+                f_sigma =  1.1e6/UnitVelocity_in_cm_per_s / (0.5*Gal[p].Vvir*exp(-(Gal[p].DiscRadii[i]+Gal[p].DiscRadii[i+1])/4.0/Gal[p].DiskScaleRadius)); // Ratio of gas vel dispersion to stars', assuming gas is always 11 km/s
+                Pressure = 0.5*M_PI*G * Gal[p].DiscGas[i] * (Gal[p].DiscGas[i] + f_sigma*Gal[p].DiscStars[i]) / pow(area,2.0);
+                f_H2_HI = H2FractionFactor * pow(Pressure/P_0, H2FractionExponent);
+                
+                //f_H2_HI = f_H2_const * pow(pow(Gal[p].DiscGas[i]/area, 2.0) + 0.1*Gal[p].DiscGas[i]/area * pow((Gal[p].DiscStars[i]+M_B)*(Gal[p].DiscStars[0]+M_B_0), 0.5)/area, H2FractionExponent);
+                
+                
+                
             }
             else
             {

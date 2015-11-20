@@ -14,12 +14,12 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	// New treatment of instabilities based on the Toomre Q parameter
 	double Q_star, Q_gas, V_rot, Q_gas_min;
 	double unstable_gas, unstable_stars, metallicity, stars, stars_sum, gas_sink;
-    double r_inner, r_outer, r_av, Omega, Kappa, omega_R, c_s;
+    double r_inner, r_outer, r_av, Omega, Kappa, sigma_R, c_s;
 	double NewStars[N_BINS], NewStarsMetals[N_BINS], spinmag;
 	int i, s;
     int first, first_gas, first_star;
 	
-    c_s = 1.7e6 / UnitVelocity_in_cm_per_s; // Speed of sound assumed for cold gas
+    c_s = 1.1e6 / UnitVelocity_in_cm_per_s; // Speed of sound assumed for cold gas, now set to be the same as vel disp of gas at 11 km/s
     
 	for(i=0; i<N_BINS; i++){
 		metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
@@ -48,15 +48,20 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
         
 //        if(r_inner<r0)
 //            Omega = V_rot / r0;
+//        if(i>0)
+//            Omega = DiscBinEdge[i] / r_inner / r_inner;
+//        else
+//            Omega = DiscBinEdge[i+1] / r_outer / r_outer;
+        
         if(i>0)
-            Omega = DiscBinEdge[i] / r_inner / r_inner;
+            Kappa = sqrt(2.0*DiscBinEdge[i]/pow(r_inner,3.0) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
         else
-            Omega = DiscBinEdge[i+1] / r_outer / r_outer;
+            Kappa = sqrt(2.0*DiscBinEdge[i+1]/pow(r_outer,3.0) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
         
         // Q_gas assumes c_s=17 km/s.  Would have UnitLength_in_cm once more on both denominator and numerator for human-reading, but redundant
         //Q_gas = 1.7e6 * Omega*UnitVelocity_in_cm_per_s * (r_outer*r_outer - r_inner*r_inner)*UnitLength_in_cm / (GRAVITY * Gal[p].DiscGas[i]*UnitMass_in_g);
         
-        Q_gas = c_s * Omega * (r_outer*r_outer - r_inner*r_inner) / G / Gal[p].DiscGas[i];
+        Q_gas = c_s * Kappa * (r_outer*r_outer - r_inner*r_inner) / G / Gal[p].DiscGas[i];
         
 //        if(Gal[p].StellarMass>0.0)
 //            Q_gas_min = QGasMin * (1.0 - (Gal[p].SecularBulgeMass+Gal[p].ClassicalBulgeMass)/Gal[p].StellarMass);
@@ -142,8 +147,8 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
         
         //Q_star = 0.66 * V_rot*UnitVelocity_in_cm_per_s * (r_outer*r_outer - r_inner*r_inner)*UnitLength_in_cm * exp(-r_av/(2*Gal[p].DiskScaleRadius)) * Omega*UnitVelocity_in_cm_per_s / (GRAVITY * Gal[p].DiscStars[i]*UnitMass_in_g);
         
-        omega_R = 0.5*Gal[p].Vvir*exp(-r_av/2.0/Gal[p].DiskScaleRadius);
-        Q_star = Kappa * omega_R * 0.935 * (r_outer*r_outer - r_inner*r_inner) / G / Gal[p].DiscStars[i];
+        sigma_R = 0.5*Gal[p].Vvir*exp(-r_av/2.0/Gal[p].DiskScaleRadius);
+        Q_star = Kappa * sigma_R * 0.935 * (r_outer*r_outer - r_inner*r_inner) / G / Gal[p].DiscStars[i];
         
 		if(Q_star<QStarMin)
 		{
@@ -190,6 +195,8 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	for(i=0; i<N_BINS; i++){
 		if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 		assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);}
+    
+    update_disc_radii(p);
 }
 
 double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, double metallicity, int centralgal, int direct_to_BH, double r_inner, double r_outer)
