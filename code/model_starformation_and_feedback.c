@@ -368,7 +368,7 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
 	
 	J_new = 0.0;
 	for(i=0; i<3; i++)
-		J_new += NewStars[i] * pow((pow(DiscBinEdge[i],2.0) + pow(DiscBinEdge[i+1],2.0))/2.0, 0.5); // The assumption that DiscBinEdge is now proportional to radius has broken down
+		J_new += NewStars[i] * (DiscBinEdge[i]+DiscBinEdge[i+1])/2.0; // The assumption that DiscBinEdge is now proportional to radius has broken down
 	
 	// Determine projection angles for combining discs
 	if(Gal[p].StellarMass > Gal[p].SecularBulgeMass + Gal[p].ClassicalBulgeMass)
@@ -559,6 +559,7 @@ void update_HI_H2(int p)
     double area, f_H2, f_H2_HI, Pressure, f_sigma;
     //double M_B_tot, M_B_inf, a_B, M_B, M_B_0;
     int i;
+    double angle = acos(Gal[p].DiscStars[0]*Gal[p].DiscGas[0] + Gal[p].DiscStars[1]*Gal[p].DiscGas[1] + Gal[p].DiscStars[2]*Gal[p].DiscGas[2])*180.0/M_PI;
     
     //f_H2_const = 1.38e-3 * H2FractionFactor * pow((CM_PER_MPC*CM_PER_MPC/1e12 / SOLAR_MASS) * (UnitMass_in_g / UnitLength_in_cm / UnitLength_in_cm), 2.0*H2FractionExponent);
     double P_0 = 5.93e-12 / UnitMass_in_g * UnitLength_in_cm * UnitTime_in_s * UnitTime_in_s;
@@ -586,9 +587,13 @@ void update_HI_H2(int p)
 //                if(i==0)
 //                    M_B_0 = M_B;
                 
-                
-                f_sigma =  1.1e6/UnitVelocity_in_cm_per_s / (0.5*Gal[p].Vvir*exp(-(Gal[p].DiscRadii[i]+Gal[p].DiscRadii[i+1])/4.0/Gal[p].DiskScaleRadius)); // Ratio of gas vel dispersion to stars', assuming gas is always 11 km/s
-                Pressure = 0.5*M_PI*G * Gal[p].DiscGas[i] * (Gal[p].DiscGas[i] + f_sigma*Gal[p].DiscStars[i]) / pow(area,2.0);
+                if(angle <=10.0)
+                {
+                    f_sigma =  1.1e6/UnitVelocity_in_cm_per_s / (0.5*Gal[p].Vvir*exp(-(Gal[p].DiscRadii[i]+Gal[p].DiscRadii[i+1])/4.0/Gal[p].DiskScaleRadius)); // Ratio of gas vel dispersion to stars', assuming gas is always 11 km/s
+                    Pressure = 0.5*M_PI*G * Gal[p].DiscGas[i] * (Gal[p].DiscGas[i] + f_sigma*Gal[p].DiscStars[i]) / pow(area,2.0);
+                }
+                else
+                    Pressure = 0.5*M_PI*G * pow(Gal[p].DiscGas[i]/area,2.0);
                 f_H2_HI = H2FractionFactor * pow(Pressure/P_0, H2FractionExponent);
                 
                 //f_H2_HI = f_H2_const * pow(pow(Gal[p].DiscGas[i]/area, 2.0) + 0.1*Gal[p].DiscGas[i]/area * pow((Gal[p].DiscStars[i]+M_B)*(Gal[p].DiscStars[0]+M_B_0), 0.5)/area, H2FractionExponent);

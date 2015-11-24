@@ -327,12 +327,12 @@ double get_disc_ang_mom(int p, int type)
 	if(type==0)
 	{
 		for(l=0; l<N_BINS; l++) // Calculation of average J_sum in bin no longer so straight forward
-			J_sum += Gal[p].DiscGas[l] * pow((pow(DiscBinEdge[l],2.0) + pow(DiscBinEdge[l+1],2.0))/2.0, 0.5);
+			J_sum += Gal[p].DiscGas[l] * (DiscBinEdge[l]+DiscBinEdge[l+1])/2.0;
 	}
 	else if(type==1)
 	{
 		for(l=0; l<N_BINS; l++)
-			J_sum += Gal[p].DiscStars[l] * pow((pow(DiscBinEdge[l],2.0) + pow(DiscBinEdge[l+1],2.0))/2.0, 0.5);
+			J_sum += Gal[p].DiscStars[l] * (DiscBinEdge[l]+DiscBinEdge[l+1])/2.0;
 	}
 	
 	return J_sum;
