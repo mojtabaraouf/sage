@@ -57,6 +57,7 @@ int SupernovaRecipeOn;
 int DiskInstabilityOn;
 int AGNrecipeOn;
 int SFprescription;
+int H2prescription;
 int GasPrecessionOn;
 int RamPressureOn;
 
@@ -79,15 +80,12 @@ double QuasarModeEfficiency;
 double BlackHoleGrowthRate;
 double H2FractionFactor;
 double H2FractionExponent;
-double QStarMin;
-double QGasMin;
+double QTotMin;
 double GasSinkRate;
 double DegPerTdyn;
 double Reionization_z0;
 double Reionization_zr;
 double ThresholdSatDisruption;
-double ClumpingFactor;
-
 
 // more misc 
 double UnitLength_in_cm,

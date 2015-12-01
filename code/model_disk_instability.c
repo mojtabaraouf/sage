@@ -12,7 +12,7 @@
 void check_disk_instability(int p, int centralgal, double time, double dt, int step)
 {
 	// New treatment of instabilities based on the Toomre Q parameter
-	double Q_star, Q_gas, V_rot, Q_gas_min, Q_star_min, Q_tot, W, Q_stable, Q_tot_min;
+	double Q_star, Q_gas, V_rot, Q_gas_min, Q_star_min, Q_tot, W, Q_stable;
 	double unstable_gas, unstable_stars, metallicity, stars, stars_sum, gas_sink;
     double r_inner, r_outer, r_av, Omega, Kappa, sigma_R, c_s;
 	double NewStars[N_BINS], NewStarsMetals[N_BINS], SNgas[N_BINS], spinmag, angle;
@@ -20,8 +20,6 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
     int first, first_gas, first_star;
 	
     c_s = 1.1e6 / UnitVelocity_in_cm_per_s; // Speed of sound assumed for cold gas, now set to be the same as vel disp of gas at 11 km/s
-    
-    Q_tot_min = 1.0;  // Will make this a parameter probably
     
     angle = acos(Gal[p].DiscStars[0]*Gal[p].DiscGas[0] + Gal[p].DiscStars[1]*Gal[p].DiscGas[1] + Gal[p].DiscStars[2]*Gal[p].DiscGas[2])*180.0/M_PI;
     
@@ -88,21 +86,21 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
             else
                 Q_tot = 1.0 / (1.0/Q_gas + W/Q_star);
             
-            if(Q_tot>=Q_tot_min)
+            if(Q_tot>=QTotMin)
                 continue;
             
-            Q_stable = Q_tot_min + W; // This would be the quantity to make both Q_s and Q_g if they're both lower than this.
+            Q_stable = QTotMin + W; // This would be the quantity to make both Q_s and Q_g if they're both lower than this.
             if(Q_gas<Q_stable && Q_star<Q_stable)
                 Q_gas_min = Q_stable;
             else if(Q_gas>=Q_stable && Q_star<Q_stable)
                 continue; // The stars' responsibility to sort out the instability
             else if(Q_gas<Q_stable && Q_star>=Q_stable)
-                Q_gas_min = 1.0 / (1.0/Q_tot_min - W/Q_star);
+                Q_gas_min = 1.0 / (1.0/QTotMin - W/Q_star);
         }
         else
-            Q_gas_min = Q_tot_min;
+            Q_gas_min = QTotMin;
         
-        assert(Q_gas_min >= Q_tot_min);
+        assert(Q_gas_min >= QTotMin);
         
         
 //        if(Gal[p].StellarMass>0.0)
@@ -202,28 +200,27 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
         
         sigma_R = 0.5*Gal[p].Vvir*exp(-r_av/2.0/Gal[p].DiskScaleRadius);
         
-        Q_star = Kappa * sigma_R * 0.935 * (r_outer*r_outer - r_inner*r_inner) / G / (Gal[p].DiscStars[i]+SNgas[i]);
-
         if(Gal[p].DiscGas[i]>0.0 && angle<=10.0)
         {
+            Q_star = Kappa * sigma_R * 0.935 * (r_outer*r_outer - r_inner*r_inner) / G / (Gal[p].DiscStars[i]+SNgas[i]);
             Q_gas = c_s * Kappa * (r_outer*r_outer - r_inner*r_inner) / G / (Gal[p].DiscGas[i]-SNgas[i]);
             
             W = 2.0*sigma_R*c_s / (sigma_R*sigma_R + c_s*c_s);
             if(Q_gas >= Q_star)
             {
                 Q_tot = 1.0 / (W/Q_gas + 1.0/Q_star);
-                Q_star_min = 1.0 / (1.0/Q_tot_min - W/Q_gas);
+                Q_star_min = 1.0 / (1.0/QTotMin - W/Q_gas);
             }
             else
             {
                 Q_tot = 1.0 / (1.0/Q_gas + W/Q_star);
-                Q_star_min = W / (1.0/Q_tot_min - 1.0/Q_gas);
+                Q_star_min = W / (1.0/QTotMin - 1.0/Q_gas);
             }
             
-            if(Q_tot>=Q_tot_min || Q_star>=Q_star_min)
+            if(Q_tot>=QTotMin || Q_star>=Q_star_min)
                 continue;
             
-            if(Q_gas < 0.9*Q_tot_min)
+            if(Q_gas < 0.9*QTotMin)
             {
                 printf("\nWarning, Q_gas too low after dealing with gas instabilities\n");
                 printf("Q_gas, Q_star, Q_tot = %e, %e, %e\n", Q_gas, Q_star, Q_tot);
@@ -233,7 +230,10 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
             }
         }
         else
-            Q_star_min = Q_tot_min;
+        {
+            Q_star = Kappa * sigma_R * 0.935 * (r_outer*r_outer - r_inner*r_inner) / G / Gal[p].DiscStars[i];
+            Q_star_min = QTotMin;
+        }
         
 
         
@@ -301,8 +301,8 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
     
 	// Let gas sink -- I may well want to change this formula
     gas_sink = GasSinkRate * unstable_gas;
-    if(Gal[p].StellarMass > 0.0)
-        gas_sink *= (1.0 - (Gal[p].SecularBulgeMass+Gal[p].ClassicalBulgeMass)/Gal[p].StellarMass); // / (1.0 + pow(280.0 / V_rot, 2.0));
+//    if(Gal[p].StellarMass > 0.0)
+//        gas_sink *= (1.0 - (Gal[p].SecularBulgeMass+Gal[p].ClassicalBulgeMass)/Gal[p].StellarMass); // / (1.0 + pow(280.0 / V_rot, 2.0));
     Gal[p].DiscGas[i] -= gas_sink;
     Gal[p].DiscGasMetals[i] -= metallicity * gas_sink;
     

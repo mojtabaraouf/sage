@@ -81,10 +81,6 @@ void read_parameter_file(char *fname)
   addr[nt] = &ReIncorporationFactor;
   id[nt++] = DOUBLE;
 
-  strcpy(tag[nt], "ClumpingFactor");
-  addr[nt] = &ClumpingFactor;
-  id[nt++] = DOUBLE;
-
   strcpy(tag[nt], "UnitVelocity_in_cm_per_s");
   addr[nt] = &UnitVelocity_in_cm_per_s;
   id[nt++] = DOUBLE;
@@ -117,6 +113,10 @@ void read_parameter_file(char *fname)
   addr[nt] = &SFprescription;
   id[nt++] = INT;
 
+  strcpy(tag[nt], "H2prescription");
+  addr[nt] = &H2prescription;
+  id[nt++] = INT;
+    
   strcpy(tag[nt], "AGNrecipeOn");
   addr[nt] = &AGNrecipeOn;
   id[nt++] = INT;
@@ -193,12 +193,8 @@ void read_parameter_file(char *fname)
     addr[nt] = &H2FractionExponent;
     id[nt++] = DOUBLE;
     
-    strcpy(tag[nt], "QStarMin");
-    addr[nt] = &QStarMin;
-    id[nt++] = DOUBLE;
-    
-    strcpy(tag[nt], "QGasMin");
-    addr[nt] = &QGasMin;
+    strcpy(tag[nt], "QTotMin");
+    addr[nt] = &QTotMin;
     id[nt++] = DOUBLE;
     
     strcpy(tag[nt], "GasSinkRate");

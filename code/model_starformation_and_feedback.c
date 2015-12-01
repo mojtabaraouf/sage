@@ -43,7 +43,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
     
   update_HI_H2(p);
     
-  if(SFprescription==3) // Prescription based on SAGE
+  if(SFprescription==2) // Prescription based on SAGE
   {
       reff = 3.0 * Gal[p].DiskScaleRadius;
       tdyn = reff / Gal[p].Vvir;
@@ -79,7 +79,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
             double SFE_gas = SFE_H2 * 0.75 * 1.0/(1.0/0.5 + 1) * (1 - Gal[p].DiscGasMetals[i]/Gal[p].DiscGas[i])/1.3 / Sig_gas_half;
             strdot = SfrEfficiency * SFE_gas * pow(Gal[p].DiscGas[i], 2.0) / area;
         }
-        else if(SFprescription==3)
+        else if(SFprescription==2)
             strdot = strdotfull * Gal[p].DiscH2[i] / H2sum;
         else
             strdot = SfrEfficiency * SFE_H2 * Gal[p].DiscH2[i];
@@ -240,24 +240,16 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 void update_from_star_formation(int p, double stars, double metallicity, int i)
 {
   // In older SAGE, this updated the gas and stellar components.  It only does the gas component now due to the way in which discs are handled.
-  
-  //double DiscNewSpin[3], OldDisc[30], OldDiscMetals[30];
-	
+  	
   // update gas and metals from star formation 
   Gal[p].DiscGas[i] -= (1 - RecycleFraction) * stars;
   Gal[p].DiscGasMetals[i] -= metallicity * (1 - RecycleFraction) * stars;
 
   if(Gal[p].DiscGasMetals[i] > Gal[p].DiscGas[i])
   	printf("update_from_star_formation report -- gas metals, gas mass = %e, %e\n", Gal[p].DiscGasMetals[i], Gal[p].DiscGas[i]);
-
- // Here's where I need to consider the offset of the gas and star discs
-  //Gal[p].DiscStars[i] += (1 - RecycleFraction) * stars;
-  //Gal[p].DiscStarsMetals[i] += metallicity * (1 - RecycleFraction) * stars;
   
   Gal[p].ColdGas -= (1 - RecycleFraction) * stars;
   Gal[p].MetalsColdGas -= metallicity * (1 - RecycleFraction) * stars;
-  //Gal[p].StellarMass += (1 - RecycleFraction) * stars;
-  //Gal[p].MetalsStellarMass += metallicity * (1 - RecycleFraction) * stars;
 
   if(Gal[p].DiscGas[i] < 0.0){
 	printf("DiscGas in update_SF...%e\n", Gal[p].DiscGas[i]);
@@ -358,11 +350,12 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
 	double Disc1[N_BINS], Disc1Metals[N_BINS], Disc2[N_BINS], Disc2Metals[N_BINS];
 	int i;
 	
-	for(i=0; i<N_BINS; i++){
+	for(i=0; i<N_BINS; i++)
+    {
 		assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
 		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
-		//double metallicity = get_metallicity(NewStars[i], NewStarsMetals[i]);
-		assert(NewStarsMetals[i] <= NewStars[i]);}
+		assert(NewStarsMetals[i] <= NewStars[i]);
+    }
 	
 	// Try not to get confused, where "new" here implies the newly formed stars.  In the cooling recipe, "new" meant the combined disc, here instead denoted "comb".
 	
@@ -423,7 +416,6 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
 	// Combine the discs
 	if(cos_angle_sdisc_comb<1.0)
     {
-        //printf("Combining two discs\n");
 		project_disc(Gal[p].DiscStars, cos_angle_sdisc_comb, p, Disc1);
 		project_disc(Gal[p].DiscStarsMetals, cos_angle_sdisc_comb, p, Disc1Metals);
 		project_disc(NewStars, cos_angle_new_comb, p, Disc2);
@@ -444,10 +436,8 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
 			assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
 		}
 	}
-	//else if(Gal[p].StellarMass == Gal[p].SecularMetalsBulgeMass + Gal[p].ClassicalMetalsBulgeMass)
     else
 	{
-        //printf("Should be 1.0 and is %e\n", cos_angle_sdisc_comb);
 		for(i=0; i<N_BINS; i++)
 		{
 			if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
@@ -460,8 +450,6 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
 			assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
 		}
 	}
-    //else
-    //printf("Nothing actually updated\n");
 	
 	// Readjust disc to deal with any retrograde stars
 	if(cos_angle_sdisc_comb<0.0)
@@ -557,36 +545,43 @@ void project_disc(double DiscMass[N_BINS], double cos_angle, int p, double *NewD
 void update_HI_H2(int p)
 {
     double area, f_H2, f_H2_HI, Pressure, f_sigma;
-    //double M_B_tot, M_B_inf, a_B, M_B, M_B_0;
     int i;
     double angle = acos(Gal[p].DiscStars[0]*Gal[p].DiscGas[0] + Gal[p].DiscStars[1]*Gal[p].DiscGas[1] + Gal[p].DiscStars[2]*Gal[p].DiscGas[2])*180.0/M_PI;
-    
-    //f_H2_const = 1.38e-3 * H2FractionFactor * pow((CM_PER_MPC*CM_PER_MPC/1e12 / SOLAR_MASS) * (UnitMass_in_g / UnitLength_in_cm / UnitLength_in_cm), 2.0*H2FractionExponent);
     double P_0 = 5.93e-12 / UnitMass_in_g * UnitLength_in_cm * UnitTime_in_s * UnitTime_in_s;
     
     if(Gal[p].Vvir>0.0)
     {
         for(i=0; i<N_BINS; i++)
         {
-            //area = M_PI * (pow(get_annulus_radius(p,i+1), 2.0) - pow(get_annulus_radius(p,i), 2.0));
             area = M_PI * (pow(Gal[p].DiscRadii[i+1],2.0) - pow(Gal[p].DiscRadii[i],2.0));
             
-            if(SFprescription!=2)
+            if(H2prescription==1)
             {
-                // Determine bulge stars in each annulus
-//                M_B_tot = Gal[p].SecularBulgeMass + Gal[p].ClassicalBulgeMass;
-//                if(M_B_tot > 0.0)
-//                {
-//                    a_B = ((Gal[p].ClassicalBulgeMass * Gal[p].ClassicalBulgeRadius) + (Gal[p].SecularBulgeMass * 0.2*Gal[p].DiskScaleRadius)) / M_B_tot / (1.0 + sqrt(0.5));
-//                    M_B_inf = M_B_tot * pow((Gal[p].Rvir+a_B)/Gal[p].Rvir, 2.0);
-//                    M_B = M_B_inf * (pow(Gal[p].DiscRadii[i+1]/(Gal[p].DiscRadii[i+1] + a_B), 2.0) - pow(Gal[p].DiscRadii[i]/(Gal[p].DiscRadii[i] + a_B), 2.0));
-//                }
-//                else
-//                    M_B = 0.0;
-//                
-//                if(i==0)
-//                    M_B_0 = M_B;
+                double s, Zp, chi, c_f, Sigma_comp0, Tau_c;
+                Zp = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]) / 0.02; // Might also want solar metal fraction to be variable too
                 
+                if(Zp>0.01 && Zp<1) // Fu et al. 2013
+                    c_f = pow(Zp, -0.7);
+                else if(Zp>=1)
+                    c_f = 1.0;
+                else // prescription from Fu not defined here, so assume clumping factor can't exceed this value ~25
+                    c_f = pow(0.01, -0.7);
+                
+                Sigma_comp0 = c_f * Gal[p].DiscGas[i]/area; // see Krumholz & Dekel 2012, originally comes from McKee & Krumholz 2010
+                Tau_c = 320 * Zp * Sigma_comp0 * UnitMass_in_g / UnitLength_in_cm / UnitLength_in_cm * Hubble_h;
+                chi = 3.1 * (1+ 3.1*pow(Zp,0.365)) / 4.1;
+                s = log(1 + 0.6*chi + 0.01*chi*chi) / (0.6*Tau_c);
+                if(s<2)
+                {
+                    f_H2 = 1.0 - 0.75*s/(1+0.25*s); // Not actual H2/cold, but rather H2/(H2+HI)
+                    f_H2_HI = 1.0 / (1.0/f_H2 - 1.0);
+                }
+                else
+                    f_H2_HI = 0.0;
+                
+            }
+            else
+            {
                 if(angle <=10.0)
                 {
                     f_sigma =  1.1e6/UnitVelocity_in_cm_per_s / (0.5*Gal[p].Vvir*exp(-(Gal[p].DiscRadii[i]+Gal[p].DiscRadii[i+1])/4.0/Gal[p].DiskScaleRadius)); // Ratio of gas vel dispersion to stars', assuming gas is always 11 km/s
@@ -595,39 +590,9 @@ void update_HI_H2(int p)
                 else
                     Pressure = 0.5*M_PI*G * pow(Gal[p].DiscGas[i]/area,2.0);
                 f_H2_HI = H2FractionFactor * pow(Pressure/P_0, H2FractionExponent);
-                
-                //f_H2_HI = f_H2_const * pow(pow(Gal[p].DiscGas[i]/area, 2.0) + 0.1*Gal[p].DiscGas[i]/area * pow((Gal[p].DiscStars[i]+M_B)*(Gal[p].DiscStars[0]+M_B_0), 0.5)/area, H2FractionExponent);
-                
-                
-                
+
             }
-            else
-            {
-                double s, Zp, chi, c_f, Sigma_comp0, Tau_c;
-//                c_f = 1.5; // Ideally this should be a free parameter
-//                Sigma_comp0 = c_f * (Gal[p].DiscGas[i]*1e10/Hubble_h)/(area*1e6/pow(Hubble_h,2.0));
-                Zp = Gal[p].DiscGasMetals[i] / Gal[p].DiscGas[i] / 0.02; // Might also want solar metal fraction to be variable too
-//                if(Zp>10.0) printf("Zp too high for recipe = %e\n", Zp);
-//                assert(Gal[p].DiscGas[i] >= Gal[p].DiscGasMetals[i]);
-//                chi = 2.3 * (1 + 3.1*pow(Zp,0.365)) / 3.0;
-//                double psi = chi * (2.5+chi) / (2.5+chi*2.71828);
-//                s = Sigma_comp0 * Zp / psi;
-//                f_H2_HI = pow(1+pow(s/11.0,3.0)*pow((125.0+s)/(96.0+s),3.0), (1.0/3.0)) - 1.0;
-                
-                if(Zp>0.01 && Zp<1)
-                    c_f = pow(Zp, -0.7);
-                else if(Zp>=1)
-                    c_f = 1.0;
-                else
-                    pow(0.01, -0.7);
-                
-                Sigma_comp0 = c_f * Gal[p].DiscGas[i]/area;
-                Tau_c = 0.66 * Zp *(Sigma_comp0 * (CM_PER_MPC*CM_PER_MPC/1e12 / SOLAR_MASS) * (UnitMass_in_g / UnitLength_in_cm / UnitLength_in_cm));
-                chi = 3.1 * (1+ 3.1*pow(Zp,0.365)) / 4.1;
-                s = log(1 + 0.6*chi + 0.01*chi*chi) / (0.6*Tau_c);
-                f_H2 = 1.0 - 0.75*s/(1+0.25*s); // Not actual H2/cold, but rather H2/(H2+HI)
-                f_H2_HI = 1.0 / (1.0/f_H2 - 1.0);
-            }
+
             
             if(f_H2_HI > 0.0)
             {
@@ -639,7 +604,7 @@ void update_HI_H2(int p)
             else
             {
                 Gal[p].DiscH2[i] = 0.0;
-                Gal[p].DiscHI[i] = 0.0;
+                Gal[p].DiscHI[i] = 0.75*(Gal[p].DiscGas[i]-Gal[p].DiscGasMetals[i])/1.3; // All properly cold hydrogen must be in the form of HI if there's no H2.
             }
         }
     }

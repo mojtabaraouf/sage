@@ -16,7 +16,6 @@ OBJS   = 	./code/main.o \
 			./code/model_reincorporation.o \
 			./code/model_mergers.o \
 			./code/model_misc.o \
-			./code/model_z_dependent_sf.o
 
 INCL   =	./code/core_allvars.h  \
 			./code/core_proto.h  \

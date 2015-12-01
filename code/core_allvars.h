@@ -287,6 +287,7 @@ extern int    SupernovaRecipeOn;
 extern int    DiskInstabilityOn;
 extern int    AGNrecipeOn;
 extern int    SFprescription;
+extern int    H2prescription;
 extern int    GasPrecessionOn;
 extern int    RamPressureOn;
 
@@ -305,14 +306,12 @@ extern double QuasarModeEfficiency;
 extern double BlackHoleGrowthRate;
 extern double H2FractionFactor;
 extern double H2FractionExponent;
-extern double QStarMin;
-extern double QGasMin;
+extern double QTotMin;
 extern double GasSinkRate;
 extern double DegPerTdyn;
 extern double Reionization_z0;
 extern double Reionization_zr;
 extern double ThresholdSatDisruption;
-extern double ClumpingFactor;
 
 extern double UnitLength_in_cm,
   UnitTime_in_s,
