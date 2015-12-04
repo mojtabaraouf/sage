@@ -86,7 +86,8 @@ struct GALAXY_OUTPUT
   float StarsMergeBurst;
     float DiscHI[N_BINS];
     float DiscH2[N_BINS];
-
+    float DiscSFR[N_BINS];
+    
     // Instability tracking
     int TotInstabEvents;
     int TotInstabEventsGas;
@@ -178,6 +179,7 @@ struct GALAXY
   double StarsMergeBurst;
     double DiscHI[N_BINS];
     double DiscH2[N_BINS];
+    double DiscSFR[N_BINS];
     
     // Instability tracking
     int TotInstabEvents;

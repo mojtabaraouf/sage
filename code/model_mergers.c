@@ -917,7 +917,9 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
 
  // This is the major and minor merger starburst recipe of Somerville et al. 2001. 
  // The coefficients in eburst are taken from TJ Cox's PhD thesis and should be more 
- // accurate then previous. 
+ // accurate then previous. The recipe has been modified to function for each annulus.
+    
+    double ejected_sum = 0.0;
 
  stars_sum = 0.0;
  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
@@ -976,10 +978,10 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
 		  reheated_mass = Gal[merger_centralgal].DiscGas[k] - (1-RecycleFraction)*stars;
 	    }
 	
-	    ejected_mass = (FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) / (CentralVvir * CentralVvir) - FeedbackReheatingEpsilon) * stars;
+        ejected_mass = (FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) * stars / (CentralVvir * CentralVvir) - reheated_mass);
 	    if(ejected_mass < 0.0)
 	        ejected_mass = 0.0;
-	
+          
 		assert(RecycleFraction*stars+reheated_mass <= 1.01*Gal[merger_centralgal].DiscGas[k]);
 	  }
 
@@ -995,6 +997,9 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
       reheated_mass = 0.0;
 	  ejected_mass = 0.0;
 	}
+      
+      ejected_sum += ejected_mass;
+      
 	if(reheated_mass!=reheated_mass || reheated_mass<0.0)
 		printf("reheated_mass, stars, fac, DiscGas -- %e\t%e\t%e\t%e\n", reheated_mass, stars, fac, Gal[merger_centralgal].DiscGas[k]);	
 	assert(reheated_mass >= 0.0);
@@ -1011,7 +1016,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
 	// update from feedback
 	metallicity = get_metallicity(Gal[merger_centralgal].DiscGas[k], Gal[merger_centralgal].DiscGasMetals[k]);
 	assert(Gal[merger_centralgal].DiscGasMetals[k] <= Gal[merger_centralgal].DiscGas[k]);
-	update_from_feedback(merger_centralgal, centralgal, reheated_mass, ejected_mass, metallicity, k);
+	update_from_feedback(merger_centralgal, centralgal, reheated_mass, metallicity, k);
  
     // Inject new metals from SN II
 	if(SupernovaRecipeOn == 1 && stars>1e-9)
@@ -1028,7 +1033,10 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
 	assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 	
 	stars_sum += stars;
+    Gal[merger_centralgal].DiscSFR[k] += stars / dt;
   }
+     
+     update_from_ejection(centralgal, ejected_sum);
 
   // Sum stellar discs together
   combine_stellar_discs(merger_centralgal, NewStars, NewStarsMetals);

@@ -145,6 +145,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 			assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
 			
 			stars_sum += stars;
+            Gal[p].DiscSFR[i] += stars / dt;
 			NewStars[i] = (1 - RecycleFraction) * stars;
 			NewStarsMetals[i] = (1 - RecycleFraction) * metallicity * stars;
 			assert(NewStarsMetals[i] <= NewStars[i]);
@@ -299,6 +300,8 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
     double GasOrig = Gal[p].DiscGas[i];
     double GasMetalsOrig = Gal[p].DiscGasMetals[i];
     
+    double ejected_sum = 0.0;
+    
 	// Let gas sink -- I may well want to change this formula
     gas_sink = GasSinkRate * unstable_gas;
 //    if(Gal[p].StellarMass > 0.0)
@@ -356,7 +359,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 		    }
 			else
 			{
-				ejected_mass = (FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) / (V_rot * V_rot) - FeedbackReheatingEpsilon) * stars;  // Maybe change V_rot to standard Vvir?
+                ejected_mass = (FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) * stars / (V_rot * V_rot) - reheated_mass);
 			    if(ejected_mass < 0.0)
 			        ejected_mass = 0.0;
 			}
@@ -367,6 +370,8 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 			ejected_mass = 0.0;
 		}
 				
+        ejected_sum += ejected_mass;
+        
 	    update_from_star_formation(p, stars, metallicity, i);
 	
 		if(reheated_mass > Gal[p].DiscGas[i] && reheated_mass < 1.01*Gal[p].DiscGas[i])
@@ -374,7 +379,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 		
 		metallicity_new = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
 		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
-	    update_from_feedback(p, centralgal, reheated_mass, ejected_mass, metallicity_new, i);
+	    update_from_feedback(p, centralgal, reheated_mass, metallicity_new, i);
 	
 		// Update metals from SN II feedback
 //		if(stars <= 1e-8)
@@ -400,6 +405,8 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
         }
 		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
 	}
+    
+    update_from_ejection(centralgal, ejected_sum);
 	
 	return stars;
 		
@@ -433,7 +440,8 @@ void precess_gas(int p, double dt, int halonr)
         deg = 0.0;
         for(i=0; i<N_BINS; i++)
         {
-            tdyn = pow((pow(DiscBinEdge[i],2.0)+pow(DiscBinEdge[i+1],2.0))/2.0, 0.5) / Gal[p].Vvir / Gal[p].Vvir;
+            //tdyn = pow((pow(DiscBinEdge[i],2.0)+pow(DiscBinEdge[i+1],2.0))/2.0, 0.5) / Gal[p].Vvir / Gal[p].Vvir;
+            tdyn = pow(Gal[p].DiscRadii[i+1],2.0) / DiscBinEdge[i+1];
             if(tdyn!=tdyn) printf("tdyn = %e\n", tdyn);
             deg_ann = DegPerTdyn * dt / tdyn; // degrees this annulus wants to precess
             deg += deg_ann * Gal[p].DiscGas[i] / DiscGasSum;
@@ -443,6 +451,8 @@ void precess_gas(int p, double dt, int halonr)
         
         if(cos_angle_precess < fabs(cos_angle_gas_stars))
             cos_angle_precess = fabs(cos_angle_gas_stars); // Gas stops precessing once it aligns or counter-aligns with stars
+        
+        assert(cos_angle_precess > 0.0);
         
         project_disc(Gal[p].DiscGas, cos_angle_precess, p, NewDisc);
         project_disc(Gal[p].DiscGasMetals, cos_angle_precess, p, NewDiscMetals);

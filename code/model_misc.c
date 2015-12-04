@@ -91,6 +91,7 @@ void init_galaxy(int p, int halonr)
 	Gal[p].DiscStars[j] = 0.0;
 	Gal[p].DiscGasMetals[j] = 0.0;
 	Gal[p].DiscStarsMetals[j] = 0.0;
+    Gal[p].DiscSFR[j] = 0.0;
     Gal[p].TotSinkGas[j] = 0.0;
     Gal[p].TotSinkStar[j] = 0.0;
   }

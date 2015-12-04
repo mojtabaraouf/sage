@@ -186,6 +186,7 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
 	o->DiscStarsMetals[j] = g->DiscStarsMetals[j];
       o->DiscHI[j] = g->DiscHI[j];
       o->DiscH2[j] = g->DiscH2[j];
+      o->DiscSFR[j] = g->DiscSFR[j] * UnitMass_in_g / UnitTime_in_s * SEC_PER_YEAR / SOLAR_MASS / STEPS;
       o->TotSinkGas[j] = g->TotSinkGas[j];
       o->TotSinkStar[j] = g->TotSinkStar[j];
   }

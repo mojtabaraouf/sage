@@ -340,6 +340,13 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 
   infallingGas = infall_recipe(centralgal, ngal, ZZ[Halo[halonr].SnapNum]);
  
+  // Reset SFRs for each galaxy
+  for(p = 0; p < ngal; p++)
+  {
+      for(i=0; i<N_BINS; i++)
+          Gal[p].DiscSFR[i] = 0.0;
+  }
+    
   // we integrate things forward by using a number of intervals equal to STEPS 
   for(step = 0; step < STEPS; step++)
   {
@@ -499,7 +506,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
     Gal[p].Cooling /= deltaT;
     Gal[p].Heating /= deltaT;
     Gal[p].OutflowRate /= deltaT;
-    
+      
     if(Gal[p].Mvir > 0 && Gal[p].Rvir > 0)
     {
         update_disc_radii(p);
