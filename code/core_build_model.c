@@ -62,15 +62,6 @@ void construct_galaxies(int halonr, int tree)
 
     while(fofhalo >= 0)
     {
-//	  if(Gal[ngal].HotGas != Gal[ngal].HotGas || Gal[ngal].HotGas < 0)
-//	  {
-//	    printf("HotGas CONSTRUCT 1...%e\n", Gal[ngal].HotGas);
-//	    printf("ColdGas CONSTRUCT 1...%e\n", Gal[ngal].ColdGas);
-//	    printf("Stars CONSTRUCT 1...%e\n", Gal[ngal].StellarMass);
-//	    printf("DiscGas CONSTRUCT 1...%e\n", Gal[ngal].DiscGas[0]);
-//		printf("%d\t%d\n", ngal, halonr);
-//	    ABORT(1);
-//	  }
       ngal = join_galaxies_of_progenitors(fofhalo, ngal);
       fofhalo = Halo[fofhalo].NextHaloInFOFgroup;
     }
@@ -160,13 +151,6 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
           Gal[ngal].Len = Halo[halonr].Len;
           Gal[ngal].Vmax = Halo[halonr].Vmax;
 
-	      if(Gal[ngal].HotGas != Gal[ngal].HotGas || Gal[ngal].HotGas < 0)
-	      {
-	        printf("HotGas JOIN 1...%e\n", Gal[ngal].HotGas);
-			printf("%d\n", ngal);
-	        ABORT(1);
-	      }
-
           Gal[ngal].deltaMvir = get_virial_mass(halonr) - Gal[ngal].Mvir;
 
           if(get_virial_mass(halonr) > Gal[ngal].Mvir)
@@ -175,21 +159,7 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
             Gal[ngal].Vvir = get_virial_velocity(halonr);  //use the maximum Vvir in model
           }
 
-	      if(Gal[ngal].HotGas != Gal[ngal].HotGas || Gal[ngal].HotGas < 0)
-	      {
-	        printf("HotGas JOIN 1...%e\n", Gal[ngal].HotGas);
-			printf("%d\n", ngal);
-	        ABORT(2);
-	      }
-
           Gal[ngal].Mvir = get_virial_mass(halonr);
-
-	      if(Gal[ngal].HotGas != Gal[ngal].HotGas || Gal[ngal].HotGas < 0)
-	      {
-	        printf("HotGas JOIN 3...%e\n", Gal[ngal].HotGas);
-			printf("%d\n", ngal);
-	        ABORT(1);
-	      }
 
           Gal[ngal].Cooling = 0.0;
           Gal[ngal].Heating = 0.0;
@@ -211,13 +181,6 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
 
             Gal[ngal].DiskScaleRadius = get_disk_radius(halonr, ngal);
 
-	        if(Gal[ngal].HotGas != Gal[ngal].HotGas || Gal[ngal].HotGas < 0)
-	        {
-	          printf("HotGas JOIN 4...%e\n", Gal[ngal].HotGas);
-			  printf("%d\n", ngal);
-	          ABORT(1);
-	        }
-
             Gal[ngal].Type = 0;
           }
           else
@@ -237,12 +200,6 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
 			{
               // here the galaxy has gone from type 1 to type 2 or otherwise doesn't have a merging time.
               Gal[ngal].MergTime = estimate_merging_time(halonr, Halo[halonr].FirstHaloInFOFgroup, ngal);
-		      if(Gal[ngal].HotGas != Gal[ngal].HotGas || Gal[ngal].HotGas < 0)
-		      {
-		        printf("HotGas JOIN 5...%e\n", Gal[ngal].HotGas);
-				printf("%d\n", ngal);
-		        ABORT(1);
-		      }
 			}
             Gal[ngal].Type = 1;
           }
@@ -272,13 +229,6 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
       {
         printf("what's that????\n");
         ABORT(88);
-      }
-
-      if(Gal[ngal].HotGas != Gal[ngal].HotGas || Gal[ngal].HotGas < 0)
-      {
-        printf("HotGas JOIN 6...%e\n", Gal[ngal].HotGas);
-		printf("%d\n", ngal);
-        ABORT(1);
       }
 
       ngal++;
@@ -354,12 +304,6 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
     // Loop over all galaxies in the halo 
     for(p = 0; p < ngal; p++)
     {
-		for(i=0; i<N_BINS; i++) 
-		{
-			if (Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i])
-				printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
-			assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
-		}
 	  DiscGasSum = get_disc_gas(p);
 	  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
@@ -393,9 +337,6 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
       cool_gas_onto_galaxy(p, centralgal, coolingGas, deltaT / STEPS, step);
 
       DiscGasSum = get_disc_gas(p);
-	  //if(DiscGasSum>1.001*Gal[p].ColdGas || DiscGasSum<Gal[p].ColdGas/1.001)
-		//printf("core_build_model report %e\t%e\n", DiscGasSum, Gal[p].ColdGas);
-
       assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
@@ -412,12 +353,6 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
-		for(i=0; i<N_BINS; i++) 
-		{
-			if (Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i])
-				printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
-			assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
-		}
         
       // precess gas disc
       if(GasPrecessionOn)
@@ -428,13 +363,6 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
     // check for satellite disruption and merger events 
     for(p = 0; p < ngal; p++)
     {
-	
-		for(i=0; i<N_BINS; i++) 
-		{
-			if (Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i])
-				printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
-			assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
-		}
 
       if((Gal[p].Type == 1 || Gal[p].Type == 2) && Gal[p].mergeType == 0)  // satellite galaxy!
       {
@@ -464,26 +392,11 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
           Gal[p].mergeIntoID = NumGals + merger_centralgal;  // position in output 
 
           if(Gal[p].MergTime > 0.0)  // disruption has occured!
-          {
             disrupt_satellite_to_ICS(merger_centralgal, p);
-	        DiscGasSum = get_disc_gas(p);
-			assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
-			assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
-			assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
-			assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
-          }
           else
           {
-            if(Gal[p].MergTime <= 0.0)  // a merger has occured! 
-            {
-              time = Age[Gal[p].SnapNum] - (step + 0.5) * (deltaT / STEPS);   
-              deal_with_galaxy_merger(p, merger_centralgal, centralgal, time, deltaT / STEPS, halonr, step);
-		      DiscGasSum = get_disc_gas(p);
-			  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
-			  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
-			  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
-			  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
-            }
+            time = Age[Gal[p].SnapNum] - (step + 0.5) * (deltaT / STEPS);
+            deal_with_galaxy_merger(p, merger_centralgal, centralgal, time, deltaT / STEPS, halonr, step);
           }
  
         }
@@ -530,16 +443,6 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
       HaloAux[currenthalo].FirstGalaxy = NumGals;
       HaloAux[currenthalo].NGalaxies = 0;
     }
-      
-      if(Gal[p].HotGas != Gal[p].HotGas || Gal[p].HotGas < 0 || Gal[p].ColdGas != Gal[p].ColdGas || Gal[p].ColdGas < 0 || Gal[p].StellarMass != Gal[p].StellarMass)
-      {
-          printf("HotGas EVOLVE 1...%e\n", Gal[p].HotGas);
-          printf("ColdGas EVOLVE 1...%e\n", Gal[p].ColdGas);
-          printf("Stars EVOLVE 1...%e\n", Gal[p].StellarMass);
-          printf("DiscGas EVOLVE 1...%e\n", Gal[p].DiscGas[0]);
-          printf("%d\t%d\n", p, currenthalo);
-          ABORT(1);
-      }
       
     // Merged galaxies won't be output. So go back through its history and find it
     // in the previous timestep. Then copy the current merger info there.

@@ -12,7 +12,7 @@
 
 void starformation_and_feedback(int p, int centralgal, double time, double dt, int halonr, int step)
 {
-    double strdot, stars, reheated_mass, ejected_mass, fac, metallicity, stars_sum, area, SFE_H2, f_H2_const, Sigma_0gas, DiscGasSum, DiscPre, ColdPre;//, cos_theta_gas_stars;
+    double strdot, stars, reheated_mass, ejected_mass, fac, metallicity, stars_sum, area, SFE_H2, f_H2_const, Sigma_0gas, DiscGasSum, DiscPre, ColdPre;
     double r_inner, r_outer;
     double reff, tdyn, cold_crit, strdotfull, H2sum; // For SFprescription==3
 
@@ -40,8 +40,6 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
   Gal[p].SfrDiskColdGas[step] = Gal[p].ColdGas;
   Gal[p].SfrDiskColdGasMetals[step] = Gal[p].MetalsColdGas; // Do I ever use these or even know what they represent?
     
-  //cos_theta_gas_stars = Gal[p].SpinStars[0]*Gal[p].SpinGas[0] + Gal[p].SpinStars[1]*Gal[p].SpinGas[1] + Gal[p].SpinStars[2]*Gal[p].SpinGas[2];
-    
   update_HI_H2(p);
     
   if(SFprescription==2) // Prescription based on SAGE
@@ -62,13 +60,11 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
   {
 	if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 	assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
+
+    r_inner = Gal[p].DiscRadii[i];
+    r_outer = Gal[p].DiscRadii[i+1];
       
-    //r_inner = get_annulus_radius(p, i);
-    //r_outer = get_annulus_radius(p, i+1);
-      r_inner = Gal[p].DiscRadii[i];
-      r_outer = Gal[p].DiscRadii[i+1];
-      
-      area = M_PI * (r_outer*r_outer - r_inner*r_inner);
+    area = M_PI * (r_outer*r_outer - r_inner*r_inner);
 		
 	if(Gal[p].Vvir>0) // These galaxies (which aren't useful for science) won't have H2 to form stars
 	{
@@ -126,8 +122,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 
 	  else
 	  {
-		//reheated_mass = RecycleFraction * stars;
-          reheated_mass = 0.0;
+        reheated_mass = 0.0;
 		ejected_mass = 0.0;
 	  }
 	}  
@@ -180,13 +175,6 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	    Gal[p].DiscGasMetals[i] += Yield * stars*(1.0 - get_metallicity(NewStars[i],NewStarsMetals[i]));
 	    Gal[p].MetalsColdGas += Yield * stars*(1.0 - get_metallicity(NewStars[i],NewStarsMetals[i]));
   	  }
-//	  else
-//	  {
-//		if(Gal[centralgal].HotGas>0.0)
-//			Gal[centralgal].MetalsHotGas += Yield * stars;
-//		else
-//			Gal[centralgal].MetalsEjectedMass += Yield * stars;
-//	  }
 	}
     if(Gal[p].DiscGasMetals[i] > Gal[p].DiscGas[i]) printf("DiscGas, Metals = %e, %e\n", Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
 	assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
@@ -194,26 +182,19 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
   }
 
-    update_from_ejection(centralgal, ejected_sum);
+  update_from_ejection(centralgal, ejected_sum);
     
-    double NewStarSum = 0.0;
-    for(i=0; i<N_BINS; i++) NewStarSum += NewStars[i];
-    //printf("NewStarSum, stars_sum*(1-R) = %e, %e\n", NewStarSum, (1-RecycleFraction)*stars_sum);
+  double NewStarSum = 0.0;
+  for(i=0; i<N_BINS; i++) NewStarSum += NewStars[i];
     
   // Sum stellar discs together
   if(NewStarSum>0.0)
     combine_stellar_discs(p, NewStars, NewStarsMetals);
-    
-  for(i=0; i<N_BINS; i++){
-	if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
-	assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
-	assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);}
 
   // Update the star formation rate 
   Gal[p].SfrDisk[step] += stars_sum / dt;
   Gal[p].StarsInSitu += (1-RecycleFraction)*stars_sum;
     
-    //printf("StarsPre, stars_sum(1-R), StarsPre+formed, StellarMass = %e, %e, %e, %e\n\n", StarsPre, (1-RecycleFraction)*stars_sum, StarsPre+(1-RecycleFraction)*stars_sum, Gal[p].StellarMass);
   if(Gal[p].StellarMass > 1e-8)
   {
       assert(Gal[p].StellarMass >= (StarsPre + (1-RecycleFraction)*stars_sum)/1.01 && Gal[p].StellarMass <= (StarsPre + (1-RecycleFraction)*stars_sum)*1.01);
@@ -224,17 +205,9 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
   DiscGasSum = get_disc_gas(p);
   assert(DiscGasSum <= 1.01*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.01);
 
-  for(i=0; i<N_BINS; i++){
-	metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
-	assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);}
-
   // Check for disk instability
   if(DiskInstabilityOn)
     check_disk_instability(p, centralgal, time, dt, step);
-
-  for(i=0; i<N_BINS; i++){
-	if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
-	assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);}
 
   assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 
@@ -272,11 +245,8 @@ void update_from_star_formation(int p, double stars, double metallicity, int i)
 
 void update_from_feedback(int p, int centralgal, double reheated_mass, double metallicity, int i)
 {
-  //double metallicityHot;
-  
   // Check first just to be sure 
   assert(reheated_mass <= Gal[p].DiscGas[i]);
-  //metallicityHot = get_metallicity(Gal[centralgal].HotGas, Gal[centralgal].MetalsHotGas);
   assert(Gal[centralgal].MetalsHotGas <= Gal[centralgal].HotGas);
 
   if(SupernovaRecipeOn == 1)
@@ -298,11 +268,8 @@ void update_from_feedback(int p, int centralgal, double reheated_mass, double me
       Gal[centralgal].MetalsHotGas += Gal[p].DiscGasMetals[i];
 	  Gal[p].DiscGasMetals[i] = 0.0;
     }
-
-  
   }
 
-  //metallicityHot = get_metallicity(Gal[centralgal].HotGas, Gal[centralgal].MetalsHotGas);
   assert(Gal[centralgal].MetalsHotGas <= Gal[centralgal].HotGas);
 
   if(Gal[p].DiscGas[i] < 0.0)
@@ -326,7 +293,7 @@ void update_from_feedback(int p, int centralgal, double reheated_mass, double me
 	Gal[p].MetalsHotGas=0.0;
   }
     
-    Gal[p].OutflowRate += reheated_mass;
+  Gal[p].OutflowRate += reheated_mass;
     
 }
 
@@ -353,6 +320,7 @@ void update_from_ejection(int centralgal, double ejected_mass)
     	}
     	assert(Gal[centralgal].MetalsHotGas <= Gal[centralgal].HotGas);
 }
+
 
 void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals[N_BINS])
 {

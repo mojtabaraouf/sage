@@ -46,10 +46,9 @@ void update_from_feedback(int p, int centralgal, double reheated_mass, double me
 void update_from_ejection(int centralgal, double ejected_mass);
 void stars_to_bulge(int t, int p);
 double grow_black_hole(int merger_centralgal, double* disc_mass_ratio);
-//void check_disk_instability_old(int p, int centralgal, int halonr, double time, double dt, int step);
 void check_disk_instability(int p, int centralgal, double time, double dt, int step);
 
-// Adam's functions
+// Adam's functions (most of the others above have been heavily modified too)
 void retrograde_gas_collision(int p, double RetroGas[N_BINS], double cos_angle_halo_new, double cos_angle_disc_new, double J_disc, double J_cool);
 void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals[N_BINS]);
 void project_disc(double DiscMass[N_BINS], double cos_angle, int p, double *NewDisc);
@@ -59,7 +58,6 @@ double get_disc_stars(int halonr);
 double get_disc_ang_mom(int halonr, int type);
 void precess_gas(int p, double dt, int halonr);
 void update_HI_H2(int p);
-//double get_annulus_radius(int p, int i);
 void update_disc_radii(int p);
 //
 

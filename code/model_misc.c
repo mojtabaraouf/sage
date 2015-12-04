@@ -340,34 +340,6 @@ double get_disc_ang_mom(int p, int type)
 }
 
 
-//double get_annulus_radius(int p, int i)
-//{
-//    double vel, radius;
-//    // if i=0, radius=0 --- could add that explicity
-//    
-//    //printf("Bessel %e, %e\n", gsl_sf_bessel_K0(1e-3), gsl_sf_bessel_K0(1e1));
-//    
-//    if(Gal[p].Vvir > 0.0)
-//        vel = Gal[p].Vvir;
-//    else
-//        vel = Gal[p].Vmax;
-//    
-//    if(vel>0.0)
-//    {
-//        if(DiscBinEdge[i] >= vel*r0)
-//            radius = DiscBinEdge[i]/vel;
-//        else
-//            radius = sqrt(DiscBinEdge[i] * r0 / vel);
-//    }
-//    else
-//    {
-//        printf("Annulus radius set as 0 for i=%d", i);
-//        radius = 0.0;
-//    }
-//
-//    return radius;
-//}
-
 
 void update_disc_radii(int p)
 {
@@ -408,30 +380,11 @@ void update_disc_radii(int p)
     // ===========================================================
     
     // Determine distribution for bulge and ICS ==================
-//    M_B_tot = Gal[p].SecularBulgeMass + Gal[p].ClassicalBulgeMass;
-//    //a_B = pow(10.0, (log10(M_B_tot*UnitMass_in_g/SOLAR_MASS/Hubble_h)-10.21)/1.13) * (CM_PER_MPC/1e3) / UnitLength_in_cm * Hubble_h; // Sofue 2015
-//    //if(a_B > Gal[p].Rvir/40.0) a_B = Gal[p].Rvir/40.0; // Arbitrary upper limit.  May want to motivate/change later.
-//    if(M_B_tot > 0.0)
-//        a_B = ((Gal[p].ClassicalBulgeMass * Gal[p].ClassicalBulgeRadius) + (Gal[p].SecularBulgeMass * 0.2*Gal[p].DiskScaleRadius)) / M_B_tot / (1.0 + sqrt(0.5));
-//    else
-//        a_B = 0.0;
-    
     a_SB = 0.2 * Gal[p].DiskScaleRadius / (1.0 + sqrt(0.5)); // Fisher & Drory (2008)
     M_SB_inf = Gal[p].SecularBulgeMass * pow((Gal[p].Rvir+a_SB)/Gal[p].Rvir, 2.0);
     
     a_CB = pow(10.0, (log10(Gal[p].ClassicalBulgeMass*UnitMass_in_g/SOLAR_MASS/Hubble_h)-10.21)/1.13) * (CM_PER_MPC/1e3) / UnitLength_in_cm * Hubble_h; // Sofue 2015
     M_CB_inf = Gal[p].ClassicalBulgeMass * pow((Gal[p].Rvir+a_CB)/Gal[p].Rvir, 2.0);
-    
-    
-//    if(a_B!=a_B || a_B==INFINITY || a_B<0)
-//    {
-//        printf("a_B = %e\n", a_B);
-//        printf("Secular, Classical masses = %e, %e\n", Gal[p].SecularBulgeMass, Gal[p].ClassicalBulgeMass);
-//        printf("Classical, Disk radii = %e, %e\n", Gal[p].ClassicalBulgeRadius, Gal[p].DiskScaleRadius);
-//        ABORT(1);
-//    }
-    
-    //M_B_inf = M_B_tot * pow((Gal[p].Rvir+a_B)/Gal[p].Rvir, 2.0);
     
     if(Gal[p].ClassicalBulgeMass>0.0)
         a_ICS = 13.0 * a_CB; // Gonzalez et al (2005)
@@ -476,7 +429,7 @@ void update_disc_radii(int p)
                     printf("a_CB, a_SB, a_ICS = %e, %e, %e\n", a_CB, a_SB, a_ICS);
                     printf("R_vir = %e\n", Gal[p].Rvir);
                 }
-                assert(j_try==j_try && j_try>0.0);
+                assert(j_try==j_try && j_try>0.0 && j_try!=INFINITY);
                 
                 
                 // Found correct r (within tolerance)

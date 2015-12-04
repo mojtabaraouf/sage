@@ -57,20 +57,10 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
         if(Gal[p].DiscGas[i]==0.0)
             continue;
         
-//        if(r_inner<r0)
-//            Omega = V_rot / r0;
-//        if(i>0)
-//            Omega = DiscBinEdge[i] / r_inner / r_inner;
-//        else
-//            Omega = DiscBinEdge[i+1] / r_outer / r_outer;
-        
         if(i>0)
             Kappa = sqrt(2.0*DiscBinEdge[i]/pow(r_inner,3.0) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
         else
             Kappa = sqrt(2.0*DiscBinEdge[i+1]/pow(r_outer,3.0) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
-        
-        // Q_gas assumes c_s=17 km/s.  Would have UnitLength_in_cm once more on both denominator and numerator for human-reading, but redundant
-        //Q_gas = 1.7e6 * Omega*UnitVelocity_in_cm_per_s * (r_outer*r_outer - r_inner*r_inner)*UnitLength_in_cm / (GRAVITY * Gal[p].DiscGas[i]*UnitMass_in_g);
         
         sigma_R = 0.5*Gal[p].Vvir*exp(-r_av/2.0/Gal[p].DiskScaleRadius);
 
@@ -102,12 +92,6 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
         
         assert(Q_gas_min >= QTotMin);
         
-        
-//        if(Gal[p].StellarMass>0.0)
-//            Q_gas_min = QGasMin * (1.0 - (Gal[p].SecularBulgeMass+Gal[p].ClassicalBulgeMass)/Gal[p].StellarMass);
-//        else
-            //Q_gas_min = QGasMin;
-		
 		if(Q_gas<Q_gas_min)
 		{
             if(first==1)
@@ -183,21 +167,15 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	{
         if(Gal[p].DiscStars[i]==0.0)
             continue;
-        
-        //r_inner = get_annulus_radius(p, i);
-        //r_outer = get_annulus_radius(p, i+1);
+
         r_inner = Gal[p].DiscRadii[i];
         r_outer = Gal[p].DiscRadii[i+1];
         r_av = pow((r_inner*r_inner+r_outer*r_outer)/2.0, 0.5);
         
-//        if(r_inner<r0)
-//            Omega = sqrt(2.0) * V_rot / r0; // Not the actual value of Omega, but serves the equation below to calculate the right Q.
         if(i>0)
             Kappa = sqrt(2.0*DiscBinEdge[i]/pow(r_inner,3.0) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
         else
             Kappa = sqrt(2.0*DiscBinEdge[i+1]/pow(r_outer,3.0) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
-        
-        //Q_star = 0.66 * V_rot*UnitVelocity_in_cm_per_s * (r_outer*r_outer - r_inner*r_inner)*UnitLength_in_cm * exp(-r_av/(2*Gal[p].DiskScaleRadius)) * Omega*UnitVelocity_in_cm_per_s / (GRAVITY * Gal[p].DiscStars[i]*UnitMass_in_g);
         
         sigma_R = 0.5*Gal[p].Vvir*exp(-r_av/2.0/Gal[p].DiskScaleRadius);
         
@@ -380,16 +358,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 		metallicity_new = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
 		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
 	    update_from_feedback(p, centralgal, reheated_mass, metallicity_new, i);
-	
-		// Update metals from SN II feedback
-//		if(stars <= 1e-8)
-//		{
-//			if(Gal[centralgal].HotGas > 0.0)
-//				Gal[centralgal].MetalsHotGas += Yield * stars;
-//			else
-//				Gal[centralgal].MetalsEjectedMass += Yield * stars;
-//		}
-//		else
+
         if(stars > 1e-8)
         {
 			Gal[p].DiscGasMetals[i] += Yield * stars*(1-metallicity);
@@ -440,7 +409,6 @@ void precess_gas(int p, double dt, int halonr)
         deg = 0.0;
         for(i=0; i<N_BINS; i++)
         {
-            //tdyn = pow((pow(DiscBinEdge[i],2.0)+pow(DiscBinEdge[i+1],2.0))/2.0, 0.5) / Gal[p].Vvir / Gal[p].Vvir;
             tdyn = pow(Gal[p].DiscRadii[i+1],2.0) / DiscBinEdge[i+1];
             if(tdyn!=tdyn) printf("tdyn = %e\n", tdyn);
             deg_ann = DegPerTdyn * dt / tdyn; // degrees this annulus wants to precess
@@ -501,104 +469,3 @@ void precess_gas(int p, double dt, int halonr)
         // check instability here
     }
 }
-
-
-// THIS IS NO LONGER USED
-// void check_disk_instability_old(int p, int centralgal, int halonr, double time, double dt, int step)
-// {
-//   double Mcrit, gas_fraction, unstable_gas, unstable_gas_fraction, unstable_stars, diskmass, metallicity, DiscGasSum, DiscStarSum;
-//   double star_fraction, ring_fraction, GasBeforeBH;
-//   int j;
-// 
-//   // Here we calculate the stability of the stellar and gaseous disk as discussed in Mo, Mao & White (1998).
-//   // For unstable stars and gas, we transfer the required ammount to the bulge to make the disk stable again
-// 
-//   // Check that Cold Gas has been treated properly prior to this function
-//   DiscGasSum = get_disc_gas(p);
-//   assert(DiscGasSum <= 1.001*Gal[p].ColdGas || DiscGasSum >= Gal[p].ColdGas/1.001);
-// 
-//   // Disk mass has to be > 0.0 !
-//   diskmass = Gal[p].ColdGas + (Gal[p].StellarMass - Gal[p].ClassicalBulgeMass - Gal[p].SecularBulgeMass);
-//   if(diskmass > 0.0)
-//   {
-//     // calculate critical disk mass
-//     Mcrit = Gal[p].Vmax * Gal[p].Vmax * (3.0 * Gal[p].DiskScaleRadius) / G;
-//     if(Mcrit > diskmass)
-//       Mcrit = diskmass;
-//     
-//     // use Disk mass here !
-//     gas_fraction   = Gal[p].ColdGas / diskmass;
-//     unstable_gas   = gas_fraction * (diskmass - Mcrit);
-//     star_fraction  = 1.0 - gas_fraction;
-//     unstable_stars = star_fraction * (diskmass - Mcrit);
-// 
-//     // add excess stars to the bulge
-//     if(unstable_stars > 0.0)
-//     {
-//       for(j=0; j<30; j++)
-// 	  {
-// 		metallicity = get_metallicity(Gal[p].DiscStars[j], Gal[p].DiscStarsMetals[j]);
-// 	    ring_fraction = Gal[p].DiscStars[j] / (star_fraction*diskmass);
-// 		Gal[p].DiscStars[j] -= unstable_stars * ring_fraction;
-// 		Gal[p].DiscStarsMetals[j] -= metallicity * unstable_stars * ring_fraction;
-// 		Gal[p].SecularBulgeMass += unstable_stars * ring_fraction;
-// 	    Gal[p].SecularMetalsBulgeMass += metallicity * unstable_stars * ring_fraction;
-// 	  }
-//     }  
-//       
-//     // Need to fix this. Excluded for now.
-//     // Gal[p].mergeType = 3;  // mark as disk instability partial mass transfer
-//     // Gal[p].mergeIntoID = NumGals + p - 1;      
-//     
-//     DiscStarSum = get_disc_stars(p);
-//     assert((Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass) <= 1.001*Gal[p].StellarMass);
-//     //if(DiscStarSum > 1.001*(Gal[p].StellarMass-Gal[p].SecularBulgeMass-Gal[p].ClassicalBulgeMass) || DiscStarSum < (Gal[p].StellarMass-Gal[p].SecularBulgeMass-Gal[p].ClassicalBulgeMass)/1.001)
-//         //printf("DiscStarSum, StellarMass, BulgeSum, diff = %e, %e, %e, %e\n", DiscStarSum, Gal[p].StellarMass, Gal[p].SecularBulgeMass+Gal[p].ClassicalBulgeMass, Gal[p].StellarMass-Gal[p].SecularBulgeMass-Gal[p].ClassicalBulgeMass);
-//     if(DiscStarSum>0.0) assert(DiscStarSum <= 1.001*(Gal[p].StellarMass-Gal[p].SecularBulgeMass-Gal[p].ClassicalBulgeMass) && DiscStarSum >= (Gal[p].StellarMass-Gal[p].SecularBulgeMass-Gal[p].ClassicalBulgeMass)/1.001);
-// 	assert((Gal[p].ClassicalMetalsBulgeMass + Gal[p].SecularMetalsBulgeMass) <= 1.001*Gal[p].MetalsStellarMass);
-// 
-//     // burst excess gas and feed black hole (really need a dedicated model for bursts and BH growth here)
-//     if(unstable_gas > 0.0)
-//     {
-// 	  assert(unstable_gas/Gal[p].ColdGas < 1.0001);
-// 
-// 	  unstable_gas_fraction = unstable_gas / Gal[p].ColdGas;
-// 	  GasBeforeBH = Gal[p].ColdGas;
-// 		
-//       //if(AGNrecipeOn > 0)
-//         //grow_black_hole(p, unstable_gas_fraction);
-// 	
-//       // MY NEW SIMPLE WAY TO DEAL WITH AN INSTABILITY
-//       //unstable_gas = unstable_gas - (GasBeforeBH - Gal[p].ColdGas); // Update the unstable gas after BH accretion
-//       if(DiscGasSum>0 && unstable_gas>0)
-// 	  {
-// 	    for(j=0; j<30; j++)
-// 	    {	
-// 		  assert(Gal[p].DiscGasMetals[j]<=Gal[p].DiscGas[j]);
-// 		  metallicity = get_metallicity(Gal[p].DiscGas[j], Gal[p].DiscGasMetals[j]);
-// 		  ring_fraction = Gal[p].DiscGas[j] / DiscGasSum;
-// 		
-// 		  Gal[p].DiscGas[j] -= ring_fraction * unstable_gas;
-// 		  Gal[p].DiscGasMetals[j] -= metallicity * ring_fraction * unstable_gas;
-// 		  Gal[p].MetalsColdGas -= metallicity * ring_fraction * unstable_gas;
-// 		  Gal[p].ColdGas -= ring_fraction * unstable_gas;
-// 
-// 		  Gal[p].StellarMass += ring_fraction * unstable_gas * (1-RecycleFraction);
-// 		  Gal[p].MetalsStellarMass += metallicity * ring_fraction * unstable_gas * (1-RecycleFraction);
-// 		  Gal[p].SecularBulgeMass += ring_fraction * unstable_gas * (1-RecycleFraction);
-// 	      Gal[p].SecularMetalsBulgeMass += metallicity * ring_fraction * unstable_gas * (1-RecycleFraction);
-// 
-// 		  Gal[p].HotGas += ring_fraction * unstable_gas * RecycleFraction;
-// 		  Gal[p].MetalsHotGas += metallicity * ring_fraction * unstable_gas * RecycleFraction;
-// 	  	  Gal[p].MetalsHotGas += Yield * ring_fraction * unstable_gas;
-// 
-// 		  Gal[p].SfrBulgeColdGas[step] += ring_fraction * unstable_gas;
-// 		  Gal[p].SfrBulgeColdGasMetals[step] += metallicity * ring_fraction * unstable_gas;
-// 		  Gal[p].SfrBulge[step] += ring_fraction * unstable_gas / dt;
-// 	    }
-// 	  }
-// 	}
-//   }
-// }
-// 
-// 

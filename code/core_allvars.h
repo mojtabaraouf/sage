@@ -63,8 +63,8 @@ struct GALAXY_OUTPUT
   float Vmax;
   float VelDisp;
     
-    // Radius of each annulus boundary
-    float DiscRadii[N_BINS+1];
+  // Radius of each annulus boundary
+  float DiscRadii[N_BINS+1];
 
   // baryonic reservoirs 
   float ColdGas;
@@ -84,20 +84,20 @@ struct GALAXY_OUTPUT
   float StarsInSitu;
   float StarsInstability;
   float StarsMergeBurst;
-    float DiscHI[N_BINS];
-    float DiscH2[N_BINS];
-    float DiscSFR[N_BINS];
+  float DiscHI[N_BINS];
+  float DiscH2[N_BINS];
+  float DiscSFR[N_BINS];
     
-    // Instability tracking
-    int TotInstabEvents;
-    int TotInstabEventsGas;
-    int TotInstabEventsStar;
-    int TotInstabAnnuliGas;
-    int TotInstabAnnuliStar;
-    float FirstUnstableAvGas;
-    float FirstUnstableAvStar;
-    float TotSinkGas[N_BINS];
-    float TotSinkStar[N_BINS];
+  // Instability tracking
+  int TotInstabEvents;
+  int TotInstabEventsGas;
+  int TotInstabEventsStar;
+  int TotInstabAnnuliGas;
+  int TotInstabAnnuliStar;
+  float FirstUnstableAvGas;
+  float FirstUnstableAvStar;
+  float TotSinkGas[N_BINS];
+  float TotSinkStar[N_BINS];
     
   // metals
   float MetalsColdGas;
@@ -156,8 +156,8 @@ struct GALAXY
   double Vvir;
   double Vmax;
     
-    // Radius of each annulus boundary
-    double DiscRadii[N_BINS+1];
+  // Radius of each annulus boundary
+  double DiscRadii[N_BINS+1];
 
   // baryonic reservoirs 
   double ColdGas;
@@ -177,20 +177,20 @@ struct GALAXY
   double StarsInSitu;
   double StarsInstability;
   double StarsMergeBurst;
-    double DiscHI[N_BINS];
-    double DiscH2[N_BINS];
-    double DiscSFR[N_BINS];
+  double DiscHI[N_BINS];
+  double DiscH2[N_BINS];
+  double DiscSFR[N_BINS];
     
-    // Instability tracking
-    int TotInstabEvents;
-    int TotInstabEventsGas;
-    int TotInstabEventsStar;
-    int TotInstabAnnuliGas;
-    int TotInstabAnnuliStar;
-    int FirstUnstableGas;
-    int FirstUnstableStar;
-    double TotSinkGas[N_BINS];
-    double TotSinkStar[N_BINS];
+  // Instability tracking
+  int TotInstabEvents;
+  int TotInstabEventsGas;
+  int TotInstabEventsStar;
+  int TotInstabAnnuliGas;
+  int TotInstabAnnuliStar;
+  int FirstUnstableGas;
+  int FirstUnstableStar;
+  double TotSinkGas[N_BINS];
+  double TotSinkStar[N_BINS];
 
   // metals
   double MetalsColdGas;

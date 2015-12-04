@@ -86,6 +86,7 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 	else
 		central_bulge_fraction = 0.0;
 
+ // GIVEN THIS ISN'T ACTUALLY USED IN THE MODEL, I CAN PROBABLY DELETE IT
   // pre-merger information needed to calculate the final classical bulge radius below
   if( mass_ratio > ThreshMajorMerger || central_bulge_fraction > 0.5)
   {
@@ -161,7 +162,6 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 	if(PostRetroGas[i] < 0.99*Gal[merger_centralgal].DiscGas[i])
 	{
 		unstable_gas = Gal[merger_centralgal].DiscGas[i] - PostRetroGas[i];
-		//stars = deal_with_unstable_gas(unstable_gas, merger_centralgal, i, Gal[merger_centralgal].Vvir, metallicity, centralgal, 0, get_annulus_radius(merger_centralgal,i), get_annulus_radius(merger_centralgal,i+1));
         stars = deal_with_unstable_gas(unstable_gas, merger_centralgal, i, Gal[merger_centralgal].Vvir, metallicity, centralgal, 0, Gal[merger_centralgal].DiscRadii[i], Gal[merger_centralgal].DiscRadii[i+1]);
 		Gal[merger_centralgal].StellarMass += (1 - RecycleFraction) * stars;
 		Gal[merger_centralgal].MetalsStellarMass += (1 - RecycleFraction) * metallicity * stars;
@@ -289,35 +289,6 @@ double grow_black_hole(int merger_centralgal, double* disc_mass_ratio)
 
   Gal[merger_centralgal].BlackHoleMass += BHaccrete_tot;
   return BHaccrete_tot;
-
-
-
-	//   if(Gal[merger_centralgal].ColdGas > 0.0)
-	//   {
-	//     BHaccrete = BlackHoleGrowthRate * mass_ratio / (1.0 + pow(280.0 / Gal[merger_centralgal].Vvir, 2.0)) * Gal[merger_centralgal].ColdGas;
-	// 
-	//     // Cannot accrete more gas than is available
-	//     if(BHaccrete > Gal[merger_centralgal].ColdGas)
-	//       BHaccrete = Gal[merger_centralgal].ColdGas;
-	//   
-	// DiscGasSum = get_disc_gas(merger_centralgal);
-	// assert(DiscGasSum <= 1.01*Gal[merger_centralgal].ColdGas && DiscGasSum >= Gal[merger_centralgal].ColdGas/1.01);
-	// 
-	// for(k=0; k<30; k++)
-	// {
-	//   accrete_ratio = Gal[merger_centralgal].DiscGas[i] / DiscGasSum;
-	//   metallicity = get_metallicity(Gal[merger_centralgal].DiscGas[i], Gal[merger_centralgal].DiscGasMetals[i]);
-	//   assert(Gal[merger_centralgal].DiscGasMetals[i] <= Gal[merger_centralgal].DiscGas[i]);
-	//   Gal[merger_centralgal].DiscGas[i] -= BHaccrete * accrete_ratio;
-	//   Gal[merger_centralgal].DiscGasMetals[i] -= BHaccrete * accrete_ratio * metallicity;
-	//   Gal[merger_centralgal].ColdGas -= BHaccrete * accrete_ratio;
-	//   Gal[merger_centralgal].MetalsColdGas -= BHaccrete * accrete_ratio * metallicity;
-	//   Gal[merger_centralgal].BlackHoleMass += BHaccrete * accrete_ratio;
-	//   assert(Gal[merger_centralgal].DiscGasMetals[i] <= Gal[merger_centralgal].DiscGas[i]);
-	// }
-	// 
-	// return BHaccrete;
-	//   }
 }
 
 
@@ -365,8 +336,6 @@ void quasar_mode_wind(int p, float BHaccrete)
 			Gal[p].DiscGas[k] = 0.0;
 			Gal[p].DiscGasMetals[k] = 0.0;
 			quasar_energy -= cold_gas_energy;
-			//DiscGasSum = get_disc_gas(p);
-			//assert(DiscGasSum <= 1.01*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.01);
 		}
 		else if(quasar_energy > 0.0 && cold_gas_energy > 0.0)
 		{
@@ -379,8 +348,6 @@ void quasar_mode_wind(int p, float BHaccrete)
 			assert(Gal[p].DiscGasMetals[k] <= Gal[p].DiscGas[k]);
 			quasar_energy = 0.0;
 			break;
-			//DiscGasSum = get_disc_gas(p);
-			//assert(DiscGasSum <= 1.01*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.01);
 		}
 		else if(cold_gas_energy > 0.0 || quasar_energy < 0.0)
 		{
@@ -484,8 +451,6 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 		}
 	
 		bin_num = i_max - i_min; // How many bins the satellite's gas will be added to in the main disc
-		//printf("sat_sam_min, sat_sam_mag, sat_sam_max = %e, %e, %e\n", sat_sam_min, sat_sam_mag, sat_sam_max);
-		//printf("i_min, i_max, bin_num, ColdGas = %d, %d, %d, %e\n", i_min, i_max, bin_num, Gal[p].ColdGas);
 	
 		double gas_added = 0.0;
 	
@@ -506,7 +471,6 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
                 assert(disc_mass_ratio[i] <= 1.0);
 				Gal[t].DiscGas[i] += Gal[p].ColdGas / bin_num;
 				gas_added += Gal[p].ColdGas / bin_num;
-				//printf("gas added = %e\n", Gal[p].ColdGas / bin_num);
 				Gal[t].DiscGasMetals[i] += Gal[p].MetalsColdGas / bin_num;
 				assert(Gal[t].DiscGasMetals[i] <= Gal[t].DiscGas[i]);
 				
@@ -526,111 +490,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 		DiscGasSum = get_disc_gas(t);
 		assert(DiscGasSum <= 1.01*Gal[t].ColdGas && DiscGasSum >= Gal[t].ColdGas/1.01);
 
-	
-		// Check if the satellite is a retrograde orbiter and get ready to deal with it
-		// if(cos_angle_sat_disc<0.0)
-		// {
-		// 	//printf("retro sat\n");
-		// 	double J_retro = sat_sam_mag*Gal[p].ColdGas;
-		// 	double J_sum = get_disc_ang_mom(t, 0);
-		// 	if(J_sum > 2.0*J_retro)
-		// 	{
-		// 		double NewDisc[30], NewDiscMetals[30];
-		// 		project_disc(Gal[t].DiscGas, (J_sum - 2.0*J_retro)/J_sum, t, NewDisc);
-		// 		project_disc(Gal[t].DiscGasMetals, (J_sum - 2.0*J_retro)/J_sum, t, NewDiscMetals);
-		// 		for(i=0; i<30; i++)
-		// 		{
-		// 			Gal[t].DiscGas[i] = NewDisc[i];
-		// 			Gal[t].DiscGasMetals[i] = NewDiscMetals[i];
-		// 			assert(Gal[t].DiscGasMetals[i] <= Gal[t].DiscGas[i]);
-		// 		}
-		// 	}
-		// 	// else
-		// 	// {
-		// 	// 	project_disc(Gal[t].DiscGas, (J_retro - 2.0*J_sum)/J_retro, t, NewDisc);
-		// 	// 	project_disc(Gal[t].DiscGasMetals, (J_retro - 2.0*J_sum)/J_retro, t, NewDiscMetals);
-		// 	// 	for(i=0; i<3; i++)
-		// 	// 		Gal[t].SpinGas[i] *= -1.0;
-		// 	// }
-		// 
-		// }
-		//else
-			//printf("pro sat\n");	
-			
-		DiscGasSum = get_disc_gas(p);
-		assert(DiscGasSum <= 1.01*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.01);
-		DiscGasSum = get_disc_gas(t);
-		assert(DiscGasSum <= 1.01*Gal[t].ColdGas && DiscGasSum >= Gal[t].ColdGas/1.01);
     }
-	// else if(Gal[p].ColdGas > 0.0)
-	// {
-	// 	Gal[t].ColdGas = 0.0;
-	// 	Gal[t].MetalsColdGas = 0.0;
-	// 	Gal[t].HotGas += Gal[p].ColdGas;
-	// 	Gal[t].MetalsHotGas += Gal[p].MetalsColdGas;
-	// }
-
-	
-    
-
-//	if(Gal[p].StellarMass>0.0)
-//	{
-//		for(i=0; i<N_BINS; i++) assert(Gal[t].DiscStarsMetals[i] <= Gal[t].DiscStars[i]);
-//		sat_sam_mag = pow(sat_sam[0]*sat_sam[0] + sat_sam[1]*sat_sam[1] + sat_sam[2]*sat_sam[2], 0.5);
-//		cos_angle_sat_disc = (Gal[t].SpinStars[0]*sat_sam[0] + Gal[t].SpinStars[1]*sat_sam[1] + Gal[t].SpinStars[2]*sat_sam[2]) / sat_sam_mag; // Angle between ang mom of satellite and central's disc
-//		sat_sam_mag *= fabs(cos_angle_sat_disc); // Project satellite's (gas) angular momentum onto central's disc
-//	
-//		// Consider that the satellite will have rotation and hence it will have a distribution of angular momentum to contribute
-//		sat_sam_max =  sat_sam_mag  +  Gal[p].Vvir * fabs(cos_angle_sat_disc) * pow(pow(Gal[p].Pos[0]-Gal[t].Pos[0], 2.0) + pow(Gal[p].Pos[1]-Gal[t].Pos[1], 2.0) + pow(Gal[p].Pos[2]-Gal[t].Pos[2], 2.0), 0.5);
-//		sat_sam_min = 2.0*sat_sam_mag - sat_sam_max;
-//		if(sat_sam_min<0.0)
-//			sat_sam_min = 0.0;
-//		
-//		i_min=0;
-//		while(DiscBinEdge[i_min]<=sat_sam_min)
-//		{
-//			i_min++;
-//			if(i_min==N_BINS) break;
-//		}
-//		i_min -= 1;
-//	
-//		i_max=i_min;
-//		while(DiscBinEdge[i_max]<=sat_sam_max)
-//		{
-//			i_max++;
-//			if(i_max==N_BINS) break;
-//		}
-//	
-//		bin_num = i_max - i_min;
-//	
-//		for(i=i_min; i<i_max; i++)
-//		{
-//			Gal[t].DiscStars[i] += Gal[p].StellarMass / bin_num;
-//			Gal[t].DiscStarsMetals[i] += Gal[p].MetalsStellarMass / bin_num;
-//			assert(Gal[t].DiscStarsMetals[i] <= Gal[t].DiscStars[i]);
-//		}
-//	
-//		// Check if the satellite is a retrograde orbiter and get ready to deal with it -- I'M NOT CONVINCED OF DOING THIS HERE!
-//		if(cos_angle_sat_disc<0.0)
-//		{
-//			double J_retro = sat_sam_mag*Gal[p].StellarMass;
-//			double J_sum = get_disc_ang_mom(t, 1);
-//			if(J_sum > 2.0*J_retro)
-//			{
-//				for(i=0; i<N_BINS; i++) assert(Gal[t].DiscStarsMetals[i] <= Gal[t].DiscStars[i]);
-//				double NewDisc[N_BINS], NewDiscMetals[N_BINS];
-//				project_disc(Gal[t].DiscStars, (J_sum - 2.0*J_retro)/J_sum, t, NewDisc);
-//				project_disc(Gal[t].DiscStarsMetals, (J_sum - 2.0*J_retro)/J_sum, t, NewDiscMetals);
-//				for(i=0; i<N_BINS; i++)
-//				{
-//					Gal[t].DiscStars[i] = NewDisc[i];
-//					Gal[t].DiscStarsMetals[i] = NewDiscMetals[i];
-//					assert(Gal[t].DiscStarsMetals[i] <= Gal[t].DiscStars[i]);
-//				}
-//			}
-//			// Still need to deal with satellite having more ang mom here
-//		}
-//	}
 
       // Now just going to throw stars into the bulge.  Ang mom conservation will average itself out.
       if(Gal[p].StellarMass>0.0)
@@ -655,13 +515,12 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
       }
       
   }
-  else // Major mergers -- still needs work
+  else // Major mergers -- a more complex treatment of the gas could be done in future versions
   {
 	
 	DiscGasSum = get_disc_gas(p);
 	assert(DiscGasSum <= 1.01*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.01);
 	
-	//if(CentralGasOrig > 0.0 && Gal[p].ColdGas > 0.0)
 	if(Gal[p].ColdGas > 0.0)
 	{
 		double new_spin_mag, cos_angle_t, cos_angle_p;
@@ -723,79 +582,12 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 			if(PostRetroGas[i] < 0.0) 
 				PostRetroGas[i] = 0.0;
 		}
-		
-		// // Deal with retrograde gas by treating it and an equal amount of prograde gas as unstable	
-		// if(cos_angle_t < 0.0 || cos_angle_p < 0.0)
-		// {
-		// 	double metallicity, stars, gas_sink;
-		// 	gas_sink = -Gal[t].BlackHoleMass;
-		// 	
-		// 	for(i=0; i<30; i++)
-		// 	{
-		// 		if(cos_angle_t < 0.0)
-		// 			retro_gas = NewDiscT[i];
-		// 		else
-		// 			retro_gas = NewDiscP[i];
-		// 		
-		// 		metallicity = get_metallicity(Gal[t].DiscGas[i], Gal[t].DiscGasMetals[i]);
-		// 		assert(Gal[t].DiscGasMetals[i] <= Gal[t].DiscGas[i]);
-		// 		stars = deal_with_unstable_gas(2.0*retro_gas, t, i, Gal[t].Vvir, metallicity, centralgal, 1);
-		// 		
-		// 		// Stars formed are going to go the bulge during a major merger anyway
-		// 		Gal[t].StellarMass += (1 - RecycleFraction) * stars;
-		// 		Gal[t].MetalsStellarMass += (1 - RecycleFraction) * metallicity * stars;
-		// 		Gal[t].ClassicalBulgeMass += (1 - RecycleFraction) * stars;
-		// 		Gal[t].ClassicalMetalsBulgeMass += (1 - RecycleFraction) * metallicity * stars;
-		// 		Gal[t].SfrBulge[step] += stars / dt;
-		// 	}
-		// 	
-		// 	gas_sink += Gal[t].BlackHoleMass;
-		// 	if(gas_sink > 0 &&  AGNrecipeOn > 0)  // Deal with quasar feedback
-		// 		quasar_mode_wind(t, gas_sink);
-		// 	
-		// }
-		// 
-		// DiscGasSum = get_disc_gas(p);
-		// assert(DiscGasSum <= 1.01*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.01);
-		// DiscGasSum = get_disc_gas(t);
-		// assert(DiscGasSum <= 1.01*Gal[t].ColdGas && DiscGasSum >= Gal[t].ColdGas/1.01);
-
-	}
-	// else if(Gal[p].ColdGas > 0.0) // larger system would have no gas here, so the new galaxy maintains the disc of the smaller one
-	// {
-	// 	// for(i=0; i<30; i++)
-	// 	// {
-	// 	// 	// if(Gal[t].DiscGas[i]>0.0 && Gal[p].DiscGas[i]>0.0)
-	// 	// 	// 		  		disc_mass_ratio[i] = Gal[p].DiscGas[i] / Gal[t].DiscGas[i];
-	// 	// 	// 			else
-	// 	//   		disc_mass_ratio[i] = 0.0;
-	// 	// 	
-	// 	// 	Gal[t].DiscGas[i] = Gal[p].DiscGas[i];
-	// 	// 	Gal[t].DiscGasMetals[i] = Gal[p].DiscGasMetals[i];
-	// 	// 	assert(Gal[t].DiscGas[i] >= Gal[t].DiscGasMetals[i]);
-	// 	// }
-	// 	
-	// 
-	// 	// Instead going to try destroying this disc...
-	// 	Gal[t].ColdGas = 0.0;
-	// 	Gal[t].MetalsColdGas = 0.0;
-	// 	Gal[t].HotGas += Gal[p].ColdGas;
-	// 	Gal[t].MetalsHotGas += Gal[p].MetalsColdGas;
-	// }
-	
+    }
 	DiscGasSum = get_disc_gas(t);
 	assert(DiscGasSum <= 1.01*Gal[t].ColdGas && DiscGasSum >= Gal[t].ColdGas/1.01);
-	// Add stars in merger to bulge
-	  // if(Gal[t].StellarMass > 0.0 && Gal[t].ClassicalBulgeMass > 0.5 * Gal[t].StellarMass)
-	  // {
-	Gal[t].ClassicalBulgeMass += Gal[p].StellarMass;
-	Gal[t].ClassicalMetalsBulgeMass += Gal[p].MetalsStellarMass;		
-		// 	  }
-		// 	  else
-		// 	  {
-		// Gal[t].SecularBulgeMass += Gal[p].StellarMass;
-		// Gal[t].SecularMetalsBulgeMass += Gal[p].MetalsStellarMass;				
-		// 	  }
+
+    Gal[t].ClassicalBulgeMass += Gal[p].StellarMass;
+	Gal[t].ClassicalMetalsBulgeMass += Gal[p].MetalsStellarMass;
   }
 
 
@@ -955,10 +747,8 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
 	{
 	  if(stars>1e-8)
 	  {
-        //r_inner = get_annulus_radius(merger_centralgal, k);
-        //r_outer = get_annulus_radius(merger_centralgal, k+1);
-          r_inner = Gal[merger_centralgal].DiscRadii[k];
-          r_outer = Gal[merger_centralgal].DiscRadii[k+1];
+        r_inner = Gal[merger_centralgal].DiscRadii[k];
+        r_outer = Gal[merger_centralgal].DiscRadii[k+1];
           
         area = M_PI * (r_outer*r_outer - r_inner*r_inner);
 		Sigma_0gas = 2.1 * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
@@ -1026,8 +816,6 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
 	    Gal[merger_centralgal].DiscGasMetals[k] += Yield * stars*(1-get_metallicity(NewStars[k],NewStarsMetals[k]));
 	    Gal[merger_centralgal].MetalsColdGas += Yield * stars*(1-get_metallicity(NewStars[k],NewStarsMetals[k]));
   	  }
-		// 	  else
-		// Gal[merger_centralgal].MetalsHotGas += Yield * stars;
 	}
 	assert(Gal[merger_centralgal].DiscGasMetals[k]<=Gal[merger_centralgal].DiscGas[k]);
 	assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
