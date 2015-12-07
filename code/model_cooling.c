@@ -134,6 +134,7 @@ double do_AGN_heating(double coolingGas, int p, double dt, double x, double rcoo
     metallicity = get_metallicity(Gal[p].HotGas, Gal[p].MetalsHotGas);
 	assert(Gal[p].MetalsHotGas <= Gal[p].HotGas);
     Gal[p].BlackHoleMass += AGNaccreted;
+      assert(Gal[p].BlackHoleMass>=0.0);
     Gal[p].HotGas -= AGNaccreted;
     Gal[p].MetalsHotGas -= metallicity * AGNaccreted;
 

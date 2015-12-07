@@ -55,6 +55,8 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 		if (Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i])
 			printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 		assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
+        
+        disc_mass_ratio[i] = 0.0;
 	}
 
   // calculate mass ratio of merging galaxies 
@@ -130,7 +132,7 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 
   add_galaxies_together(merger_centralgal, p, mass_ratio, disc_mass_ratio, centralgal, dt, PostRetroGas);
   
-    for(i=0; i<N_BINS; i++) assert(disc_mass_ratio[i] <= 1.0);
+    for(i=0; i<N_BINS; i++) assert(disc_mass_ratio[i] <= 1.0 && disc_mass_ratio[i]>=0.0);
     
   DiscGasSum = get_disc_gas(merger_centralgal);
   assert(DiscGasSum <= 1.01*Gal[merger_centralgal].ColdGas && DiscGasSum >= Gal[merger_centralgal].ColdGas/1.01);
@@ -263,8 +265,15 @@ double grow_black_hole(int merger_centralgal, double* disc_mass_ratio)
 	if(Gal[merger_centralgal].DiscGas[i] > 0.0)
 	{
 		BHaccrete = BlackHoleGrowthRate * disc_mass_ratio[i] / (1.0 + pow(280.0 / Gal[merger_centralgal].Vvir, 2.0)) * Gal[merger_centralgal].DiscGas[i];
-        if(disc_mass_ratio[i] > 1.0 || disc_mass_ratio[i]!=disc_mass_ratio[i]) printf("i, disc_mass_ratio[i] = %d, %e\n", i, disc_mass_ratio[i]);
+        if(disc_mass_ratio[i] > 1.0 || disc_mass_ratio[i]!=disc_mass_ratio[i] || disc_mass_ratio[i]<0.0) printf("i, disc_mass_ratio[i] = %d, %e\n", i, disc_mass_ratio[i]);
 		assert(disc_mass_ratio[i]<=1.0);
+        
+        if(BHaccrete<0.0)
+        {
+            printf("BHaccrete, disc_mass_ratio, DiscGas, Vvir, BlackHoleGrowthRate = %e, %e, %e, %e, %e\n", BHaccrete, disc_mass_ratio[i], Gal[merger_centralgal].DiscGas[i], Gal[merger_centralgal].Vvir, BlackHoleGrowthRate);
+        }
+        
+        assert(BHaccrete>=0.0);
 		if(BHaccrete > Gal[merger_centralgal].DiscGas[i]) // This could only be possible if BlackHoleGrowthRate is set to >1.0, which shouldn't happen...
 		{
 			BHaccrete_tot += Gal[merger_centralgal].DiscGas[i];
@@ -288,6 +297,7 @@ double grow_black_hole(int merger_centralgal, double* disc_mass_ratio)
   }
 
   Gal[merger_centralgal].BlackHoleMass += BHaccrete_tot;
+    assert(Gal[merger_centralgal].BlackHoleMass>=0.0);
   return BHaccrete_tot;
 }
 
@@ -399,6 +409,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 		if (Gal[t].DiscStarsMetals[i] > Gal[t].DiscStars[i])
 			printf("DiscStars, Metals = %e, %e\n", Gal[t].DiscStars[i], Gal[t].DiscStarsMetals[i]);
 		assert(Gal[t].DiscStarsMetals[i] <= Gal[t].DiscStars[i]);
+        assert(disc_mass_ratio[i]==0.0);
 	}
 	
   Gal[t].ColdGas += DiscGasSum;
@@ -458,7 +469,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 		{
 			if(i<i_min || i>=i_max)
 			{
-				disc_mass_ratio[i] = 0.0;
+				disc_mass_ratio[i] = 0.0; // Probably redundant line, given all initialised at 0.
 				PostRetroGas[i] = Gal[t].DiscGas[i];
 			}
 			else
@@ -468,7 +479,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
                 else
                     disc_mass_ratio[i] = 0.0;
 				if(disc_mass_ratio[i] > 1.0) disc_mass_ratio[i] = 1.0/disc_mass_ratio[i];
-                assert(disc_mass_ratio[i] <= 1.0);
+                assert(disc_mass_ratio[i] <= 1.0 && disc_mass_ratio[i]>=0.0);
 				Gal[t].DiscGas[i] += Gal[p].ColdGas / bin_num;
 				gas_added += Gal[p].ColdGas / bin_num;
 				Gal[t].DiscGasMetals[i] += Gal[p].MetalsColdGas / bin_num;
@@ -491,6 +502,9 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 		assert(DiscGasSum <= 1.01*Gal[t].ColdGas && DiscGasSum >= Gal[t].ColdGas/1.01);
 
     }
+    else
+        for(i=0; i<N_BINS; i++) PostRetroGas[i] = Gal[t].DiscGas[i];
+        
 
       // Now just going to throw stars into the bulge.  Ang mom conservation will average itself out.
       if(Gal[p].StellarMass>0.0)
@@ -562,6 +576,8 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
             
 			if(disc_mass_ratio[i] > 1.0)
 				disc_mass_ratio[i] = 1.0 / disc_mass_ratio[i];
+            
+            assert(disc_mass_ratio[i]<=1.0 && disc_mass_ratio[i]>=0.0);
 		}
 		
 		DiscGasSum = get_disc_gas(p);
@@ -582,12 +598,19 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 			if(PostRetroGas[i] < 0.0) 
 				PostRetroGas[i] = 0.0;
 		}
+        
+        // Set the new spin direction of the gas
+        for(i=0; i<3; i++) Gal[t].SpinGas[i] = NewSpin[i];
     }
+    else
+        for(i=0; i<N_BINS; i++) PostRetroGas[i] = Gal[t].DiscGas[i];
+
 	DiscGasSum = get_disc_gas(t);
 	assert(DiscGasSum <= 1.01*Gal[t].ColdGas && DiscGasSum >= Gal[t].ColdGas/1.01);
 
     Gal[t].ClassicalBulgeMass += Gal[p].StellarMass;
 	Gal[t].ClassicalMetalsBulgeMass += Gal[p].MetalsStellarMass;
+      
   }
 
 
@@ -611,6 +634,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
   Gal[t].MetalsICS += Gal[p].MetalsICS;
 
   Gal[t].BlackHoleMass += Gal[p].BlackHoleMass;
+    assert(Gal[t].BlackHoleMass>=0.0);
 
   
 
@@ -632,6 +656,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
         
         // This should already be taken care of above, but for whatever reason I needed to add it here to actually work.
         if(disc_mass_ratio[i] > 1.0) disc_mass_ratio[i] = 1.0/disc_mass_ratio[i];
+        assert(disc_mass_ratio[i]<=1.0 && disc_mass_ratio[i]>=0.0);
 	}
 }
 
@@ -681,6 +706,8 @@ void stars_to_bulge(int t, int p)
     assert(spinmag>0.99 && spinmag<1.01);
 }
 
+
+
 void disrupt_satellite_to_ICS(int centralgal, int gal)
 {  
   Gal[centralgal].HotGas += Gal[gal].ColdGas + Gal[gal].HotGas;
@@ -702,9 +729,9 @@ void disrupt_satellite_to_ICS(int centralgal, int gal)
 
 void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_centralgal, int centralgal, double time, double dt, int halonr, int mode, int step, double mass_ratio)
 {
- double stars, reheated_mass, ejected_mass, fac, metallicity, CentralVvir, eburst, Sigma_0gas, area, stars_sum;
+ double stars, reheated_mass, ejected_mass, fac, metallicity, CentralVvir, eburst, Sigma_0gas, area, stars_sum, metals_stars;
  double r_inner, r_outer;
- double NewStars[N_BINS], NewStarsMetals[N_BINS];
+ //double NewStars[N_BINS], NewStarsMetals[N_BINS];
  int k;
 
  // This is the major and minor merger starburst recipe of Somerville et al. 2001. 
@@ -712,6 +739,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
  // accurate then previous. The recipe has been modified to function for each annulus.
     
     double ejected_sum = 0.0;
+    double metals_stars_sum = 0.0;
 
  stars_sum = 0.0;
  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
@@ -796,8 +824,10 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
 
 	metallicity = get_metallicity(Gal[merger_centralgal].DiscGas[k], Gal[merger_centralgal].DiscGasMetals[k]);
 	assert(Gal[merger_centralgal].DiscGasMetals[k] <= Gal[merger_centralgal].DiscGas[k]);
-	NewStars[k] = (1 - RecycleFraction) * stars;
-	NewStarsMetals[k] = (1 - RecycleFraction) * metallicity * stars;
+    metals_stars = metallicity * stars;
+    
+	//NewStars[k] = (1 - RecycleFraction) * stars;
+	//NewStarsMetals[k] = (1 - RecycleFraction) * metallicity * stars;
     update_from_star_formation(merger_centralgal, stars, metallicity, k);
 
     if(reheated_mass > Gal[merger_centralgal].DiscGas[k] && reheated_mass < 1.01*Gal[merger_centralgal].DiscGas[k])
@@ -813,23 +843,30 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
 	{
 	  if(stars>1e-8)
 	  {
-	    Gal[merger_centralgal].DiscGasMetals[k] += Yield * stars*(1-get_metallicity(NewStars[k],NewStarsMetals[k]));
-	    Gal[merger_centralgal].MetalsColdGas += Yield * stars*(1-get_metallicity(NewStars[k],NewStarsMetals[k]));
+	    Gal[merger_centralgal].DiscGasMetals[k] += Yield * stars*(1-get_metallicity(stars,metals_stars));
+	    Gal[merger_centralgal].MetalsColdGas += Yield * stars*(1-get_metallicity(stars,metals_stars));
   	  }
 	}
 	assert(Gal[merger_centralgal].DiscGasMetals[k]<=Gal[merger_centralgal].DiscGas[k]);
 	assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 	
 	stars_sum += stars;
+    metals_stars_sum += metals_stars;
     Gal[merger_centralgal].DiscSFR[k] += stars / dt;
   }
      
-     update_from_ejection(centralgal, ejected_sum);
+  update_from_ejection(centralgal, ejected_sum);
 
   // Sum stellar discs together
-  combine_stellar_discs(merger_centralgal, NewStars, NewStarsMetals);
+  //combine_stellar_discs(merger_centralgal, NewStars, NewStarsMetals);
+     
+     // Now adding all new stars directly to the bulge
+     Gal[merger_centralgal].StellarMass += (1 - RecycleFraction) * stars_sum;
+     Gal[merger_centralgal].ClassicalBulgeMass += (1 - RecycleFraction) * stars_sum;
+     Gal[merger_centralgal].MetalsStellarMass += (1 - RecycleFraction) * metals_stars_sum;
+     Gal[merger_centralgal].ClassicalMetalsBulgeMass += (1 - RecycleFraction) * metals_stars_sum;
 
-  Gal[merger_centralgal].SfrDisk[step] += stars_sum / dt; // This can probably be handled better.  It's a bit complicated though (as to whether it's Sfr in the bulge or disc)
+  Gal[merger_centralgal].SfrBulge[step] += stars_sum / dt; // This can probably be handled better.  It's a bit complicated though (as to whether it's Sfr in the bulge or disc)
   Gal[merger_centralgal].StarsMergeBurst += (1-RecycleFraction)*stars_sum;
      
   assert(Gal[merger_centralgal].StellarMass >= (Gal[merger_centralgal].StarsInSitu+Gal[merger_centralgal].StarsInstability+Gal[merger_centralgal].StarsMergeBurst)/1.01 && Gal[merger_centralgal].StellarMass <= (Gal[merger_centralgal].StarsInSitu+Gal[merger_centralgal].StarsInstability+Gal[merger_centralgal].StarsMergeBurst)*1.01);

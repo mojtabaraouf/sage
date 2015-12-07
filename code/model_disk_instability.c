@@ -292,6 +292,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
     if(direct_to_BH>0 || i==0)
 	{
 		Gal[p].BlackHoleMass += gas_sink;
+        assert(Gal[p].BlackHoleMass>=0);
 		Gal[p].ColdGas -= gas_sink;
 		Gal[p].MetalsColdGas -= metallicity * gas_sink;
 	}
