@@ -44,7 +44,7 @@ SFprescription				0		;0: proportional to H2; 1: as 0 but all gas for low H2 frac
 H2prescription              0       ;0: mid-plane pressure; 1: metallicity-dependent (McKee & Krumholz 2010)
 AGNrecipeOn					2		;0: switch off; 1: empirical model; 2: Bondi-Hoyle model; 3: cold cloud accretion model
 SupernovaRecipeOn			1		;0: switch off
-ReionizationOn				0		;0: switch off
+ReionizationOn				1		;0: switch off
 DiskInstabilityOn			1		;0: switch off; 1: bulge and BH growth through instabilities w. instability starbursts
 GasPrecessionOn             1       ;0: switch off; 1: gas discs will precess to naturally come in line with stellar discs
 RamPressureOn               1       ;0: switch off; 1: cold gas can be stripped from satellites
@@ -61,29 +61,29 @@ ExponentBin                 1.4     ; The factor in spec ang mom between bins
 %----- Parameters of physical model -------
 %------------------------------------------
 
-SfrEfficiency				1.0
+SfrEfficiency				0.0
 
-FeedbackReheatingEpsilon	3.0		;mass of cold gas reheated due to SF (see Martin 1999) (SupernovaRecipeOn=1)
+FeedbackReheatingEpsilon	6.0
 FeedbackEjectionEfficiency	0.3 	;mixing efficiency of SN energy with hot gas to unbind and eject some (SupernovaRecipeOn=1)
 
 ReIncorporationFactor		0.15
 
-RadioModeEfficiency			0.01
-QuasarModeEfficiency		0.0001
-BlackHoleGrowthRate			0.05     ;fraction of cold gas added to the BH during mergers (AGNrecipeOn>0)
+RadioModeEfficiency			0.04
+QuasarModeEfficiency		0.005
+BlackHoleGrowthRate			0.05
 
 H2FractionFactor            1.0    ;Controls the normalisation of the H2/HI ratio calculation if H2prescription=0. 1.0 would be the same as Fu et al. (2010).
 H2FractionExponent          0.92   ;Also controls the H2/HI ratio calculation. 0.92 would be the same as Fu et al. (2010).
 
 QTotMin                     1.0    ;threshold Toomre Q value for instabilities
-GasSinkRate                 0.05    ;ratio of unstable gas that will sink in an instability
+GasSinkRate                 0.05
 
 DegPerTdyn                  5.0    ;degrees the gas disc precesses to come in line with stars per dynamical time
 
 ThreshMajorMerger			0.3		;major merger when mass ratio greater than this
 ThresholdSatDisruption		1.0		;Mvir-to-baryonic mass ratio threshold for satellite merger or disruption
 
-Yield						0.02	;fraction of SF mass produced as metals
+Yield						0.015	;fraction of SF mass produced as metals
 RecycleFraction				0.43	;fraction of SF mass instantaneously recycled back to cold
 FracZleaveDisk				0.0		;fraction of metals produced directly to hot component
 

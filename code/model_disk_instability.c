@@ -108,31 +108,35 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
             Gal[p].TotInstabAnnuliGas +=1;
             
             unstable_gas = Gal[p].DiscGas[i]*(1.0 - Q_gas/Q_gas_min);
-			metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
-			
-			if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
-			assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
-			assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
-			
-            double before = Gal[p].DiscGas[i];
-			stars = deal_with_unstable_gas(unstable_gas, p, i, V_rot, metallicity, centralgal, 0, r_inner, r_outer);
-            SNgas[i] = RecycleFraction * stars;
-
-            if(before-(Gal[p].DiscGas[i]-SNgas[i])<0.99*unstable_gas || before-(Gal[p].DiscGas[i]-SNgas[i])>1.01*unstable_gas)
+            
+            if(unstable_gas>1e-10)
             {
-                printf("before, after, diff, unstable_gas = %e, %e, %e, %e\n", before, Gal[p].DiscGas[i]-SNgas[i], before-(Gal[p].DiscGas[i]-SNgas[i]), unstable_gas);
-                ABORT(0);
+                metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
+                
+                if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
+                assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
+                assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
+                
+                double before = Gal[p].DiscGas[i];
+                stars = deal_with_unstable_gas(unstable_gas, p, i, V_rot, metallicity, centralgal, 0, r_inner, r_outer);
+                SNgas[i] = RecycleFraction * stars;
+
+                if(before-(Gal[p].DiscGas[i]-SNgas[i])<0.99*unstable_gas || before-(Gal[p].DiscGas[i]-SNgas[i])>1.01*unstable_gas)
+                {
+                    printf("before, after, diff, unstable_gas = %e, %e, %e, %e\n", before, Gal[p].DiscGas[i]-SNgas[i], before-(Gal[p].DiscGas[i]-SNgas[i]), unstable_gas);
+                    ABORT(0);
+                }
+                
+                if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
+                assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
+                assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
+                
+                stars_sum += stars;
+                Gal[p].DiscSFR[i] += stars / dt;
+                NewStars[i] = (1 - RecycleFraction) * stars;
+                NewStarsMetals[i] = (1 - RecycleFraction) * metallicity * stars;
+                assert(NewStarsMetals[i] <= NewStars[i]);
             }
-			
-			if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
-			assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
-			assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
-			
-			stars_sum += stars;
-            Gal[p].DiscSFR[i] += stars / dt;
-			NewStars[i] = (1 - RecycleFraction) * stars;
-			NewStarsMetals[i] = (1 - RecycleFraction) * metallicity * stars;
-			assert(NewStarsMetals[i] <= NewStars[i]);
 		}
         
         Q_gas = c_s * Kappa * (r_outer*r_outer - r_inner*r_inner) / G / (Gal[p].DiscGas[i]-SNgas[i]);
@@ -233,29 +237,33 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
             
 			unstable_stars = (Gal[p].DiscStars[i]+SNgas[i]) * (1.0 - Q_star/Q_star_min);
             if(unstable_stars > Gal[p].DiscStars[i]) unstable_stars = Gal[p].DiscStars[i];
-			metallicity = get_metallicity(Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
-			assert(Gal[p].DiscStarsMetals[i]<=Gal[p].DiscStars[i]);
-			Gal[p].DiscStars[i] -= unstable_stars;
-			Gal[p].DiscStarsMetals[i] = metallicity * Gal[p].DiscStars[i];
-            Gal[p].TotSinkStar[i] = unstable_stars;
-			if(i!=0)
-			{
-				Gal[p].DiscStars[i-1] += unstable_stars;
-				Gal[p].DiscStarsMetals[i-1] += metallicity * unstable_stars;
-				assert(Gal[p].DiscStarsMetals[i-1]<=Gal[p].DiscStars[i-1]);
-			}
-			else
-			{
-                for(s=0; s<3; s++)
-                    Gal[p].SpinSecularBulge[s] = Gal[p].SpinSecularBulge[s]*Gal[p].SecularBulgeMass + Gal[p].SpinStars[s]*unstable_stars;
-                
-				Gal[p].SecularBulgeMass += unstable_stars;
-				Gal[p].SecularMetalsBulgeMass += metallicity * unstable_stars;
-                
-                spinmag = pow(pow(Gal[p].SpinSecularBulge[0],2.0)+pow(Gal[p].SpinSecularBulge[1],2.0)+pow(Gal[p].SpinSecularBulge[2],2.0),0.5);
-                for(s=0; s<3; s++)
-                    Gal[p].SpinSecularBulge[s] /= spinmag;
-			}
+            
+            if(unstable_stars>1e-10)
+            {
+                metallicity = get_metallicity(Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
+                assert(Gal[p].DiscStarsMetals[i]<=Gal[p].DiscStars[i]);
+                Gal[p].DiscStars[i] -= unstable_stars;
+                Gal[p].DiscStarsMetals[i] = metallicity * Gal[p].DiscStars[i];
+                Gal[p].TotSinkStar[i] = unstable_stars;
+                if(i!=0)
+                {
+                    Gal[p].DiscStars[i-1] += unstable_stars;
+                    Gal[p].DiscStarsMetals[i-1] += metallicity * unstable_stars;
+                    assert(Gal[p].DiscStarsMetals[i-1]<=Gal[p].DiscStars[i-1]);
+                }
+                else
+                {
+                    for(s=0; s<3; s++)
+                        Gal[p].SpinSecularBulge[s] = Gal[p].SpinSecularBulge[s]*Gal[p].SecularBulgeMass + Gal[p].SpinStars[s]*unstable_stars;
+                    
+                    Gal[p].SecularBulgeMass += unstable_stars;
+                    Gal[p].SecularMetalsBulgeMass += metallicity * unstable_stars;
+                    
+                    spinmag = pow(pow(Gal[p].SpinSecularBulge[0],2.0)+pow(Gal[p].SpinSecularBulge[1],2.0)+pow(Gal[p].SpinSecularBulge[2],2.0),0.5);
+                    for(s=0; s<3; s++)
+                        Gal[p].SpinSecularBulge[s] /= spinmag;
+                }
+            }
 		}
 	}
 	
@@ -392,11 +400,15 @@ void precess_gas(int p, double dt, int halonr)
     // Axis of symmetry assumed to be the bulge in a bulge-dominated system, else it's the disc
     for(i=0; i<3; i++)
     {
-        if(Gal[p].ClassicalBulgeMass>0.5*Gal[p].StellarMass)
+        if(Gal[p].ClassicalBulgeMass>0.5*Gal[p].StellarMass){
             StarSpin[i] = Gal[p].SpinClassicalBulge[i];
-        else
+            assert(fabs(StarSpin[0]+StarSpin[1]+StarSpin[2]) > 0.0);}
+        else{
             StarSpin[i] = Gal[p].SpinStars[i];
+            assert(fabs(StarSpin[0]+StarSpin[1]+StarSpin[2]) > 0.0);}
     }
+    
+    assert(fabs(StarSpin[0]+StarSpin[1]+StarSpin[2]) > 0.0);
     
     cos_angle_gas_stars = StarSpin[0]*Gal[p].SpinGas[0] + StarSpin[1]*Gal[p].SpinGas[1] + StarSpin[2]*Gal[p].SpinGas[2];
         
@@ -405,7 +417,10 @@ void precess_gas(int p, double dt, int halonr)
     
     DiscStarSum = get_disc_stars(p);
     
-    if(fabs(cos_angle_gas_stars)<1.0 && DiscGasSum>0.0 && DiscStarSum>0.0)
+    if(cos_angle_gas_stars==0)
+        printf("Spin of gas and stars orthogonal -- no precession\n");
+    
+    if(fabs(cos_angle_gas_stars)<1.0 && DiscGasSum>0.0 && DiscStarSum>0.0 & cos_angle_gas_stars!=0.0)
     {
         deg = 0.0;
         for(i=0; i<N_BINS; i++)
