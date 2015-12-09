@@ -319,7 +319,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 		if(SupernovaRecipeOn == 1)
 		{
 			area = M_PI * (r_outer*r_outer - r_inner*r_inner);
-			Sigma_0gas = 2.1 * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
+			Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
             reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3);
 						
 			// Can't use more cold gas than is available, so balance SF and feedback 
@@ -346,7 +346,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 		    }
 			else
 			{
-                ejected_mass = (FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) * stars / (V_rot * V_rot) - reheated_mass);
+                ejected_mass = (FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) / (V_rot * V_rot) - FeedbackReheatingEpsilon) * stars;
 			    if(ejected_mass < 0.0)
 			        ejected_mass = 0.0;
 			}

@@ -63,13 +63,14 @@ ExponentBin                 1.4     ; The factor in spec ang mom between bins
 
 SfrEfficiency				0.0
 
-FeedbackReheatingEpsilon	6.0
+FeedbackReheatingEpsilon	3.0     ;directly comparable to the SAGE value
+FeedbackGasSigma            2.1     ;Surface density scaling for net heating from SN (solar masses per pc^2 -- Fu et al use 2.1)
 FeedbackEjectionEfficiency	0.3 	;mixing efficiency of SN energy with hot gas to unbind and eject some (SupernovaRecipeOn=1)
 
 ReIncorporationFactor		0.15
 
-RadioModeEfficiency			0.04
-QuasarModeEfficiency		0.005
+RadioModeEfficiency			0.08
+QuasarModeEfficiency		0.00
 BlackHoleGrowthRate			0.05
 
 H2FractionFactor            1.0    ;Controls the normalisation of the H2/HI ratio calculation if H2prescription=0. 1.0 would be the same as Fu et al. (2010).
@@ -83,7 +84,7 @@ DegPerTdyn                  5.0    ;degrees the gas disc precesses to come in li
 ThreshMajorMerger			0.3		;major merger when mass ratio greater than this
 ThresholdSatDisruption		1.0		;Mvir-to-baryonic mass ratio threshold for satellite merger or disruption
 
-Yield						0.015	;fraction of SF mass produced as metals
+Yield						0.03	;fraction of SF mass produced as metals
 RecycleFraction				0.43	;fraction of SF mass instantaneously recycled back to cold
 FracZleaveDisk				0.0		;fraction of metals produced directly to hot component
 

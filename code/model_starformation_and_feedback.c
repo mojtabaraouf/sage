@@ -96,7 +96,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	{
 	  if(stars>1e-8)
 	  {
-		Sigma_0gas = 2.1 * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
+		Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
         reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3);
 
 		// Can't use more cold gas than is available, so balance SF and feedback 
@@ -113,7 +113,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 		  reheated_mass = Gal[p].DiscGas[i] - stars; // Used to have (1-RecycleFraction)* in front of stars here, but changed philosophy
 	    }
 	
-	    ejected_mass = (FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) * stars / (Gal[centralgal].Vvir * Gal[centralgal].Vvir) - reheated_mass);
+	    ejected_mass = (FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) / (Gal[centralgal].Vvir * Gal[centralgal].Vvir) - FeedbackReheatingEpsilon) * stars;
 	    if(ejected_mass < 0.0)
 	        ejected_mass = 0.0;
 	

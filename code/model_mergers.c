@@ -779,7 +779,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
         r_outer = Gal[merger_centralgal].DiscRadii[k+1];
           
         area = M_PI * (r_outer*r_outer - r_inner*r_inner);
-		Sigma_0gas = 2.1 * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
+		Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
         reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[merger_centralgal].DiscGas[k]/area/1.3);
 		
 		// can't use more cold gas than is available! so balance SF and feedback 
@@ -796,7 +796,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
 		  reheated_mass = Gal[merger_centralgal].DiscGas[k] - (1-RecycleFraction)*stars;
 	    }
 	
-        ejected_mass = (FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) * stars / (CentralVvir * CentralVvir) - reheated_mass);
+        ejected_mass = (FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) / (CentralVvir * CentralVvir) - FeedbackReheatingEpsilon) * stars;
 	    if(ejected_mass < 0.0)
 	        ejected_mass = 0.0;
           

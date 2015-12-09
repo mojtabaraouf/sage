@@ -302,6 +302,7 @@ extern double ThreshMajorMerger;
 extern double BaryonFrac;
 extern double SfrEfficiency;
 extern double FeedbackReheatingEpsilon;
+extern double FeedbackGasSigma;
 extern double FeedbackEjectionEfficiency;
 extern double RadioModeEfficiency;
 extern double QuasarModeEfficiency;

@@ -169,6 +169,10 @@ void read_parameter_file(char *fname)
   addr[nt] = &FeedbackReheatingEpsilon;
   id[nt++] = DOUBLE;
 
+    strcpy(tag[nt], "FeedbackGasSigma");
+    addr[nt] = &FeedbackGasSigma;
+    id[nt++] = DOUBLE;
+    
   strcpy(tag[nt], "FeedbackEjectionEfficiency");
   addr[nt] = &FeedbackEjectionEfficiency;
   id[nt++] = DOUBLE;

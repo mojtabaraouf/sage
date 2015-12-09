@@ -74,6 +74,7 @@ double ThreshMajorMerger;
 double BaryonFrac;
 double SfrEfficiency;
 double FeedbackReheatingEpsilon;
+double FeedbackGasSigma;
 double FeedbackEjectionEfficiency;
 double RadioModeEfficiency;
 double QuasarModeEfficiency;
