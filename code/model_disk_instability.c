@@ -15,10 +15,18 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	double Q_star, Q_gas, V_rot, Q_gas_min, Q_star_min, Q_tot, W, Q_stable;
 	double unstable_gas, unstable_stars, metallicity, stars, stars_sum, gas_sink;
     double r_inner, r_outer, r_av, Omega, Kappa, sigma_R, c_s;
-	double NewStars[N_BINS], NewStarsMetals[N_BINS], SNgas[N_BINS], spinmag, angle;
+	double NewStars[N_BINS], NewStarsMetals[N_BINS], SNgas[N_BINS], spinmag, angle, DiscGasSum;
 	int i, s;
     int first, first_gas, first_star;
 	
+    double star_init = Gal[p].StellarMass;
+    
+    
+    assert(Gal[p].StellarMass >= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)/1.01 && Gal[p].StellarMass <= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)*1.01);
+    
+    DiscGasSum = get_disc_gas(p);
+    assert(Gal[p].ColdGas >= DiscGasSum/1.01 && Gal[p].ColdGas <= DiscGasSum*1.01);
+    
     c_s = 1.1e6 / UnitVelocity_in_cm_per_s; // Speed of sound assumed for cold gas, now set to be the same as vel disp of gas at 11 km/s
     
     angle = acos(Gal[p].DiscStars[0]*Gal[p].DiscGas[0] + Gal[p].DiscStars[1]*Gal[p].DiscGas[1] + Gal[p].DiscStars[2]*Gal[p].DiscGas[2])*180.0/M_PI;
@@ -119,7 +127,10 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
                 
                 double before = Gal[p].DiscGas[i];
                 stars = deal_with_unstable_gas(unstable_gas, p, i, V_rot, metallicity, centralgal, 0, r_inner, r_outer);
-                SNgas[i] = RecycleFraction * stars;
+                if(stars>=MIN_STARS_FOR_SN)
+                    SNgas[i] = RecycleFraction * stars;
+                else
+                    SNgas[i] = 0.0;
 
                 if(before-(Gal[p].DiscGas[i]-SNgas[i])<0.99*unstable_gas || before-(Gal[p].DiscGas[i]-SNgas[i])>1.01*unstable_gas)
                 {
@@ -133,9 +144,22 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
                 
                 stars_sum += stars;
                 Gal[p].DiscSFR[i] += stars / dt;
-                NewStars[i] = (1 - RecycleFraction) * stars;
-                NewStarsMetals[i] = (1 - RecycleFraction) * metallicity * stars;
+                if(stars>=MIN_STARS_FOR_SN)
+                {
+                    NewStars[i] = (1 - RecycleFraction) * stars;
+                    NewStarsMetals[i] = (1 - RecycleFraction) * metallicity * stars;
+                }
+                else
+                {
+                    NewStars[i] = stars;
+                    NewStarsMetals[i] = metallicity * stars;
+                }
                 assert(NewStarsMetals[i] <= NewStars[i]);
+            }
+            else
+            {
+                NewStars[i] = 0.0;
+                NewStarsMetals[i] = 0.0;
             }
 		}
         
@@ -152,11 +176,35 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	// Merge new-star disc with previous stellar disc
 	if(stars_sum>0.0)
 	{
-		for(i=0; i<N_BINS; i++) assert(NewStarsMetals[i] <= NewStars[i]);
+        assert(Gal[p].StellarMass==star_init);
+        
+        double NewStarsSum = 0.0;
+		for(i=0; i<N_BINS; i++)
+        {
+            assert(NewStarsMetals[i] <= NewStars[i]);
+            NewStarsSum += NewStars[i];
+        }
+        //double StarPre = get_disc_stars(p);
 		combine_stellar_discs(p, NewStars, NewStarsMetals);
+        //double StarPost = get_disc_stars(p);
+        
+        //if(!(StarPost-StarPre <= 1.01*NewStarsSum && StarPost-StarPre >= NewStarsSum/1.01))
+            //printf("StarPre, StarPost, StarPost-StarPre, NewStarsSum, star_init = %e, %e, %e, %e, %e\n", StarPre, StarPost, StarPost-StarPre, NewStarsSum, star_init);
+        //else
+            //printf("working\n");
+        //assert(StarPost-StarPre <= 1.01*NewStarsSum && StarPost-StarPre >= NewStarsSum/1.01);
+        
+        
 		Gal[p].SfrDisk[step] += stars_sum / dt; // Some of these stars may quickly be transferred to the bulge, so simply updating SfrDisk might be crude
-        Gal[p].StarsInstability += (1-RecycleFraction)*stars_sum;
-        assert(Gal[p].StellarMass >= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)/1.001 && Gal[p].StellarMass <= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)*1.001);
+        Gal[p].StarsInstability += NewStarsSum;
+        
+        assert(NewStarsSum<=stars_sum);
+        
+        if(!(Gal[p].StellarMass >= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)/1.01 && Gal[p].StellarMass <= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)*1.01))
+            //printf("stars, insitu, instab, mergeburst = %e, %e, %e, %e\n", Gal[p].StellarMass, Gal[p].StarsInSitu, Gal[p].StarsInstability, Gal[p].StarsMergeBurst);
+            printf("stars actual, sum channels = %e, %e\n", Gal[p].StellarMass, Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst);
+        
+        assert(Gal[p].StellarMass >= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)/1.01 && Gal[p].StellarMass <= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)*1.01);
 
 	}
     
@@ -290,6 +338,10 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
     
 	// Let gas sink -- I may well want to change this formula
     gas_sink = GasSinkRate * unstable_gas;
+    
+    if(unstable_gas - gas_sink < MIN_STARFORMATION) // Not enough unstable gas to form stars
+        gas_sink = unstable_gas;
+    
 //    if(Gal[p].StellarMass > 0.0)
 //        gas_sink *= (1.0 - (Gal[p].SecularBulgeMass+Gal[p].ClassicalBulgeMass)/Gal[p].StellarMass); // / (1.0 + pow(280.0 / V_rot, 2.0));
     Gal[p].DiscGas[i] -= gas_sink;
@@ -330,12 +382,12 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 		    	reheated_mass *= fac;
 		    }
 		
-			if(stars<1e-8)
+			if(stars<MIN_STARS_FOR_SN)
 		    {
-				if(gas_sf >= 1e-8)
+				if(gas_sf >= MIN_STARS_FOR_SN)
 				{
-		    		stars = 1e-8;
-					reheated_mass = gas_sf - stars; // Previously had (1-RecycleFration)* in front of stars, which would have ensured all the unstable gas was removed in some way, but this would be inconsistent with what's done for the case that stars>1e-8.
+		    		stars = MIN_STARS_FOR_SN;
+					reheated_mass = gas_sf - stars; // Previously had (1-RecycleFration)* in front of stars, which would have ensured all the unstable gas was removed in some way, but this would be inconsistent with what's done for the case that stars>MIN_STARS_FOR_SN.
 				}
 				else
 				{
@@ -368,7 +420,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
 	    update_from_feedback(p, centralgal, reheated_mass, metallicity_new, i);
 
-        if(stars > 1e-8)
+        if(SupernovaRecipeOn == 1 && stars>=MIN_STARS_FOR_SN)
         {
 			Gal[p].DiscGasMetals[i] += Yield * stars*(1-metallicity);
 	    	Gal[p].MetalsColdGas += Yield * stars*(1-metallicity);
@@ -415,6 +467,7 @@ void precess_gas(int p, double dt, int halonr)
     DiscGasSum = get_disc_gas(p);
     assert(DiscGasSum <= 1.001*Gal[p].ColdGas || DiscGasSum >= Gal[p].ColdGas/1.001);
     
+    //printf("disc stars from instability\n");
     DiscStarSum = get_disc_stars(p);
     
     if(cos_angle_gas_stars==0)

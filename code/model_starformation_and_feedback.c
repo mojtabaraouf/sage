@@ -86,16 +86,14 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 
 	stars = strdot * dt;
 	
-	if(stars < 0.0)
+	if(stars < MIN_STARFORMATION)
 	  stars = 0.0;
 
     if(stars > Gal[p].DiscGas[i])
       stars = Gal[p].DiscGas[i];
 
-    if(SupernovaRecipeOn == 1 && Gal[p].DiscGas[i] > 0.0 && stars>1e-9)
+    if(SupernovaRecipeOn == 1 && Gal[p].DiscGas[i] > 0.0 && stars>MIN_STARS_FOR_SN)
 	{
-	  if(stars>1e-8)
-	  {
 		Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
         reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3);
 
@@ -107,9 +105,9 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	      reheated_mass *= fac;
 	    }
 
-	    if(stars<1e-8)
+	    if(stars<MIN_STARS_FOR_SN)
 	    {
-	      stars = 1e-8;
+	      stars = MIN_STARS_FOR_SN;
 		  reheated_mass = Gal[p].DiscGas[i] - stars; // Used to have (1-RecycleFraction)* in front of stars here, but changed philosophy
 	    }
 	
@@ -118,17 +116,9 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	        ejected_mass = 0.0;
 	
 		assert(stars+reheated_mass < 1.01*Gal[p].DiscGas[i]);
-	  }
-
-	  else
-	  {
-        reheated_mass = 0.0;
-		ejected_mass = 0.0;
-	  }
 	}  
     else // I haven't actually dealt with the situation of Supernovae being turned off here.  But do I even want to turn SN off?
 	{
-	  stars=0.0;
       reheated_mass = 0.0;
 	  ejected_mass = 0.0;
 	}
@@ -143,8 +133,16 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
     // Update for star formation
     metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
 	assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
-	NewStars[i] = (1 - RecycleFraction) * stars;
-	NewStarsMetals[i] = (1 - RecycleFraction) * metallicity * stars;
+    if(stars>=MIN_STARS_FOR_SN)
+    {
+        NewStars[i] = (1 - RecycleFraction) * stars;
+        NewStarsMetals[i] = (1 - RecycleFraction) * metallicity * stars;
+    }
+    else
+    {
+        NewStars[i] = stars;
+        NewStarsMetals[i] = metallicity * stars;
+    }
 	assert(NewStarsMetals[i] <= NewStars[i]);
     update_from_star_formation(p, stars, metallicity, i);
 
@@ -168,13 +166,10 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	assert(abs(Gal[p].ColdGas-ColdPre) <= 1.01*abs(Gal[p].DiscGas[i]-DiscPre) && abs(Gal[p].ColdGas-ColdPre) >= 0.999*abs(Gal[p].DiscGas[i]-DiscPre) && (Gal[p].ColdGas-ColdPre)*(Gal[p].DiscGas[i]-DiscPre)>=0.0);
 
 	// Inject new metals from SN II
-	if(SupernovaRecipeOn == 1 && stars>1e-9)
+	if(SupernovaRecipeOn == 1 && stars>=MIN_STARS_FOR_SN)
 	{
-	  if(stars>=1e-8)
-	  {
-	    Gal[p].DiscGasMetals[i] += Yield * stars*(1.0 - get_metallicity(NewStars[i],NewStarsMetals[i]));
+	    Gal[p].DiscGasMetals[i] += Yield * stars*(1.0 - get_metallicity(NewStars[i],NewStarsMetals[i])); // Could just use metallicity variable here, surely
 	    Gal[p].MetalsColdGas += Yield * stars*(1.0 - get_metallicity(NewStars[i],NewStarsMetals[i]));
-  	  }
 	}
     if(Gal[p].DiscGasMetals[i] > Gal[p].DiscGas[i]) printf("DiscGas, Metals = %e, %e\n", Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
 	assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
@@ -193,11 +188,11 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 
   // Update the star formation rate 
   Gal[p].SfrDisk[step] += stars_sum / dt;
-  Gal[p].StarsInSitu += (1-RecycleFraction)*stars_sum;
+  Gal[p].StarsInSitu += NewStarSum;
     
-  if(Gal[p].StellarMass > 1e-8)
+  if(Gal[p].StellarMass >= MIN_STARS_FOR_SN)
   {
-      assert(Gal[p].StellarMass >= (StarsPre + (1-RecycleFraction)*stars_sum)/1.01 && Gal[p].StellarMass <= (StarsPre + (1-RecycleFraction)*stars_sum)*1.01);
+      assert(Gal[p].StellarMass >= (StarsPre + NewStarSum)/1.01 && Gal[p].StellarMass <= (StarsPre + NewStarSum)*1.01);
       assert(Gal[p].StellarMass >= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)/1.01 && Gal[p].StellarMass <= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)*1.01);
   }
 
@@ -218,24 +213,37 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 void update_from_star_formation(int p, double stars, double metallicity, int i)
 {
   // In older SAGE, this updated the gas and stellar components.  It only does the gas component now due to the way in which discs are handled.
-  	
-  // update gas and metals from star formation 
-  Gal[p].DiscGas[i] -= (1 - RecycleFraction) * stars;
-  Gal[p].DiscGasMetals[i] -= metallicity * (1 - RecycleFraction) * stars;
 
-  if(Gal[p].DiscGasMetals[i] > Gal[p].DiscGas[i])
-  	printf("update_from_star_formation report -- gas metals, gas mass = %e, %e\n", Gal[p].DiscGasMetals[i], Gal[p].DiscGas[i]);
-  
-  Gal[p].ColdGas -= (1 - RecycleFraction) * stars;
-  Gal[p].MetalsColdGas -= metallicity * (1 - RecycleFraction) * stars;
+  // update gas and metals from star formation
+  if(stars>=MIN_STARS_FOR_SN)
+  {
+      //printf("(above SN) stars = %e\n", stars);
+      Gal[p].DiscGas[i] -= (1 - RecycleFraction) * stars;
+      Gal[p].DiscGasMetals[i] -= metallicity * (1 - RecycleFraction) * stars;
 
-  if(Gal[p].DiscGas[i] < 0.0){
-	printf("DiscGas in update_SF...%e\n", Gal[p].DiscGas[i]);
+      if(Gal[p].DiscGasMetals[i] > Gal[p].DiscGas[i])
+        printf("update_from_star_formation report -- gas metals, gas mass = %e, %e\n", Gal[p].DiscGasMetals[i], Gal[p].DiscGas[i]);
+      
+      Gal[p].ColdGas -= (1 - RecycleFraction) * stars;
+      Gal[p].MetalsColdGas -= metallicity * (1 - RecycleFraction) * stars;
+  }
+  else
+  {
+      //printf("(below SN) stars = %e\n", stars);
+      Gal[p].DiscGas[i] -= stars;
+      Gal[p].DiscGasMetals[i] -= metallicity * stars;
+      Gal[p].ColdGas -= stars;
+      Gal[p].MetalsColdGas -= metallicity * stars;
+  }
+    
+    
+  if(Gal[p].DiscGas[i] <= 0.0){
+	//printf("DiscGas in update_SF...%e\n", Gal[p].DiscGas[i]);
 	Gal[p].DiscGas[i]=0.0;
 	Gal[p].DiscGasMetals[i]=0.0;}
 
-  if(Gal[p].ColdGas < 0.0){
-	printf("DiscGas in update_SF...%e\n", Gal[p].DiscGas[i]);
+  if(Gal[p].ColdGas <= 0.0){
+	//printf("DiscGas in update_SF...%e\n", Gal[p].DiscGas[i]);
 	Gal[p].ColdGas=0.0;
 	Gal[p].MetalsColdGas=0.0;}
   
@@ -272,23 +280,23 @@ void update_from_feedback(int p, int centralgal, double reheated_mass, double me
 
   assert(Gal[centralgal].MetalsHotGas <= Gal[centralgal].HotGas);
 
-  if(Gal[p].DiscGas[i] < 0.0)
+  if(Gal[p].DiscGas[i] <= 0.0)
   {
-    printf("DiscGas in update_feedback...%e\n", Gal[p].DiscGas[i]);
+    //printf("DiscGas in update_feedback...%e\n", Gal[p].DiscGas[i]);
 	Gal[p].DiscGas[i]=0.0;
 	Gal[p].DiscGasMetals[i]=0.0;
   }
 
-  if(Gal[p].ColdGas < 0.0)
+  if(Gal[p].ColdGas <= 0.0)
   {
-    printf("ColdGas in update_feedback...%d, %e\n", i, Gal[p].ColdGas);
+    //printf("ColdGas in update_feedback...%d, %e\n", i, Gal[p].ColdGas);
 	Gal[p].ColdGas=0.0;
 	Gal[p].MetalsColdGas=0.0;
   }
 
-  if(Gal[p].HotGas < 0.0)
+  if(Gal[p].HotGas <= 0.0)
   {
-	printf("HotGas in update_feedback...%e\n", Gal[p].HotGas);
+	//printf("HotGas in update_feedback...%e\n", Gal[p].HotGas);
 	Gal[p].HotGas=0.0;
 	Gal[p].MetalsHotGas=0.0;
   }
@@ -329,6 +337,9 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
 	double Disc1[N_BINS], Disc1Metals[N_BINS], Disc2[N_BINS], Disc2Metals[N_BINS];
 	int i;
 	
+    //printf("disc stars from combine discs 1\n");
+    DiscStarSum = get_disc_stars(p);
+    
 	for(i=0; i<N_BINS; i++)
     {
 		assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
@@ -395,6 +406,7 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
 	// Combine the discs
 	if(cos_angle_sdisc_comb<1.0)
     {
+        //printf("projecting both\n");
 		project_disc(Gal[p].DiscStars, cos_angle_sdisc_comb, p, Disc1);
 		project_disc(Gal[p].DiscStarsMetals, cos_angle_sdisc_comb, p, Disc1Metals);
 		project_disc(NewStars, cos_angle_new_comb, p, Disc2);
@@ -417,6 +429,11 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
 	}
     else
 	{
+        //printf("adding directly with cos_angle_sdisc_comb = %e\n", cos_angle_sdisc_comb);
+        DiscStarSum = get_disc_stars(p);
+        double NewStarSum = 0.0;
+        for(i=0; i<N_BINS; i++) NewStarSum += NewStars[i];
+        //printf("DiscStarSum, StellarMass, NewStarSum = %e, %e, %e\n", DiscStarSum, Gal[p].StellarMass, NewStarSum);
 		for(i=0; i<N_BINS; i++)
 		{
 			if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
@@ -430,6 +447,9 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
 		}
 	}
 	
+    //printf("disc stars from combine discs 2\n");
+    DiscStarSum = get_disc_stars(p);
+    
 	// Readjust disc to deal with any retrograde stars
 	if(cos_angle_sdisc_comb<0.0)
 		J_retro = J_sdisc*fabs(cos_angle_sdisc_comb);
@@ -457,6 +477,7 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
 		Gal[p].SpinStars[i] = SDiscNewSpin[i];
 		assert(Gal[p].SpinStars[i]==Gal[p].SpinStars[i]);}
     
+    //printf("disc stars from combine discs 3\n");
     DiscStarSum = get_disc_stars(p);
     if(DiscStarSum > 1.01*(Gal[p].StellarMass-Gal[p].SecularBulgeMass-Gal[p].ClassicalBulgeMass) || DiscStarSum < (Gal[p].StellarMass-Gal[p].SecularBulgeMass-Gal[p].ClassicalBulgeMass)/1.01)
         printf("Stellar Disc, bulge, total = %e, %e, %e\n", DiscStarSum, Gal[p].SecularBulgeMass+Gal[p].ClassicalBulgeMass, Gal[p].StellarMass);

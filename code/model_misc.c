@@ -155,7 +155,7 @@ double get_metallicity(double gas, double metals)
   if(metals>gas)
 	printf("get_metallicity report: metals, gas/stars = %e, %e\n", metals, gas);
   //assert(gas>metals);
-
+    
   if(gas > 0.0 && metals > 0.0)
   {
     metallicity = metals / gas;
@@ -287,14 +287,16 @@ double get_disc_gas(int p)
 
 double get_disc_stars(int p)
 {
-    double DiscStarSum, DiscAndBulge;
+    double DiscStarSum, DiscAndBulge, dumped_mass;
     int l;
     
     DiscStarSum = 0.0;
+    dumped_mass = 0.0;
     for(l=0; l<N_BINS; l++)
     {
         if(Gal[p].DiscStars[l] < 1e-11) // This would be less than a single star in an aperture.  Not likely.
         {
+            dumped_mass += Gal[p].DiscStars[l];
             Gal[p].DiscStars[l] = 0.0;
             Gal[p].DiscStarsMetals[l] = 0.0;
         }
@@ -305,7 +307,7 @@ double get_disc_stars(int p)
     
     if(DiscAndBulge>1.001*Gal[p].StellarMass || DiscAndBulge<Gal[p].StellarMass/1.001)
     {
-        printf("get_disc_stars report %e\t%e\n", DiscAndBulge, Gal[p].StellarMass);
+        printf("get_disc_stars report: DiscAndBulge, StellarMass, dumped_mass = %e, %e, %e\n", DiscAndBulge, Gal[p].StellarMass, dumped_mass);
         if(DiscAndBulge<1.01*Gal[p].StellarMass && DiscAndBulge>Gal[p].StellarMass/1.01)
             Gal[p].StellarMass = DiscAndBulge; // If difference is small, just set the numbers to be the same to prevent small errors from blowing up
         if(Gal[p].StellarMass <= Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass)
@@ -313,6 +315,7 @@ double get_disc_stars(int p)
             for(l=0; l<N_BINS; l++)
                 Gal[p].DiscStars[l] = 0.0;
             DiscStarSum = 0.0;
+            Gal[p].StellarMass = Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass;
         }
     }
     return DiscStarSum;

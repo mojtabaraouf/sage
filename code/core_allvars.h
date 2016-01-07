@@ -34,6 +34,8 @@ do {                                                                \
 #define  SEC_PER_YEAR       3.155e7
 
 #define N_BINS 30
+#define MIN_STARS_FOR_SN 1e-8
+#define MIN_STARFORMATION 1e-10
 
 struct GALAXY_OUTPUT  
 {
