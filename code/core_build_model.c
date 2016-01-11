@@ -151,15 +151,15 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
           Gal[ngal].Len = Halo[halonr].Len;
           Gal[ngal].Vmax = Halo[halonr].Vmax;
 
-          Gal[ngal].deltaMvir = get_virial_mass(halonr) - Gal[ngal].Mvir;
+          Gal[ngal].deltaMvir = get_virial_mass(halonr, ngal) - Gal[ngal].Mvir;
 
-          if(get_virial_mass(halonr) > Gal[ngal].Mvir)
+          if(get_virial_mass(halonr, ngal) > Gal[ngal].Mvir)
           {
-            Gal[ngal].Rvir = get_virial_radius(halonr);  //use the maximum Rvir in model
-            Gal[ngal].Vvir = get_virial_velocity(halonr);  //use the maximum Vvir in model
+            Gal[ngal].Rvir = get_virial_radius(halonr, ngal);  //use the maximum Rvir in model
+            Gal[ngal].Vvir = get_virial_velocity(halonr, ngal);  //use the maximum Vvir in model
           }
 
-          Gal[ngal].Mvir = get_virial_mass(halonr);
+          Gal[ngal].Mvir = get_virial_mass(halonr, ngal);
 
           Gal[ngal].Cooling = 0.0;
           Gal[ngal].Heating = 0.0;

@@ -6,7 +6,7 @@ FileNameGalaxies       model
 OutputDir              ./output/results/millennium/
 
 FirstFile					0
-LastFile					7
+LastFile					15
 
 
 %------------------------------------------
@@ -24,8 +24,8 @@ NumOutputs        18   ; sets the desired number of galaxy outputs; use -1 for a
 %------------------------------------------
 
 TreeName					    trees_063		; assumes the trees are named TreeName.n where n is the snapshot number
-SimulationDir				../../../trees/Mini_Millennium/treedata
-FileWithSnapList			../../../trees/Mini_Millennium/millennium.a_list
+SimulationDir				../../../trees/Millennium/treedata
+FileWithSnapList			../../../trees/Millennium/millennium.a_list
 LastSnapShotNr				63
 
 Omega				0.25
@@ -61,16 +61,16 @@ ExponentBin                 1.4     ; The factor in spec ang mom between bins
 %----- Parameters of physical model -------
 %------------------------------------------
 
-SfrEfficiency				1.0
+SfrEfficiency				0.7
 
-FeedbackReheatingEpsilon	3.0
-FeedbackGasSigma            2.1
-FeedbackEjectionEfficiency	0.3
+FeedbackReheatingEpsilon	7.0
+FeedbackGasSigma            8.4
+FeedbackEjectionEfficiency	0.5
 
 ReIncorporationFactor		0.15
 
-RadioModeEfficiency			0.005
-QuasarModeEfficiency		0.002
+RadioModeEfficiency			0.02
+QuasarModeEfficiency		0.005
 BlackHoleGrowthRate			0.05
 
 H2FractionFactor            1.0    ;Controls the normalisation of the H2/HI ratio calculation if H2prescription=0. 1.0 would be the same as Fu et al. (2010).

@@ -161,6 +161,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
     // Update from SN feedback
 	metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
 	assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
+    assert(reheated_mass==reheated_mass && reheated_mass!=INFINITY);
     update_from_feedback(p, centralgal, reheated_mass, metallicity, i);
 
 	assert(abs(Gal[p].ColdGas-ColdPre) <= 1.01*abs(Gal[p].DiscGas[i]-DiscPre) && abs(Gal[p].ColdGas-ColdPre) >= 0.999*abs(Gal[p].DiscGas[i]-DiscPre) && (Gal[p].ColdGas-ColdPre)*(Gal[p].DiscGas[i]-DiscPre)>=0.0);
@@ -253,7 +254,8 @@ void update_from_star_formation(int p, double stars, double metallicity, int i)
 
 void update_from_feedback(int p, int centralgal, double reheated_mass, double metallicity, int i)
 {
-  // Check first just to be sure 
+  // Check first just to be sure
+    if(!(reheated_mass <= Gal[p].DiscGas[i])) printf("disc gas, reheated gas = %e, %e\n", Gal[p].DiscGas[i], reheated_mass);
   assert(reheated_mass <= Gal[p].DiscGas[i]);
   assert(Gal[centralgal].MetalsHotGas <= Gal[centralgal].HotGas);
 

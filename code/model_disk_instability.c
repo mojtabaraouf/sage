@@ -126,6 +126,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
                 assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
                 
                 double before = Gal[p].DiscGas[i];
+                assert(r_inner!=INFINITY && r_inner==r_inner);
                 stars = deal_with_unstable_gas(unstable_gas, p, i, V_rot, metallicity, centralgal, 0, r_inner, r_outer);
                 if(stars>=MIN_STARS_FOR_SN)
                     SNgas[i] = RecycleFraction * stars;
@@ -373,13 +374,22 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 			area = M_PI * (r_outer*r_outer - r_inner*r_inner);
 			Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
             reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3);
-						
-			// Can't use more cold gas than is available, so balance SF and feedback 
+            
+            if(!(reheated_mass==reheated_mass && reheated_mass!=INFINITY))
+            {
+                printf("area, reheated = %e, %e\n", area, reheated_mass);
+                printf("r_inner, r_outer = %e, %e\n", r_inner, r_outer);
+            }
+            assert(reheated_mass==reheated_mass && reheated_mass!=INFINITY);
+
+			// Can't use more cold gas than is available, so balance SF and feedback
 		    if((stars + reheated_mass) > gas_sf && (stars + reheated_mass) > 0.0)
 		    {
 		    	fac = gas_sf / (stars + reheated_mass);
 		    	stars *= fac;
 		    	reheated_mass *= fac;
+                assert(reheated_mass==reheated_mass && reheated_mass!=INFINITY);
+
 		    }
 		
 			if(stars<MIN_STARS_FOR_SN)
@@ -388,6 +398,8 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 				{
 		    		stars = MIN_STARS_FOR_SN;
 					reheated_mass = gas_sf - stars; // Previously had (1-RecycleFration)* in front of stars, which would have ensured all the unstable gas was removed in some way, but this would be inconsistent with what's done for the case that stars>MIN_STARS_FOR_SN.
+                    assert(reheated_mass==reheated_mass && reheated_mass!=INFINITY);
+
 				}
 				else
 				{
@@ -418,6 +430,15 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 		
 		metallicity_new = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
 		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
+        
+        if(!(reheated_mass==reheated_mass && reheated_mass!=INFINITY))
+        {
+            printf("stars, reheated, ejected = %e, %e, %e\n", stars, reheated_mass, ejected_mass);
+            printf("gas_sf, gas_sink = %e, %e\n", gas_sf, gas_sink);
+            printf("annulus gas = %e\n", Gal[p].DiscGas[i]);
+        }
+        
+        assert(reheated_mass==reheated_mass && reheated_mass!=INFINITY);
 	    update_from_feedback(p, centralgal, reheated_mass, metallicity_new, i);
 
         if(SupernovaRecipeOn == 1 && stars>=MIN_STARS_FOR_SN)

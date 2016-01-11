@@ -23,12 +23,12 @@ double estimate_merging_time(int sat_halo, int mother_halo, int ngal)
   
   coulomb = log(Halo[mother_halo].Len / ((double) Halo[sat_halo].Len) + 1);
 
-  SatelliteMass = get_virial_mass(sat_halo) + Gal[ngal].StellarMass + Gal[ngal].ColdGas;
-  SatelliteRadius = get_virial_radius(mother_halo);
+  SatelliteMass = get_virial_mass(sat_halo, ngal) + Gal[ngal].StellarMass + Gal[ngal].ColdGas;
+  SatelliteRadius = get_virial_radius(mother_halo, ngal); // Feeding ngal here is right, but it's better than nothing.  Frankly, why doesn't this use coords to get the satellite radius anyway?
 
   if(SatelliteMass > 0.0 && coulomb > 0.0)
     mergtime = 2.0 *
-    1.17 * SatelliteRadius * SatelliteRadius * get_virial_velocity(mother_halo) / (coulomb * G * SatelliteMass);
+    1.17 * SatelliteRadius * SatelliteRadius * get_virial_velocity(mother_halo, ngal) / (coulomb * G * SatelliteMass);
   else
     mergtime = -1.0;
   
@@ -164,6 +164,17 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 	if(PostRetroGas[i] < 0.99*Gal[merger_centralgal].DiscGas[i])
 	{
 		unstable_gas = Gal[merger_centralgal].DiscGas[i] - PostRetroGas[i];
+        
+        if(!(Gal[merger_centralgal].DiscRadii[i]!=INFINITY && Gal[merger_centralgal].DiscRadii[i]==Gal[merger_centralgal].DiscRadii[i]))
+        {
+            printf("i = %d\n", i);
+            printf("Mvir = %e\n", Gal[merger_centralgal].Mvir);
+            printf("radius before = %e\n", Gal[merger_centralgal].DiscRadii[i]);
+            update_disc_radii(merger_centralgal);
+            printf("radius after = %e\n", Gal[merger_centralgal].DiscRadii[i]);
+        }
+        
+        assert(Gal[merger_centralgal].DiscRadii[i]!=INFINITY && Gal[merger_centralgal].DiscRadii[i]==Gal[merger_centralgal].DiscRadii[i]);
         stars = deal_with_unstable_gas(unstable_gas, merger_centralgal, i, Gal[merger_centralgal].Vvir, metallicity, centralgal, 0, Gal[merger_centralgal].DiscRadii[i], Gal[merger_centralgal].DiscRadii[i+1]);
         
         if(stars>=MIN_STARS_FOR_SN)
@@ -845,6 +856,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
 	// update from feedback
 	metallicity = get_metallicity(Gal[merger_centralgal].DiscGas[k], Gal[merger_centralgal].DiscGasMetals[k]);
 	assert(Gal[merger_centralgal].DiscGasMetals[k] <= Gal[merger_centralgal].DiscGas[k]);
+      assert(reheated_mass==reheated_mass && reheated_mass!=INFINITY);
 	update_from_feedback(merger_centralgal, centralgal, reheated_mass, metallicity, k);
  
     // Inject new metals from SN II

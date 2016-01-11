@@ -48,9 +48,9 @@ void init_galaxy(int p, int halonr)
 
   Gal[p].Len = Halo[halonr].Len;
   Gal[p].Vmax = Halo[halonr].Vmax;
-  Gal[p].Vvir = get_virial_velocity(halonr);
-  Gal[p].Mvir = get_virial_mass(halonr);
-  Gal[p].Rvir = get_virial_radius(halonr);
+  Gal[p].Vvir = get_virial_velocity(halonr, p);
+  Gal[p].Mvir = get_virial_mass(halonr, p);
+  Gal[p].Rvir = get_virial_radius(halonr, p);
 
   Gal[p].deltaMvir = 0.0;
 
@@ -86,7 +86,10 @@ void init_galaxy(int p, int halonr)
   Gal[p].DiscRadii[0] = 0.0;
   for(j=0; j<N_BINS; j++)
   {
-    Gal[p].DiscRadii[j+1] = DiscBinEdge[j+1] / Gal[p].Vvir;
+    if(Gal[p].Vvir>0.0)
+        Gal[p].DiscRadii[j+1] = DiscBinEdge[j+1] / Gal[p].Vvir;
+    else
+        Gal[p].DiscRadii[j+1] = DiscBinEdge[j+1]; // This is essentially just a place-holder for problem galaxies
 	Gal[p].DiscGas[j] = 0.0;
 	Gal[p].DiscStars[j] = 0.0;
 	Gal[p].DiscGasMetals[j] = 0.0;
@@ -181,31 +184,33 @@ double dmax(double x, double y)
 
 
 
-double get_virial_mass(int halonr)
+double get_virial_mass(int halonr, int p)
 {
   if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir >= 0.0)
     return Halo[halonr].Mvir;   /* take spherical overdensity mass estimate */ 
-  else
+  else if(Halo[halonr].Len>0)
     return Halo[halonr].Len * PartMass;
+  else if(p!=-1)
+      return Gal[p].StellarMass + Gal[p].ColdGas + Gal[p].HotGas + Gal[p].BlackHoleMass + Gal[p].ICS;
 }
 
 
 
-double get_virial_velocity(int halonr)
+double get_virial_velocity(int halonr, int p)
 {
 	double Rvir;
 	
-	Rvir = get_virial_radius(halonr);
+	Rvir = get_virial_radius(halonr, p);
 	
   if(Rvir > 0.0)
-		return sqrt(G * get_virial_mass(halonr) / Rvir);
+		return sqrt(G * get_virial_mass(halonr, p) / Rvir);
 	else
 		return 0.0;
 }
 
 
 
-double get_virial_radius(int halonr)
+double get_virial_radius(int halonr, int p)
 {
   // return Halo[halonr].Rvir;  // Used for Bolshoi
 
@@ -219,7 +224,7 @@ double get_virial_radius(int halonr)
   rhocrit = 3 * hubble_of_z_sq / (8 * M_PI * G);
   fac = 1 / (200 * 4 * M_PI / 3.0 * rhocrit);
   
-  return cbrt(get_virial_mass(halonr) * fac);
+  return cbrt(get_virial_mass(halonr, p) * fac);
 }
 
 
@@ -354,13 +359,15 @@ void update_disc_radii(int p)
     double a_CB, M_CB_inf, a_SB, M_SB_inf, a_ICS, M_ICS_inf;
     
     // Try to stably set discs up first -- this might no longer be necessary with NFW treatment
-    M_D = Gal[p].StellarMass + Gal[p].ColdGas - Gal[p].SecularBulgeMass - Gal[p].ClassicalBulgeMass;
-    if(M_D == 0.0)
-    {
-        for(i=1; i<N_BINS+1; i++)
-            Gal[p].DiscRadii[i] = DiscBinEdge[i] / Gal[p].Vvir;
-        return;
-    }
+//    M_D = Gal[p].StellarMass + Gal[p].ColdGas - Gal[p].SecularBulgeMass - Gal[p].ClassicalBulgeMass;
+//    if(M_D == 0.0)
+//    {
+//        if(Gal[p].Vvir>0.0)
+//            Gal[p].DiscRadii[j+1] = DiscBinEdge[j+1] / Gal[p].Vvir;
+//        else
+//            Gal[p].DiscRadii[j+1] = DiscBinEdge[j+1]; // This is essentially just a place-holder for problem galaxies
+//        return;
+//    }
     
     tol = 1e-3;
     j_max = 100;
@@ -400,6 +407,17 @@ void update_disc_radii(int p)
 
     M_D = 0.0;
     left = 0.0;
+    
+//    if(Gal[p].Mvir<=0.0)
+//    {
+//        printf("In update_disc_radii\n");
+//        printf("Mvir = %e\n", Gal[p].Mvir);
+//        printf("Cold, Hot, Ejected = %e, %e, %e\n", Gal[p].ColdGas, Gal[p].HotGas, Gal[p].EjectedMass);
+//        printf("Stars total, secular, classical = %e, %e, %e\n", Gal[p].StellarMass, Gal[p].SecularBulgeMass, Gal[p].ClassicalBulgeMass);
+//        printf("Black hole = %e\n", Gal[p].BlackHoleMass);
+//    }
+    
+    
     if(Gal[p].Mvir>0.0)
     {
         for(i=1; i<N_BINS+1; i++)
@@ -413,7 +431,10 @@ void update_disc_radii(int p)
             {
                 r_try = (left+right)/2.0;
 
-                M_DM = rho_const * (log((r_try+r_2)/r_2) - r_try/(r_try+r_2));
+                if(Gal[p].Mvir>0.0)
+                    M_DM = rho_const * (log((r_try+r_2)/r_2) - r_try/(r_try+r_2));
+                else
+                    M_DM = 0.0;
                 M_SB = M_SB_inf * pow(r_try/(r_try + a_SB), 2.0);
                 M_CB = M_CB_inf * pow(r_try/(r_try + a_CB), 2.0);
                 M_ICS = M_ICS_inf * pow(r_try/(r_try + a_ICS), 2.0);
@@ -445,6 +466,7 @@ void update_disc_radii(int p)
                 else
                     left = r_try;
             }
+            assert(r_try==r_try && r_try!=INFINITY);
             Gal[p].DiscRadii[i] = r_try;
             left = r_try;
         }

@@ -132,9 +132,9 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
 
   o->Len = g->Len;
   o->Mvir = g->Mvir;
-  o->CentralMvir = get_virial_mass(Halo[g->HaloNr].FirstHaloInFOFgroup);
-  o->Rvir = get_virial_radius(g->HaloNr);  //output the actual Rvir, not the maximum Rvir
-  o->Vvir = get_virial_velocity(g->HaloNr);  //output the actual Vvir, not the maximum Vvir
+  o->CentralMvir = get_virial_mass(Halo[g->HaloNr].FirstHaloInFOFgroup, -1);
+  o->Rvir = get_virial_radius(g->HaloNr, -1);  //output the actual Rvir, not the maximum Rvir
+  o->Vvir = get_virial_velocity(g->HaloNr, -1);  //output the actual Vvir, not the maximum Vvir
   o->Vmax = g->Vmax;
   o->VelDisp = Halo[g->HaloNr].VelDisp;
     
