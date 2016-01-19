@@ -1942,7 +1942,7 @@ class Results:
         plt.close()
     
         # Add this plot to our output list
-            OutputList.append(outputFile)
+        OutputList.append(outputFile)
     
     
     # ---------------------------------------------------------
@@ -2022,7 +2022,7 @@ class Results:
         plt.close()
         
         # Add this plot to our output list
-                OutputList.append(outputFile)
+        OutputList.append(outputFile)
 # ---------------------------------------------------------
 
     def Lx_Temp(self, G):
@@ -2045,7 +2045,7 @@ class Results:
         temp_x_1 = [0.1,0.2, 1,2,3,4,10,100]
         plt.plot(np.log10(temp_x_1), 2.61*np.log10(temp_x_1)+np.log10(1e44*0.12), 'r-', lw=1.5, label='Wu et al. (1999)')
         
-        plt.plot(np.log10(temp_x_1), 2.61*np.log10(temp_x_1)+np.log10(1e44*0.12), 'r-', lw=1.5, label='Wu et al. (1999)')
+        plt.plot(np.log10(temp_x_1), 3.4*np.log10(temp_x_1)+np.log10(2.9*1e44)-np.log10(6.0), 'r--', lw=1.5, label='Makino et al. (1998)')
         
         plt.xlabel(r'$T_{gas}$ [Kev]')  # Set the y...
         plt.ylabel(r' $log_{10} \  L_{X,Bol}[erg s^{-1} h^{-2}]$')  # and the x-axis labels
