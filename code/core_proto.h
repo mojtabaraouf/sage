@@ -32,7 +32,7 @@ void add_galaxies_together(int t, int p);
 void init_galaxy(int p, int halonr);
 double infall_recipe(int centralgal, int ngal, double Zcurr);
 void add_infall_to_hot(int centralgal, double infallingGas);
-double cooling_recipe(int centralgal, double dt);
+double cooling_recipe(int centralgal, double dt, double time);
 void cool_gas_onto_galaxy(int centralgal, double coolingGas);
 void reincorporate_gas(int centralgal, double dt);
 double estimate_merging_time(int prog, int mother_halo, int ngal);
@@ -70,6 +70,6 @@ double metallicity_dependent_star_formation(int p);
 double Z_dependent_SF(float lower_limit, float upper_limit, float Sigma_c0, float Xi, float gamma);
 double integrand_Z_dependent_SF(double q, void *p);
 
-
-
+double RadioLuminosity_jet(int p, double time, double dt);
+double density_profile (int p);
 
