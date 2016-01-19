@@ -57,6 +57,8 @@ int SupernovaRecipeOn;
 int DiskInstabilityOn;
 int AGNrecipeOn;
 int SFprescription;
+int AGN_model;
+int Density_model;
 
 
 // recipe parameters 
