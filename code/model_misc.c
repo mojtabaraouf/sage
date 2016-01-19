@@ -90,7 +90,6 @@ void init_galaxy(int p, int halonr)
   Gal[p].Qjet = 0.0;
   Gal[p].Rcocoon = 0.0;
   Gal[p].Rshocked = 0.0;
-  Gal[p].R_cool = 0.0;
   Gal[p].t_AGN_on = -1.0;
   Gal[p].t_cooling = -1.0;
   Gal[p].Tshocked = 0.0;
