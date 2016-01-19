@@ -207,6 +207,35 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
     o->infallVvir = 0.0;
     o->infallVmax = 0.0;
   }
+    //Jet-model properties
+    o->Qjet =  g->Qjet;
+    o->Rcocoon =  g->Rcocoon;
+    o->Rshocked =  g->Rshocked;
+    o->t_AGN_on =  g->t_AGN_on;
+    o->t_cooling =  g->t_cooling * UnitTime_in_Megayears;
+    o->Tshocked =  g->Tshocked;
+    o->Mshocked =  g->Mshocked;
+    
+    for(j = 0; j < 7; j++)
+    {
+        o->RadioLuminosity[j] = g->RadioLuminosity[j];
+    }
+    o->RadioAGNaccretionRate  = g->RadioAGNaccretionRate;
+    o->rho_zero_Makino =  g->rho_zero_Makino;
+    o->rho_zero_Capelo =  g->rho_zero_Capelo;
+    o->rho_zero_iso =  g->rho_zero_iso;
+    o->b_gas =  g->b_gas;
+    o->Rs =  g->Rs;
+    o->concentration=  g->concentration;
+    o->Temp_Gas =  g->Temp_Gas;
+    
+    if (g->Lx_bol > 0.0)
+      o->Lx_bol =  log10(g->Lx_bol * UnitEnergy_in_cgs/UnitTime_in_s ) ;
+    else
+      o->Lx_bol = 0.0;
+    
+    o->R_index =  g->R_index;
+    o->Q_index =  g->Q_index;
 
 }
 
