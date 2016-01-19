@@ -69,7 +69,10 @@ class Results:
 
         if whichsimulation == 0 or whichsimulation == 1 :
           
-          self.SMFsnaps = [63, 37, 32, 27, 23, 20, 18, 16]
+#          self.SMFsnaps = [63, 37, 32, 27, 23, 20, 18, 16]
+          self.SMFsnaps = [63, 62, 61, 60, 59,58,57,56,55,54,53,52,51,50,49,48,47,46,45,44,43,42,41,40, 37, 32, 27, 23, 20, 18, 16]
+          self.SMFz =[0.000, 0.020, 0.041, 0.064, 0.089, 0.116, 0.144, 0.175, 0.208, 0.242, 0.280, 0.320, 0.362, 0.408, 0.457, 0.509, 0.564, 0.624, 0.687,0.755,0.828,0.905,0.989]
+
 
           self.redshift_file = ['_z127.000', '_z79.998', '_z50.000', '_z30.000', '_z19.916', '_z18.244', '_z16.725', '_z15.343', '_z14.086', '_z12.941', '_z11.897', '_z10.944', '_z10.073', '_z9.278', '_z8.550', '_z7.883', '_z7.272', '_z6.712', '_z6.197', '_z5.724', '_z5.289', '_z4.888', '_z4.520', '_z4.179', '_z3.866', '_z3.576', '_z3.308', '_z3.060', '_z2.831', '_z2.619', '_z2.422', '_z2.239', '_z2.070', '_z1.913', '_z1.766', '_z1.630', '_z1.504', '_z1.386', '_z1.276', '_z1.173', '_z1.078', '_z0.989', '_z0.905', '_z0.828', '_z0.755', '_z0.687', '_z0.624', '_z0.564', '_z0.509', '_z0.457', '_z0.408', '_z0.362', '_z0.320', '_z0.280', '_z0.242', '_z0.208', '_z0.175', '_z0.144', '_z0.116', '_z0.089', '_z0.064', '_z0.041', '_z0.020', '_z0.000']
 
@@ -127,7 +130,28 @@ class Results:
             ('OutflowRate'                  , np.float32),
             ('infallMvir'                   , np.float32),
             ('infallVvir'                   , np.float32),
-            ('infallVmax'                   , np.float32)
+            ('infallVmax'                   , np.float32),
+            ('Qjet'                         , np.float32),
+            ('Rcocoon'                      , np.float32),
+            ('Rshocked'                     , np.float32),
+            ('t_AGN_on'                     , np.float32),
+            ('t_cooling'                    , np.float32),
+            ('Tshocked'                     , np.float32),
+            ('Mshocked'                     , np.float32),
+            ('RadioLuminosity'              , (np.float32,7)),
+            ('RadioAGNaccretionRate'        , np.float32),
+            ('rho_zero_Makino'              , np.float32),
+            ('rho_zero_Capelo'              , np.float32),
+            ('rho_zero_iso'                 , np.float32),
+            ('b_gas'                        , np.float32),
+            ('Rs'                           , np.float32),
+            ('concentration'                , np.float32),
+            ('Temp_Gas'                     , np.float32),
+            ('Lx_bol'                       , np.float32),
+            ('R_index'                      , np.float32),
+            ('Q_index'                      , np.float32)
+
+                        
             ]
         names = [Galdesc_full[i][0] for i in xrange(len(Galdesc_full))]
         formats = [Galdesc_full[i][1] for i in xrange(len(Galdesc_full))]
@@ -227,7 +251,7 @@ class Results:
         plt.figure()  # New figure
         ax = plt.subplot(111)  # 1 plot on the figure
 
-        binwidth = 0.1  # mass function histogram bin width
+        binwidth = 0.15  # mass function histogram bin width
 
         # Marchesini et al. 2009ApJ...701.1765M SMF, h=0.7
         M = np.arange(7.0, 11.8, 0.01)
@@ -295,8 +319,8 @@ class Results:
 
         ###### z=1.3
         
-        w = np.where(G_history[self.SMFsnaps[1]].StellarMass > 0.0)[0]
-        mass = np.log10(G_history[self.SMFsnaps[1]].StellarMass[w] * 1.0e10 /self.Hubble_h)
+        w = np.where(G_history[self.SMFsnaps[24]].StellarMass > 0.0)[0]
+        mass = np.log10(G_history[self.SMFsnaps[24]].StellarMass[w] * 1.0e10 /self.Hubble_h)
 
         mi = np.floor(min(mass)) - 2
         ma = np.floor(max(mass)) + 2
@@ -312,8 +336,8 @@ class Results:
 
         ###### z=2
         
-        w = np.where(G_history[self.SMFsnaps[2]].StellarMass > 0.0)[0]
-        mass = np.log10(G_history[self.SMFsnaps[2]].StellarMass[w] * 1.0e10 /self.Hubble_h)
+        w = np.where(G_history[self.SMFsnaps[25]].StellarMass > 0.0)[0]
+        mass = np.log10(G_history[self.SMFsnaps[25]].StellarMass[w] * 1.0e10 /self.Hubble_h)
 
         mi = np.floor(min(mass)) - 2
         ma = np.floor(max(mass)) + 2
@@ -329,8 +353,8 @@ class Results:
 
         ###### z=3
         
-        w = np.where(G_history[self.SMFsnaps[3]].StellarMass > 0.0)[0]
-        mass = np.log10(G_history[self.SMFsnaps[3]].StellarMass[w] * 1.0e10 /self.Hubble_h)
+        w = np.where(G_history[self.SMFsnaps[26]].StellarMass > 0.0)[0]
+        mass = np.log10(G_history[self.SMFsnaps[26]].StellarMass[w] * 1.0e10 /self.Hubble_h)
 
         mi = np.floor(min(mass)) - 2
         ma = np.floor(max(mass)) + 2
