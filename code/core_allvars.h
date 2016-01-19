@@ -28,12 +28,21 @@ do {                                                                \
 #define  C           2.9979e10
 #define  PLANCK      6.6262e-27
 #define  CM_PER_MPC  3.085678e24
+#define  M_PER_MPC   3.085678e22
+#define  KM_PER_MPC  3.085678e19
+#define  M_PER_KPC   3.085678e19
 #define  PROTONMASS  1.6726e-24
 #define  HUBBLE      3.2407789e-18   /* in h/sec */
 
 #define  SEC_PER_MEGAYEAR   3.155e13
 #define  SEC_PER_YEAR       3.155e7
 
+
+// relate to Radio luminosity prediction
+#define  Cs          34320.0
+#define  Gama_c      4.0/3.0
+#define  Gama_x      5.0/3.0
+#define  gamma_isothermal 1.5
 
 // This structure contains the properties that are output
 struct GALAXY_OUTPUT  
@@ -100,6 +109,29 @@ struct GALAXY_OUTPUT
   float infallMvir;
   float infallVvir;
   float infallVmax;
+    
+  //Jet-model properties
+  float Qjet;
+  float Rcocoon;
+  float Rshocked;
+  float t_AGN_on;
+  float t_cooling;
+  float Tshocked;
+  float Mshocked;
+  float RadioLuminosity[7];
+  float RadioAGNaccretionRate;
+  float rho_zero_Makino;
+  float rho_zero_Capelo;
+  float rho_zero_iso;
+  float b_gas;
+  float Rs;
+  float concentration;
+  float Temp_Gas;
+  float Lx_bol;
+  float R_index;
+  float Q_index;
+    
+    
 };
 
 
@@ -171,6 +203,29 @@ struct GALAXY
   float infallMvir;
   float infallVvir;
   float infallVmax;
+
+  //Jet-model properties
+  float Qjet;
+  float Rcocoon;
+  float Rshocked;
+  float t_AGN_on;
+  float t_cooling;
+  float Tshocked;
+  float Mshocked;
+  float RadioLuminosity[7];
+  float RadioAGNaccretionRate;
+  float rho_zero_Makino;
+  float rho_zero_Capelo;
+  float rho_zero_iso;
+  float b_gas;
+  float Rs;
+  float concentration;
+  float Temp_Gas;
+  float Lx_bol;
+  float R_index;
+  float Q_index;
+    
+    
 }
 *Gal, *HaloGal;
 
@@ -231,6 +286,9 @@ extern int    SupernovaRecipeOn;
 extern int    DiskInstabilityOn;
 extern int    AGNrecipeOn;
 extern int    SFprescription;
+extern int    AGN_model;
+extern int    Density_model;
+
 
 // recipe parameters 
 extern double RecycleFraction;
