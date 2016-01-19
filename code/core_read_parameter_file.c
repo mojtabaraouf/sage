@@ -109,6 +109,14 @@ void read_parameter_file(char *fname)
   strcpy(tag[nt], "AGNrecipeOn");
   addr[nt] = &AGNrecipeOn;
   id[nt++] = INT;
+    
+  strcpy(tag[nt], "AGN_model");
+  addr[nt] = &AGN_model;
+  id[nt++] = INT;
+    
+  strcpy(tag[nt], "Density_model");
+  addr[nt] = &Density_model;
+  id[nt++] = INT;
 
   strcpy(tag[nt], "BaryonFrac");
   addr[nt] = &BaryonFrac;
