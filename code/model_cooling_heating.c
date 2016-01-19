@@ -81,7 +81,7 @@ double cooling_recipe(int gal, double dt, double time)
 	else
 		coolingGas = 0.0;
 
-	assert(coolingGas >= 0.0);
+//	assert(coolingGas >= 0.0);
   return coolingGas;
 
 }
