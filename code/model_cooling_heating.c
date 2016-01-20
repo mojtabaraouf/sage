@@ -65,6 +65,8 @@ double cooling_recipe(int gal, double dt, double time)
         {
             if(Gal[gal].Rshocked < rcool && coolingGas > 0.0)
                 coolingGas = (1.0 - (Gal[gal].Rshocked) /(rcool)) * coolingGas;
+            else if(coolingGas < 0.0)
+                coolingGas = 0.0;
         }
         // at this point we have calculated the maximal cooling rate
         // if AGNrecipeOn we now reduce it in line with past heating before proceeding
@@ -72,7 +74,7 @@ double cooling_recipe(int gal, double dt, double time)
         if(AGN_model == 0)
         {
             if(AGNrecipeOn > 0 && coolingGas > 0.0)
-                coolingGas = do_AGN_heating(coolingGas, gal, dt, x, rcool)
+                coolingGas = do_AGN_heating(coolingGas, gal, dt, x, rcool);
         }
         if (coolingGas > 0.0)
             Gal[gal].Cooling += 0.5 * coolingGas * Gal[gal].Vvir * Gal[gal].Vvir;
@@ -279,7 +281,10 @@ double RadioLuminosity_jet(int p, double time, double dt)
     // Maximum radius of shocked gas expansion-- Leahy et al. (1989), Subrahmanyan et al. (1996)
     lambda_Rshock = pow(1.0 - (15.0/(4.0*(11.0-betaparameter))), 1.0/3.0);
     Gal[p].Rshocked = (1.0/lambda_Rshock) * Gal[p].Rcocoon;
-    
+    // cannot shocked more radius than virial radius!
+    if(Gal[p].Rshocked > Gal[p].Rvir)
+    Gal[p].Rshocked = Gal[p].Rvir;
+
     // AGN time Scale Kaiser & Alexander (1997)
     Gal[p].t_AGN_on =  Gal[p].Rshocked / Cs;
     Gal[p].t_AGN_on *= UnitTime_in_s/SEC_PER_YEAR;
@@ -291,12 +296,11 @@ double RadioLuminosity_jet(int p, double time, double dt)
     
     // Mass of shock
     Gal[p].Mshocked = 16 * M_PI * rho_0 * pow(R_0 * M_PER_MPC,3)*(log(1+Gal[p].Rshocked/R_0)- Gal[p].Rshocked/(R_0+Gal[p].Rshocked));
-    
     Gal[p].Mshocked /=  1e10/ Hubble_h;  // 1e10 Msun
     
     // cannot shocked more mass than is available!
-    //    if(Gal[p].Mshocked > Gal[p].HotGas)
-    //        Gal[p].Mshocked = Gal[p].HotGas;
+        if(Gal[p].Mshocked > Gal[p].HotGas)
+            Gal[p].Mshocked = Gal[p].HotGas;
     
     
     // Radio Luminosity base on Shabala (2013)
@@ -341,8 +345,8 @@ double RadioLuminosity_jet(int p, double time, double dt)
     
     if(AGN_model == 1)
     {
-        //      if (temp_new > 0 && log10(Gal[p].StellarMass* 1e10 /Hubble_h) > 0 && Gal[p].RadioLuminosity[6] > 1e22)
-        if (temp_new > 0)
+        if (temp_new > 0 && log10(Gal[p].StellarMass* 1e10 /Hubble_h) > 0 && Gal[p].RadioLuminosity[6] > 1e22)
+//        if (temp_new > 0)
         {
             temp = temp_new;
         }
