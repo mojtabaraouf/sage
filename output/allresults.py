@@ -1367,38 +1367,36 @@ class Results:
     
                                 
         m_0, b_0  = np.polyfit(Lradio1400_0, Q_jet_1, 1)
-        plt.plot(Lradio1400_0, m_0*(Lradio1400_0)+b_0, 'b-',label='Jet-model,p = 2.1', alpha=0.25)
+        plt.plot(Lradio1400_0, m_0*(Lradio1400_0)+b_0, 'b-', lw = 4,label='Jet-model,p = 2.1', alpha=0.25)
                                 
         m_1, b_1  = np.polyfit(Lradio1400_1, Q_jet_1, 1)
-        plt.plot(Lradio1400_1, m_1*(Lradio1400_1)+b_1, 'g-', label='Jet-model,p = 2.2', alpha=0.25)
+        plt.plot(Lradio1400_1, m_1*(Lradio1400_1)+b_1, 'g-', lw = 4, label='Jet-model,p = 2.2', alpha=0.25)
                                 
         m_2, b_2  = np.polyfit(Lradio1400_2, Q_jet_1, 1)
-        plt.plot(Lradio1400_2, m_2*(Lradio1400_2)+b_2, 'y-', label='Jet-model,p = 2.3', alpha=0.25)
+        plt.plot(Lradio1400_2, m_2*(Lradio1400_2)+b_2, 'y-', lw = 4, label='Jet-model,p = 2.3', alpha=0.25)
                                 
         m_3, b_3  = np.polyfit(Lradio1400_3, Q_jet_1, 1)
-        plt.plot(Lradio1400_3, m_3*(Lradio1400_3)+b_3, color = 'purple',label='Jet-model,p = 2.4', alpha=0.25)
+        plt.plot(Lradio1400_3, m_3*(Lradio1400_3)+b_3, color = 'purple', lw = 4,label='Jet-model,p = 2.4', alpha=0.25)
                                 
         m_4, b_4  = np.polyfit(Lradio1400_4, Q_jet_1, 1)
-        plt.plot(Lradio1400_4, m_4*(Lradio1400_4)+b_4, 'r-', label='Jet-model,p = 2.5', alpha=0.25)
+        plt.plot(Lradio1400_4, m_4*(Lradio1400_4)+b_4, 'r-', lw = 4, label='Jet-model,p = 2.5', alpha=0.25)
                                 
         m_5, b_5  = np.polyfit(Lradio1400_5, Q_jet_1, 1)
-        plt.plot(Lradio1400_5, m_5*(Lradio1400_5)+b_5, color= 'Brown',label='Jet-model,p = 2.6', alpha=0.25)
-                                
+        plt.plot(Lradio1400_5, m_5*(Lradio1400_5)+b_5, color= 'Brown', lw = 4,label='Jet-model,p = 2.6', alpha=0.25)
+
         m_6, b_6  = np.polyfit(Lradio1400_6, Q_jet_1, 1)
-        plt.scatter(Lradio1400_6, Q_jet_1, marker='o', s=3, color='grey', alpha=0.4)
-        plt.plot(Lradio1400_6, m_6*(Lradio1400_6)+b_6, 'k-',label='Jet-model,p = 2.7 (best fit)', alpha=0.25)
-                                
-                                
-        plt.ylabel(r'$Log (Q_jet) [W]$')  # Set the y...
-        plt.xlabel(r'$Log (L_{1.4 GHz} Radio) [W/Hz]$')  # and the x-axis labels
+        plt.scatter(Lradio1400_6, Q_jet_1, marker='o', s=30, color='blue', alpha=0.15,label='Jet-model,p = 2.7')
+
+        plt.ylabel(r'Log $Q_{jet}$ [W]')  # Set the y...
+        plt.xlabel(r'Log $L_{1.4 ~GHz}$ [W/Hz]')  # and the x-axis labels
                                 
         # Set the x and y axis minor ticks
         ax.xaxis.set_minor_locator(plt.MultipleLocator(0.05))
         ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
                                 
-        plt.axis([20., 30.0, 32, 38.0])
+        plt.axis([22., 26.0, 33.5, 37.0])
         #        plt.axis([14.0, 25.0, 25, 37.0])
-        leg = plt.legend(loc='lower right', numpoints=1,labelspacing=0.1)
+        leg = plt.legend(loc='upper left', numpoints=1,labelspacing=0.1)
         leg.draw_frame(False)  # Don't want a box frame
         for t in leg.get_texts():  # Reduce the size of the text
                 t.set_fontsize('medium')
@@ -1410,7 +1408,6 @@ class Results:
     
         # Add this plot to our output list
         OutputList.append(outputFile)
-    
     
 # ---------------------------------------------------------
     def Rshocked_Rvir(self, G):
