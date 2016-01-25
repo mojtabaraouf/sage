@@ -51,9 +51,11 @@ double cooling_recipe(int gal, double dt, double time)
     if(rcool > Gal[gal].Rvir)
       // "cold accretion" regime 
       coolingGas = Gal[gal].HotGas / (Gal[gal].Rvir / Gal[gal].Vvir) * dt; 
-    else
+    else if (rcool > 0.0)
       // "hot halo cooling" regime 
       coolingGas = (Gal[gal].HotGas / Gal[gal].Rvir) * (rcool / (2.0 * tcool)) * dt;
+    else
+      coolingGas = 0.0;
 
     if(coolingGas > Gal[gal].HotGas)
       coolingGas = Gal[gal].HotGas;
@@ -83,7 +85,7 @@ double cooling_recipe(int gal, double dt, double time)
 	else
 		coolingGas = 0.0;
 
-//	assert(coolingGas >= 0.0);
+	assert(coolingGas >= 0.0);
   return coolingGas;
 
 }
