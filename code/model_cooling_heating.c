@@ -354,7 +354,7 @@ double RadioLuminosity_jet(int p, double time, double dt)
         }
     }
     
-    Gal[p].Temp_Gas = temp;
+    Gal[p].Temp_Gas = temp_new;
     Gal[p].t_cooling = tcool;
     return temp;
 }
