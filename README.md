@@ -7,5 +7,5 @@ A description of the model and its default calibration results can be found in [
 
 We are  using the SAGE semi analytic code for implementation of new prescription in AGN feedback.
 With the better density model and same density model for both AGN jet shock driven and cooling process, the AGN jet-model modifies not just the temperature of the gas but the density profile as well. 
-
-Comments can be sent to Mojtaba Raouf: m.raouf@ipm.ir & dcroton@astro.swin.edu.au
+ 
+Comments can be sent to Mojtaba Raouf: m.raouf@ipm.ir 
