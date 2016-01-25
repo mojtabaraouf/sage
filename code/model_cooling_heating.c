@@ -80,6 +80,7 @@ double cooling_recipe(int gal, double dt, double time)
         }
         if (coolingGas > 0.0)
             Gal[gal].Cooling += 0.5 * coolingGas * Gal[gal].Vvir * Gal[gal].Vvir;
+            // White & Frenk (1991)
             Gal[gal].Lx_bol  +=  2.5 * coolingGas * Gal[gal].Vvir * Gal[gal].Vvir;
     }
 	else
