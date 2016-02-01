@@ -1360,12 +1360,6 @@ class Results:
         Shabala2008_xval = np.log10(10**(Shabala2008[:, 0]) /self.Hubble_h/self.Hubble_h)
         Shabala2008_yval = np.log10(10**(Shabala2008[:, 1])  /self.Hubble_h/self.Hubble_h)
                                 
-        plt.plot(Heckman2014_xval_2, Heckman2014_yval_2, 'r--', lw = 5, alpha=0.95, label='Heckman--Best (2014) ,fw = 5')
-                                
-        plt.plot(Shabala2008_xval, Shabala2008_yval, 'g--', lw = 6, alpha=0.85, label='Shabala et al. (2008)')
-                                
-    
-                                
         m_0, b_0  = np.polyfit(Lradio1400_0, Q_jet_1, 1)
         plt.plot(Lradio1400_0, m_0*(Lradio1400_0)+b_0, 'b-', lw = 4,label='Jet-model,p = 2.1', alpha=0.25)
                                 
@@ -1386,6 +1380,11 @@ class Results:
 
         m_6, b_6  = np.polyfit(Lradio1400_6, Q_jet_1, 1)
         plt.scatter(Lradio1400_6, Q_jet_1, marker='o', s=30, color='blue', alpha=0.15,label='Jet-model,p = 2.7')
+
+        plt.plot(Heckman2014_xval_2, Heckman2014_yval_2, 'r--', lw = 5, alpha=0.95, label='Heckman--Best (2014) ,fw = 5')
+    
+        plt.plot(Shabala2008_xval, Shabala2008_yval, 'g--', lw = 6, alpha=0.85, label='Shabala et al. (2008)')
+
 
         plt.ylabel(r'Log $Q_{jet}$ [W]')  # Set the y...
         plt.xlabel(r'Log $L_{1.4 ~GHz}$ [W/Hz]')  # and the x-axis labels
@@ -1419,22 +1418,36 @@ class Results:
         plt.figure()  # New figure
         ax = plt.subplot(111)  # 1 plot on the figure
         
-        w = np.where((G.Type < 1) & (G.Mvir >0.0))[0]
+        w = np.where((G.Type == 0) & (G.Mvir >10.0)&(np.log10(G.RadioLuminosity[:,4]) > 22))[0]
         if(len(w) > dilute): w = sample(w, dilute)
         
         R_shocked = G.Rshocked[w]* 1000.0
         R_vir      = G.Rvir[w]* 1000.0
         
-        plt.scatter(R_vir, R_shocked, marker='o', s=30, c='b', alpha=0.25, label='Central-Galaxies')
+        
+        w1 = np.where((G.Type >=1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h)>12.5)&(np.log10(G.RadioLuminosity[:,4]) > 22))[0]
+        if(len(w1) > dilute): w1 = sample(w1, dilute)
+        
+        R_vir_Hi      = G.Rvir[w1]* 1000.0
+        R_shocked_Hi      = G.Rshocked[w1]* 1000.0
+        w2 = np.where((G.Type >=1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h) <12.5)&(np.log10(G.RadioLuminosity[:,4]) > 22))[0]
+        if(len(w2) > dilute): w2 = sample(w2, dilute)
+        
+        R_vir_Lo      = G.Rvir[w2]* 1000.0
+        R_shocked_Lo      = G.Rshocked[w2]* 1000.0
+
+
+        
+        
+        plt.scatter(R_vir, R_shocked, marker='o', s=30, color='grey', alpha=0.15, label='Central-Galaxies')
+        
+        plt.scatter(R_vir_Hi, R_shocked_Hi, marker='o', s=30, c='r', alpha=0.85, label='Satelite-Galaxies-Hi')
+        plt.scatter(R_vir_Lo, R_shocked_Lo, marker='o', s=30, c='b', alpha=0.85, label='Satelite-Galaxies-Lo')
         
         plt.ylabel(r'$R_{shocked}$ [kpc]')  # Set the y...
         plt.xlabel(r'$R_{vir}$ [kpc]')  # and the x-axis labels
         
-        # Set the x and y axis minor ticks
-        #        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.05))
-        #        ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
-        
-        plt.axis([0.0, 500, 0.0, 200.0])
+        plt.axis([100.0, 1000, 0.0, 400.0])
         
         leg = plt.legend(loc='upper right')
         leg.draw_frame(False)  # Don't want a box frame
@@ -1448,6 +1461,7 @@ class Results:
 
         # Add this plot to our output list
         OutputList.append(outputFile)
+
 # ---------------------------------------------------------
     def Lradio_Rshock(self, G):
     
@@ -1458,25 +1472,66 @@ class Results:
         plt.figure()  # New figure
         ax = plt.subplot(111)  # 1 plot on the figure
         
-        w = np.where((G.Type < 1) & (G.Mvir >0.0))[0]
+        w = np.where((G.Type == 0) & (G.Mvir >10.0) & (G.Rshocked >0.001))[0]
         if(len(w) > dilute): w = sample(w, dilute)
-        
-        Lradio1400 = np.log10(G.RadioLuminosity[w,5])
+
+        Lradio1400 = np.log10(G.RadioLuminosity[w,4])
         R_shocked      = G.Rshocked[w]* 1000.0
         
-        plt.scatter(R_shocked, Lradio1400, marker='o', s=30, c='b', alpha=0.25, label='Central-Galaxies')
+        w1 = np.where((G.Type >=1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h)>12.5)& (G.Rshocked >0.001))[0]
+        if(len(w1) > dilute): w1 = sample(w1, dilute)
         
+        Lradio1400_Hi = np.log10(G.RadioLuminosity[w1,4])
+        R_shocked_Hi      = G.Rshocked[w1]* 1000.0
+        w2 = np.where((G.Type >=1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h) <12.5)& (G.Rshocked >0.001))[0]
+        if(len(w2) > dilute): w2 = sample(w2, dilute)
+        
+        Lradio1400_Lo = np.log10(G.RadioLuminosity[w2,4])
+        R_shocked_Lo      = G.Rshocked[w2]* 1000.0
+        
+        
+        
+        # Shabala et al. (2008)
+        Shabala2008_LS = np.array([
+                                   [51.05240355303475, 1.3186490373585515E22],
+                                   [99.30812142284744, 3.114864039219891E23],
+                                   [139.18268120338283, 1.2706630032922422E24],
+                                   [181.09948998145737, 3.2958443369251625E24],
+                                   [276.07295608175383, 1.4548869997215123E25],
+                                   [394.42704247506873, 4.971831440193331E25],
+                                   [502.5800391819623, 1.0973531662830234E26],
+                                   ], dtype=np.float32)
+        Shabala2008_LS_2 = np.array([
+                                    [136.89181681379173, 1.1744199801610529E22],
+                                    [235.3088586574712, 9.544703947366687E22],
+                                    [390.11800635348067, 5.773782468179141E23],
+                                    [936.5523719538558, 1.073259900813307E25],
+                                    ], dtype=np.float32)
+        Shabala2008_LS_xval = Shabala2008_LS[:,0]/2.0 / self.Hubble_h
+        Shabala2008_LS_yval = np.log10(Shabala2008_LS[:,1]/self.Hubble_h/self.Hubble_h/self.Hubble_h)
+        
+        Shabala2008_LS_2_xval = Shabala2008_LS_2[:,0]/2.0/ self.Hubble_h
+        Shabala2008_LS_2_yval = np.log10(Shabala2008_LS_2[:,1]/self.Hubble_h/self.Hubble_h/self.Hubble_h)
+
+
+        plt.scatter(R_shocked, Lradio1400, marker='o', s=30, color='grey', alpha=0.25, label='Central-Galaxies')
+        plt.scatter(R_shocked_Hi, Lradio1400_Hi, marker='o', s=70, c='r', alpha=0.95, label='Satelite-Galaxies-Hi')
+        plt.scatter(R_shocked_Lo, Lradio1400_Lo, marker='o', s=70, c='b', alpha=0.95, label='Satelite-Galaxies-Lo')
+        
+        
+        plt.plot(Shabala2008_LS_xval, Shabala2008_LS_yval, 'g--', lw = 7, alpha=0.95, label='Shabala et al. (2008)')
+
         plt.ylabel(r'Log $L_{1.4~GHz}$ [W/Hz]')  # Set the y...
         plt.xlabel(r'$R_{Shocked}$ [kpc]')  # and the x-axis labels
         
         # Set the x and y axis minor ticks
         #        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.05))
         ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
-        #plt.xscale('log', nonposy='clip')
-        plt.axis([0, 300.0, 21, 27.0])
+
+        plt.axis([0, 300.0, 22, 27.0])
         
         
-        leg = plt.legend(loc='upper right')
+        leg = plt.legend(loc='upper left')
         leg.draw_frame(False)  # Don't want a box frame
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('medium')
@@ -1589,8 +1644,8 @@ class Results:
         if(len(w1) > dilute): w1 = sample(w1, dilute)
         
         Lradio1400_6 = np.log10(G.RadioLuminosity[w1,6])
-        mi_6 = np.floor(min(Lradio1400_6)) - 1.0
-        ma_6 = np.floor(max(Lradio1400_6)) + 1.0
+        mi_6 = np.floor(min(Lradio1400_6)) - 2.0
+        ma_6 = np.floor(max(Lradio1400_6)) + 2.0
         NB_6 = (ma_6 - mi_6) / binwidth
         
         #        (counts_6, binedges_6) = np.histogram(Lradio1400_6, range=(mi_6, ma_6), bins=NB_6,normed=True, weights=None, density=None)
