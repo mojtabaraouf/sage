@@ -45,7 +45,7 @@ AGNrecipeOn						2		;0: switch off; 1: empirical model; 2: Bondi-Hoyle model; 3:
 AGN_model                       1       ;0: Radio mode feedback Croton (2006); 1: jet-model re-new temperature (prep: Raouf et al.)
 Density_model                   1       ;0: Isothermal density profile; 1: Makino et al. (1998) (prep: Raouf et al.)
 SupernovaRecipeOn			1		;0: switch off
-ReionizationOn				0		;0: switch off
+ReionizationOn				1		;0: switch off
 DiskInstabilityOn			1		;0: switch off; 1: bulge and BH growth through instabilities w. instability starbursts
 
 
@@ -60,8 +60,9 @@ FeedbackEjectionEfficiency	0.3 	;mixing efficiency of SN energy with hot gas to 
 
 ReIncorporationFactor		0.15		;fraction of ejected mass reincorporated per dynamical time to hot
 
-RadioModeEfficiency			0.15 	;AGN radio mode efficiency (AGNrecipeOn=2)
+RadioModeEfficiency			0.08 	;AGN radio mode efficiency (AGNrecipeOn=2)
 QuasarModeEfficiency		0.005	;AGN quasar mode wind heating efficiency (AGNrecipeOn>0)
+JetModeEfficiency		  	0.1 	;AGN Jet mode efficiency (prep: Raouf et al.)
 BlackHoleGrowthRate			0.015	;fraction of cold gas added to the BH during mergers (AGNrecipeOn>0)
 
 ThreshMajorMerger				0.3		;major merger when mass ratio greater than this
