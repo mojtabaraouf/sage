@@ -39,7 +39,7 @@ do {                                                                \
 
 
 // relate to Radio luminosity prediction
-#define  Cs          34320.0
+#define  Cs          34320.0     // cm/s
 #define  Gama_c      4.0/3.0
 #define  Gama_x      5.0/3.0
 #define  gamma_isothermal 1.5
@@ -100,6 +100,7 @@ struct GALAXY_OUTPUT
   float DiskScaleRadius;
   float Cooling;
   float Heating;
+  float r_heat;  
   float QuasarModeBHaccretionMass;
   float TimeSinceMajorMerger;
   float TimeSinceMinorMerger;
@@ -130,6 +131,7 @@ struct GALAXY_OUTPUT
   float Lx_bol;
   float R_index;
   float Q_index;
+  float R_cool;
     
     
 };
@@ -224,7 +226,7 @@ struct GALAXY
   float Lx_bol;
   float R_index;
   float Q_index;
-    
+  float R_cool;  
     
 }
 *Gal, *HaloGal;
@@ -288,7 +290,7 @@ extern int    AGNrecipeOn;
 extern int    SFprescription;
 extern int    AGN_model;
 extern int    Density_model;
-
+extern int    Uplifting;
 
 // recipe parameters 
 extern double RecycleFraction;
