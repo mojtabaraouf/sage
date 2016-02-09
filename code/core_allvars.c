@@ -59,7 +59,7 @@ int AGNrecipeOn;
 int SFprescription;
 int AGN_model;
 int Density_model;
-
+int Uplifting;
 
 // recipe parameters 
 double RecycleFraction;
