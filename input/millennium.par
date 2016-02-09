@@ -24,8 +24,8 @@ NumOutputs        -1   ; sets the desired number of galaxy outputs; use -1 for a
 %------------------------------------------
 
 TreeName					    trees_063		; assumes the trees are named TreeName.n where n is the snapshot number
-SimulationDir					./input/treefiles/millennium/millennium_mini/
-FileWithSnapList			./input/treefiles/millennium/millennium.a_list
+SimulationDir         ./input/treefiles/millennium/millennium_mini/
+FileWithSnapList	    ./input/treefiles/millennium/millennium_mini/millennium.a_list
 LastSnapShotNr				63
 
 Omega						0.25 
@@ -42,8 +42,9 @@ PartMass				0.0860657
 
 SFprescription				0		;0: original Croton et al. 2006
 AGNrecipeOn						2		;0: switch off; 1: empirical model; 2: Bondi-Hoyle model; 3: cold cloud accretion model
-AGN_model                       1       ;0: Radio mode feedback Croton (2006); 1: jet-model re-new temperature (prep: Raouf et al.)
-Density_model                   1       ;0: Isothermal density profile; 1: Makino et al. (1998) (prep: Raouf et al.)
+AGN_model                       0       ;0: Radio mode feedback Croton (2006); 1: jet-model re-new temperature (prep: Raouf et al.)
+Density_model                   0       ;0: Isothermal density profile; 1: Makino et al. (1998) (prep: Raouf et al.)
+Uplifting                       1       ;0: Just New-Hot , 1 : New-Hot+Uplifting  for AGN_model=1  (prep: Raouf et al.)
 SupernovaRecipeOn			1		;0: switch off
 ReionizationOn				1		;0: switch off
 DiskInstabilityOn			1		;0: switch off; 1: bulge and BH growth through instabilities w. instability starbursts
@@ -62,7 +63,6 @@ ReIncorporationFactor		0.15		;fraction of ejected mass reincorporated per dynami
 
 RadioModeEfficiency			0.08 	;AGN radio mode efficiency (AGNrecipeOn=2)
 QuasarModeEfficiency		0.005	;AGN quasar mode wind heating efficiency (AGNrecipeOn>0)
-JetModeEfficiency		  	0.1 	;AGN Jet mode efficiency (prep: Raouf et al.)
 BlackHoleGrowthRate			0.015	;fraction of cold gas added to the BH during mergers (AGNrecipeOn>0)
 
 ThreshMajorMerger				0.3		;major merger when mass ratio greater than this
