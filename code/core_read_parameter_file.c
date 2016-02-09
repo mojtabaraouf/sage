@@ -118,6 +118,10 @@ void read_parameter_file(char *fname)
   addr[nt] = &Density_model;
   id[nt++] = INT;
 
+  strcpy(tag[nt], "Uplifting");
+  addr[nt] = &Uplifting;
+  id[nt++] = INT;
+    
   strcpy(tag[nt], "BaryonFrac");
   addr[nt] = &BaryonFrac;
   id[nt++] = DOUBLE;
