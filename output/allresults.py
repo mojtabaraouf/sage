@@ -115,6 +115,7 @@ class Results:
             ('DiskRadius'                   , np.float32),                  
             ('Cooling'                      , np.float32),                  
             ('Heating'                      , np.float32),
+            ('r_heat'                       , np.float32),
             ('QuasarModeBHaccretionMass'    , np.float32),
             ('TimeSinceMajorMerger'         , np.float32),
             ('TimeSinceMinorMerger'         , np.float32),
@@ -140,7 +141,8 @@ class Results:
             ('Temp_Gas'                     , np.float32),
             ('Lx_bol'                       , np.float32),
             ('R_index'                      , np.float32),
-            ('Q_index'                      , np.float32)
+            ('Q_index'                      , np.float32),
+            ('R_cool'                       , np.float32)            
             ]
         names = [Galdesc_full[i][0] for i in xrange(len(Galdesc_full))]
         formats = [Galdesc_full[i][1] for i in xrange(len(Galdesc_full))]
@@ -1302,7 +1304,6 @@ class Results:
         OutputList.append(outputFile)
 
 # ---------------------------------------------------------
-
     def Lradio_Qjet(self, G):
     
         print 'Plotting the Radio Luminosity -- Qjet relation'
@@ -1311,22 +1312,22 @@ class Results:
         
         plt.figure()  # New figure
         ax = plt.subplot(111)  # 1 plot on the figure
-        
-        w1 = np.where((G.Type < 2) & (G.Mvir >100.0) & (G.Rshocked > 0.0002))[0]
+        w = np.where((np.log10(G.Mvir * 1e10 / self.Hubble_h) >11.0))[0]
+        if(len(w) > dilute): w = sample(w, dilute)
+        w1 = np.where((G.Type == 0) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h) >11.0))[0]
         if(len(w1) > dilute): w1 = sample(w1, dilute)
-        
-        
-        Lradio1400_0 = np.log10(G.RadioLuminosity[w1,0])
-        Lradio1400_1 = np.log10(G.RadioLuminosity[w1,1])
-        Lradio1400_2 = np.log10(G.RadioLuminosity[w1,2])
-        Lradio1400_3 = np.log10(G.RadioLuminosity[w1,3])
-        Lradio1400_4 = np.log10(G.RadioLuminosity[w1,4])
-        Lradio1400_5 = np.log10(G.RadioLuminosity[w1,5])
-        Lradio1400_6 = np.log10(G.RadioLuminosity[w1,6])
-        Q_jet_1      = np.log10(G.Qjet[w1])
-        
-        
-        
+
+        w2 = np.where((G.Type == 1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h) >11.0))[0]
+        if(len(w2) > dilute): w2 = sample(w2, dilute)
+
+        Lradio1400_4 = np.log10(G.RadioLuminosity[w,4])
+        Q_jet_1      = np.log10(G.Qjet[w])
+
+
+        Lradio1400_4_S = np.log10(G.RadioLuminosity[w2,4])
+        Q_jet_S      = np.log10(G.Qjet[w2])
+        Lradio1400_4_E = np.log10(G.RadioLuminosity[w1,4])
+        Q_jet_E      = np.log10(G.Qjet[w1])
         #Shabala 2008
         Shabala2008 = np.array([
                                [22.087116069356547,  33.453373995710514],
@@ -1355,34 +1356,15 @@ class Results:
         Heckman2014_xval = np.log10(10**(Heckman2014_1[:, 0])  /self.Hubble_h/self.Hubble_h)
         Heckman2014_yval = np.log10(10**(Heckman2014_1[:, 1])  / 10**(3.0/2.0)* 5**(3.0/2.0) / self.Hubble_h/self.Hubble_h)
         Heckman2014_xval_2 = np.log10(10**(Heckman2014_2[:, 0])/self.Hubble_h/self.Hubble_h)
-        Heckman2014_yval_2 = np.log10(10**(Heckman2014_2[:, 1])  / 20**(3.0/2.0)* 5**(3.0/2.0) )
+        Heckman2014_yval_2 = np.log10(10**(Heckman2014_2[:, 1])  / 20**(3.0/2.0)* 4**(3.0/2.0) )
                                 
         Shabala2008_xval = np.log10(10**(Shabala2008[:, 0]) /self.Hubble_h/self.Hubble_h)
-        Shabala2008_yval = np.log10(10**(Shabala2008[:, 1])  /self.Hubble_h/self.Hubble_h)
-                                
-        m_0, b_0  = np.polyfit(Lradio1400_0, Q_jet_1, 1)
-        plt.plot(Lradio1400_0, m_0*(Lradio1400_0)+b_0, 'b-', lw = 4,label='Jet-model,p = 2.1', alpha=0.25)
-                                
-        m_1, b_1  = np.polyfit(Lradio1400_1, Q_jet_1, 1)
-        plt.plot(Lradio1400_1, m_1*(Lradio1400_1)+b_1, 'g-', lw = 4, label='Jet-model,p = 2.2', alpha=0.25)
-                                
-        m_2, b_2  = np.polyfit(Lradio1400_2, Q_jet_1, 1)
-        plt.plot(Lradio1400_2, m_2*(Lradio1400_2)+b_2, 'y-', lw = 4, label='Jet-model,p = 2.3', alpha=0.25)
-                                
-        m_3, b_3  = np.polyfit(Lradio1400_3, Q_jet_1, 1)
-        plt.plot(Lradio1400_3, m_3*(Lradio1400_3)+b_3, color = 'purple', lw = 4,label='Jet-model,p = 2.4', alpha=0.25)
-                                
-        m_4, b_4  = np.polyfit(Lradio1400_4, Q_jet_1, 1)
-        plt.plot(Lradio1400_4, m_4*(Lradio1400_4)+b_4, 'r-', lw = 4, label='Jet-model,p = 2.5', alpha=0.25)
-                                
-        m_5, b_5  = np.polyfit(Lradio1400_5, Q_jet_1, 1)
-        plt.plot(Lradio1400_5, m_5*(Lradio1400_5)+b_5, color= 'Brown', lw = 4,label='Jet-model,p = 2.6', alpha=0.25)
+        Shabala2008_yval = np.log10(10**(Shabala2008[:, 1]) /self.Hubble_h/self.Hubble_h)
 
-        m_6, b_6  = np.polyfit(Lradio1400_6, Q_jet_1, 1)
-        plt.scatter(Lradio1400_6, Q_jet_1, marker='o', s=30, color='blue', alpha=0.15,label='Jet-model,p = 2.7')
+        plt.scatter(Lradio1400_4_E, Q_jet_E, marker='o', s=10, color='blue', alpha=0.15,label='Central Galaxies (Jet-model)')
+        plt.scatter(Lradio1400_4_S, Q_jet_S, marker='o', s=10, color='red', alpha=0.15,label='Satellite Galaxies (Jet-model)')
 
         plt.plot(Heckman2014_xval_2, Heckman2014_yval_2, 'r--', lw = 5, alpha=0.95, label='Heckman--Best (2014) ,fw = 5')
-    
         plt.plot(Shabala2008_xval, Shabala2008_yval, 'g--', lw = 6, alpha=0.85, label='Shabala et al. (2008)')
 
 
@@ -1400,7 +1382,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
                 t.set_fontsize('medium')
                                 
-        outputFile = OutputDir1 + '16.Lradio_Qjet' + OutputFormat
+        outputFile = OutputDir + '16.Lradio_Qjet' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -1418,74 +1400,72 @@ class Results:
         plt.figure()  # New figure
         ax = plt.subplot(111)  # 1 plot on the figure
         
-        w = np.where((G.Type == 0) & (G.Mvir >10.0)&(np.log10(G.RadioLuminosity[:,4]) > 22))[0]
+        w = np.where((G.Type == 0) & (np.log10(G.Mvir * 1e10 / self.Hubble_h) >11.0))[0]
         if(len(w) > dilute): w = sample(w, dilute)
-        
+
         R_shocked = G.Rshocked[w]* 1000.0
         R_vir      = G.Rvir[w]* 1000.0
         
         
-        w1 = np.where((G.Type >=1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h)>12.5)&(np.log10(G.RadioLuminosity[:,4]) > 22))[0]
+        w1 = np.where((G.Type ==1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h)>12.5))[0]
         if(len(w1) > dilute): w1 = sample(w1, dilute)
-        
+
         R_vir_Hi      = G.Rvir[w1]* 1000.0
         R_shocked_Hi      = G.Rshocked[w1]* 1000.0
-        w2 = np.where((G.Type >=1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h) <12.5)&(np.log10(G.RadioLuminosity[:,4]) > 22))[0]
+        w2 = np.where((G.Type ==1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h) <12.5))[0]
         if(len(w2) > dilute): w2 = sample(w2, dilute)
-        
+
         R_vir_Lo      = G.Rvir[w2]* 1000.0
         R_shocked_Lo      = G.Rshocked[w2]* 1000.0
 
 
-        
-        
         plt.scatter(R_vir, R_shocked, marker='o', s=30, color='grey', alpha=0.15, label='Central-Galaxies')
         
-        plt.scatter(R_vir_Hi, R_shocked_Hi, marker='o', s=30, c='r', alpha=0.85, label='Satelite-Galaxies-Hi')
-        plt.scatter(R_vir_Lo, R_shocked_Lo, marker='o', s=30, c='b', alpha=0.85, label='Satelite-Galaxies-Lo')
+        plt.scatter(R_vir_Hi, R_shocked_Hi, marker='o', s=30, c='r', alpha=0.25, label='Satellite-Galaxies-Hi')
+        plt.scatter(R_vir_Lo, R_shocked_Lo, marker='o', s=30, c='b', alpha=0.45, label='Satellite-Galaxies-Lo')
         
         plt.ylabel(r'$R_{shocked}$ [kpc]')  # Set the y...
         plt.xlabel(r'$R_{vir}$ [kpc]')  # and the x-axis labels
         
-        plt.axis([100.0, 1000, 0.0, 400.0])
+        plt.axis([50.0, 800, 0.0, 300.0])
         
         leg = plt.legend(loc='upper right')
         leg.draw_frame(False)  # Don't want a box frame
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('medium')
         
-        outputFile = OutputDir1 + '17.Rshocked_Rvir' + OutputFormat
+        outputFile = OutputDir + '17.Rshocked_Rvir' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
 
         # Add this plot to our output list
         OutputList.append(outputFile)
-
 # ---------------------------------------------------------
     def Lradio_Rshock(self, G):
     
         print 'Plotting the Radio Luminosity -- Rshock relation'
         
         seed(2222)
-        
+
+
         plt.figure()  # New figure
         ax = plt.subplot(111)  # 1 plot on the figure
         
-        w = np.where((G.Type == 0) & (G.Mvir >10.0) & (G.Rshocked >0.001))[0]
-        if(len(w) > dilute): w = sample(w, dilute)
+        w = np.where((G.Type == 0) & (G.Rshocked >0.001)& (np.log10(G.CentralMvir * 1e10 / self.Hubble_h) >11.0))[0]
+#        if(len(w) > dilute): w = sample(w, dilute)
 
         Lradio1400 = np.log10(G.RadioLuminosity[w,4])
         R_shocked      = G.Rshocked[w]* 1000.0
         
-        w1 = np.where((G.Type >=1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h)>12.5)& (G.Rshocked >0.001))[0]
-        if(len(w1) > dilute): w1 = sample(w1, dilute)
-        
+        w1 = np.where((G.Type ==1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h)>13)& (G.Rshocked >0.001))[0]
+#        if(len(w1) > dilute): w1 = sample(w1, dilute)
+
         Lradio1400_Hi = np.log10(G.RadioLuminosity[w1,4])
         R_shocked_Hi      = G.Rshocked[w1]* 1000.0
-        w2 = np.where((G.Type >=1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h) <12.5)& (G.Rshocked >0.001))[0]
-        if(len(w2) > dilute): w2 = sample(w2, dilute)
-        
+        w2 = np.where((G.Type ==1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h)<13)& (np.log10(G.CentralMvir * 1e10 / self.Hubble_h)>11)& (G.Rshocked >0.001))[0]
+#        if(len(w2) > dilute): w2 = sample(w2, dilute)
+
         Lradio1400_Lo = np.log10(G.RadioLuminosity[w2,4])
         R_shocked_Lo      = G.Rshocked[w2]* 1000.0
         
@@ -1507,17 +1487,17 @@ class Results:
                                     [390.11800635348067, 5.773782468179141E23],
                                     [936.5523719538558, 1.073259900813307E25],
                                     ], dtype=np.float32)
-        Shabala2008_LS_xval = Shabala2008_LS[:,0]/2.0 / self.Hubble_h
-        Shabala2008_LS_yval = np.log10(Shabala2008_LS[:,1]/self.Hubble_h/self.Hubble_h/self.Hubble_h)
+        Shabala2008_LS_xval = Shabala2008_LS[:,0]/2.0
+        Shabala2008_LS_yval = np.log10(Shabala2008_LS[:,1]/ self.Hubble_h/ self.Hubble_h/ self.Hubble_h)
         
-        Shabala2008_LS_2_xval = Shabala2008_LS_2[:,0]/2.0/ self.Hubble_h
-        Shabala2008_LS_2_yval = np.log10(Shabala2008_LS_2[:,1]/self.Hubble_h/self.Hubble_h/self.Hubble_h)
+        Shabala2008_LS_2_xval = Shabala2008_LS_2[:,0]/2.0
+        Shabala2008_LS_2_yval = np.log10(Shabala2008_LS_2[:,1]/ self.Hubble_h/ self.Hubble_h/ self.Hubble_h)
 
 
         plt.scatter(R_shocked, Lradio1400, marker='o', s=30, color='grey', alpha=0.25, label='Central-Galaxies')
-        plt.scatter(R_shocked_Hi, Lradio1400_Hi, marker='o', s=70, c='r', alpha=0.95, label='Satelite-Galaxies-Hi')
-        plt.scatter(R_shocked_Lo, Lradio1400_Lo, marker='o', s=70, c='b', alpha=0.95, label='Satelite-Galaxies-Lo')
-        
+        plt.scatter(R_shocked_Hi, Lradio1400_Hi, marker='o', s=30, c='r', alpha=0.25, label='Satellite-Galaxies-Hi')
+        plt.scatter(R_shocked_Lo, Lradio1400_Lo, marker='o', s=30, c='b', alpha=0.45, label='Satellite-Galaxies-Lo')
+
         
         plt.plot(Shabala2008_LS_xval, Shabala2008_LS_yval, 'g--', lw = 7, alpha=0.95, label='Shabala et al. (2008)')
 
@@ -1531,18 +1511,19 @@ class Results:
         plt.axis([0, 300.0, 22, 27.0])
         
         
-        leg = plt.legend(loc='upper left')
+        leg = plt.legend(loc='lower right')
         leg.draw_frame(False)  # Don't want a box frame
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('medium')
     
-        outputFile = OutputDir1 + '18.Lradio_Rshock' + OutputFormat
+        outputFile = OutputDir + '18.Lradio_Rshock' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
         
         # Add this plot to our output list
         OutputList.append(outputFile)
+
 
 # ---------------------------------------------------------
 
@@ -1555,66 +1536,9 @@ class Results:
         
         binwidth = 0.35  # Radio Luminosity function histogram bin width
         
-        w1 = np.where((G.Type < 2)&(G.RadioLuminosity[:,0] > 1e21)&(G.RadioLuminosity[:,0] < 1e30)& (G.StellarMass > 1))[0]
-        #        w1 = np.where((G.Type < 2)&(G.RadioLuminosity[:,0] > 1e10))[0]
+        w1 = np.where((G.RadioLuminosity[:,4] > 1e21)&(np.log10(G.CentralMvir * 1e10/self.Hubble_h) > 11))[0]
         if(len(w1) > dilute): w1 = sample(w1, dilute)
-        
-        Lradio1400_0 = np.log10(G.RadioLuminosity[w1,0])
-        mi_0 = np.floor(min(Lradio1400_0)) - 2.0
-        ma_0 = np.floor(max(Lradio1400_0)) + 2.0
-        NB_0 = (ma_0 - mi_0) / binwidth
-        
-        (counts_0, binedges_0) = np.histogram(Lradio1400_0, range=(mi_0, ma_0), bins=NB_0 )
-        
-        # Set the x-axis values to be the centre of the bins
-        xaxeshisto_0 = binedges_0[:-1] + 0.5 * binwidth
-        
-        w1 = np.where((G.Type < 2)&(G.RadioLuminosity[:,1] > 1e21)&(G.RadioLuminosity[:,1] < 1e30)& (G.StellarMass > 1))[0]
-        #        w1 = np.where((G.Type < 2)&(G.RadioLuminosity[:,1] > 1e10))[0]
-        if(len(w1) > dilute): w1 = sample(w1, dilute)
-        
-        Lradio1400_1 = np.log10(G.RadioLuminosity[w1,1])
-        mi_1 = np.floor(min(Lradio1400_1)) - 2.0
-        ma_1 = np.floor(max(Lradio1400_1)) + 2.0
-        NB_1 = (ma_1 - mi_1) / binwidth
-        
-        (counts_1, binedges_1) = np.histogram(Lradio1400_1, range=(mi_1, ma_1), bins=NB_1 )
-        
-        # Set the x-axis values to be the centre of the bins
-        xaxeshisto_1 = binedges_1[:-1] + 0.5 * binwidth
-        
-        w1 = np.where((G.Type < 2)&(G.RadioLuminosity[:,2] > 1e21)&(G.RadioLuminosity[:,2] < 1e30)& (G.StellarMass > 1))[0]
-        #        w1 = np.where((G.Type < 2)&(G.RadioLuminosity[:,2] > 1e10))[0]
-        if(len(w1) > dilute): w1 = sample(w1, dilute)
-        
-        Lradio1400_2 = np.log10(G.RadioLuminosity[w1,2])
-        mi_2 = np.floor(min(Lradio1400_2)) - 2.0
-        ma_2 = np.floor(max(Lradio1400_2)) + 2.0
-        NB_2 = (ma_2 - mi_2) / binwidth
-        
-        (counts_2, binedges_2) = np.histogram(Lradio1400_2, range=(mi_2, ma_2), bins=NB_2 )
-        
-        # Set the x-axis values to be the centre of the bins
-        xaxeshisto_2 = binedges_2[:-1] + 0.5 * binwidth
-        
-        w1 = np.where((G.Type < 2)&(G.RadioLuminosity[:,3] > 1e21)&(G.RadioLuminosity[:,3] < 1e30)& (G.StellarMass > 1))[0]
-        #        w1 = np.where((G.Type < 2)&(G.RadioLuminosity[:,3] > 1e10))[0]
-        if(len(w1) > dilute): w1 = sample(w1, dilute)
-        
-        Lradio1400_3 = np.log10(G.RadioLuminosity[w1,3])
-        mi_3 = np.floor(min(Lradio1400_3)) - 2.0
-        ma_3 = np.floor(max(Lradio1400_3)) + 2.0
-        NB_3 = (ma_3 - mi_3) / binwidth
-        
-        (counts_3, binedges_3) = np.histogram(Lradio1400_3, range=(mi_3, ma_3), bins=NB_3 )
-        
-        # Set the x-axis values to be the centre of the bins
-        xaxeshisto_3 = binedges_3[:-1] + 0.5 * binwidth
-        
-        w1 = np.where((G.Type < 2)&(G.RadioLuminosity[:,4] > 1e21)&(G.RadioLuminosity[:,4] < 1e30)& (G.StellarMass > 1))[0]
-        #        w1 = np.where((G.Type < 2)&(G.RadioLuminosity[:,4] > 1e10))[0]
-        if(len(w1) > dilute): w1 = sample(w1, dilute)
-        
+
         Lradio1400_4 = np.log10(G.RadioLuminosity[w1,4])
         mi_4 = np.floor(min(Lradio1400_4)) - 2.0
         ma_4 = np.floor(max(Lradio1400_4)) + 2.0
@@ -1624,35 +1548,12 @@ class Results:
         
         # Set the x-axis values to be the centre of the bins
         xaxeshisto_4 = binedges_4[:-1] + 0.5 * binwidth
-        
-        w1 = np.where((G.Type < 2)&(G.RadioLuminosity[:,5] > 1e21)&(G.RadioLuminosity[:,5] < 1e30)& (G.StellarMass > 1))[0]
-        #        w1 = np.where((G.Type < 2)&(G.RadioLuminosity[:,5] > 1e10))[0]
-        if(len(w1) > dilute): w1 = sample(w1, dilute)
-        
-        Lradio1400_5 = np.log10(G.RadioLuminosity[w1,5])
-        mi_5 = np.floor(min(Lradio1400_5)) - 2.0
-        ma_5 = np.floor(max(Lradio1400_5)) + 2.0
-        NB_5 = (ma_5 - mi_5) / binwidth
-        
-        (counts_5, binedges_5) = np.histogram(Lradio1400_5, range=(mi_5, ma_5), bins=NB_5 )
-        
-        # Set the x-axis values to be the centre of the bins
-        xaxeshisto_5 = binedges_5[:-1] + 0.5 * binwidth
-        
-        w1 = np.where((G.Type < 2)&(G.RadioLuminosity[:,6] > 1e21)&(G.RadioLuminosity[:,6] < 1e30) & (G.StellarMass > 1))[0]
-        #        w1 = np.where((G.Type < 2)&(G.RadioLuminosity[:,6] > 1e20))[0]
-        if(len(w1) > dilute): w1 = sample(w1, dilute)
-        
-        Lradio1400_6 = np.log10(G.RadioLuminosity[w1,6])
-        mi_6 = np.floor(min(Lradio1400_6)) - 2.0
-        ma_6 = np.floor(max(Lradio1400_6)) + 2.0
-        NB_6 = (ma_6 - mi_6) / binwidth
-        
-        #        (counts_6, binedges_6) = np.histogram(Lradio1400_6, range=(mi_6, ma_6), bins=NB_6,normed=True, weights=None, density=None)
-        (counts_6, binedges_6) = np.histogram(Lradio1400_6, range=(mi_6, ma_6), bins=NB_6)
-        
-        # Set the x-axis values to be the centre of the bins
-        xaxeshisto_6 = binedges_6[:-1] + 0.5 * binwidth
+        w = np.where(G.Type[w1] == 0)[0]
+        Lradio1400_4_E = Lradio1400_4[w]
+        (counts_4_E, binedges_4) = np.histogram(Lradio1400_4_E, range=(mi_4, ma_4), bins=NB_4 )
+        w = np.where(G.Type[w1] == 1)[0]
+        Lradio1400_4_S = Lradio1400_4[w]
+        (counts_4_S, binedges_4) = np.histogram(Lradio1400_4_S, range=(mi_4, ma_4), bins=NB_4 )
         
         # Shabala+ 2008 modified data used for the MCMC fitting
         shabala08 = np.array([[21.8950605434631,    -3.917819181692233],
@@ -1712,18 +1613,14 @@ class Results:
         plt.plot(Heckmanbest14_xval, Heckmanbest14_yval, 'r--', lw = 7, alpha=0.85, label='Heckman--Best (2014)-Jet mode AGN')
 #        plt.plot(Heckmanbest14_radio_xval, Heckmanbest14_radio_yval, 'b--', lw = 7, alpha=0.95, label='Heckman--Best (2014)-Radio-loud AGN')
 
-        plt.plot(xaxeshisto_0, counts_0   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/binwidth/xaxeshisto_0, 'b-',lw = 7, alpha=0.45, label='Jet-model, p = 2.1')
-        plt.plot(xaxeshisto_1, counts_1   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/binwidth/xaxeshisto_1, 'g-',lw = 7, alpha=0.45, label='Jet-model, p = 2.2')
-        plt.plot(xaxeshisto_2, counts_2   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/binwidth/xaxeshisto_2, 'y-',lw = 7, alpha=0.45, label='Jet-model, p = 2.3')
-        plt.plot(xaxeshisto_3, counts_3   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/binwidth/xaxeshisto_3, color = 'purple',lw = 7, alpha=0.45, label='Jet-model, p = 2.4')
-        plt.plot(xaxeshisto_4, counts_4   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/binwidth/xaxeshisto_4, 'r-',lw = 7, alpha=0.45, label='Jet-model, p = 2.5')
-        plt.plot(xaxeshisto_5, counts_5   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/binwidth/xaxeshisto_5, color = 'brown',lw = 7, alpha=0.45, label='Jet-model, p = 2.6')
-        plt.plot(xaxeshisto_6, counts_6   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/binwidth/xaxeshisto_6, 'b-',lw = 7, alpha=0.45, label='Jet-model, p = 2.7')
-                              
+        plt.plot(xaxeshisto_4, counts_4   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_4/binwidth, 'b-',lw = 7, alpha=0.45, label='Jet-model -All Galaxies')
+        plt.plot(xaxeshisto_4, counts_4_E   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_4/binwidth, 'b-.',lw = 7, alpha=0.45, label='Jet-model -Central galaxies')
+        plt.plot(xaxeshisto_4, counts_4_S   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_4/binwidth, 'm-',lw = 7, alpha=0.45, label='Jet-model -Satellite galaxies')
+
                               
                               
         plt.yscale('log', nonposy='clip')
-        plt.axis([22, 27, 1.0e-8, 2.0e-3])
+        plt.axis([22, 27, 1.0e-8, 3.0e-4])
                               
         # Set the x-axis minor ticks
         ax.xaxis.set_minor_locator(plt.MultipleLocator(0.1))
@@ -1736,7 +1633,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
                 t.set_fontsize('medium')
                               
-        outputFile = OutputDir1 + '19.RadioLF' + OutputFormat
+        outputFile = OutputDir + '19.RadioLF' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -1751,6 +1648,8 @@ class Results:
         print 'Plotting Density profile of hot gas'
         
         seed(2222)
+        
+#        plt.figure(figsize=(8,7))  # New figure
         plt.figure()  # New figure
         ax = plt.subplot(111)  # 1 plot on the figure
         
@@ -1774,18 +1673,6 @@ class Results:
             r_plot_Capelo[i]=  G.Rvir[w1][j] * (10 ** r_plot_i[i])
             rho_gas_Capelo[i] = 1e3*G.rho_zero_Capelo[w1][j]* np.exp(-13.5 * G.b_gas[w1][j]) * ((1+r_plot_Capelo[i] / (G.Rs[w][j])) ** (13.5 * G.b_gas[w1][j] /(r_plot_Capelo[i]/(G.Rs[w1][j]))))
 
-        # Isothermal density profile
-        w2 = np.where((G.Type == 0) & (G.CentralMvir > 3000) & (G.rho_zero_Capelo > 0))[0]
-        if(len(w2) > dilute): w2 = sample(w2, dilute)
-        
-        r_plot_iso  = np.zeros(len(r_plot_i))
-        rho_gas_iso = np.zeros(len(r_plot_i))
-        for i in range(len(r_plot_i)):
-            
-            r_plot_iso[i]=  G.Rvir[w1][j] * (10 ** r_plot_i[i])
-            rho_gas_iso[i] = G.rho_zero_iso[w1][j]*(1e10 / self.Hubble_h) * (1.989e30)/(3.085678e22**3)  /(r_plot_iso[i]** 2.0)
-            print r_plot_iso[i], np.log10(rho_gas_iso[i]), np.log10(rho_gas_Makino[i]), np.log10(rho_gas_Capelo[i])
-        # Beta profile
         r_plot_beta  = np.zeros(len(r_plot_i))
         rho_gas_beta = np.zeros(len(r_plot_i))
         for i in range(len(r_plot_i)):
@@ -1795,32 +1682,28 @@ class Results:
             print r_plot_iso[i], np.log10(rho_gas_iso[i]), np.log10(rho_gas_Makino[i]), np.log10(rho_gas_Capelo[i]),rho_gas_beta[i]
 
 
-        plt.plot(r_plot_iso, rho_gas_iso,  'k-.', lw = 4, alpha=0.35, label='Isothermal')
-        plt.plot(r_plot_Makino, rho_gas_Makino,  'r-', lw = 4, alpha=0.5, label='Makino+98')
-        #        plt.plot(r_plot_Capelo, rho_gas_Capelo,  'b--', lw = 4, alpha=0.25, label='Capelo')
-
-        
-        plt.plot(r_plot_beta, rho_gas_beta,  'b--', lw = 4, alpha=0.65, label=(r'$\beta$ - model ( $\beta$ = 0.9 b , $R_c$ = 0.22 $R_s$)'))
+        plt.plot(r_plot_Makino/G.Rvir[w1][j], rho_gas_Makino,  'r-', lw = 4, alpha=0.5, label='Makino+98')
+        plt.plot(r_plot_beta/G.Rvir[w1][j], rho_gas_beta,  'b--', lw = 4, alpha=0.65, label=(r'$\beta$ - model ( $\beta_{eff}$ = 0.9 b , $r_0$ = 0.22 $r_s$)'))
         
         plt.xscale('log', nonposy='clip')
         plt.yscale('log', nonposy='clip')
         
         #        plt.ylabel(r'$\rho  [kg / m^{3}]$ ')  # Set the y...
         plt.ylabel(r'$\rho$ ~ $[kg /m^{3}]$ ')  # Set the y...
-        plt.xlabel(r'Radius [Mpc]')  # and the x-axis labels
+        plt.xlabel(r'$r/r_{vir}$')  # and the x-axis labels
         
         # Set the x and y axis minor ticks
-        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.01))
+#        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.01))
         #        ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
         
-        plt.axis([0.0, 6,1e-27,1e-18])
+        plt.axis([1e-3, 9,1e-27,1e-20])
         
         leg = plt.legend(loc='upper right')
         leg.draw_frame(False)  # Don't want a box frame
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('large')
         
-        outputFile = OutputDir1 + '20.Density_profile' + OutputFormat
+        outputFile = OutputDir + '20.Density_profile' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
