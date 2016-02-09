@@ -109,7 +109,7 @@ void init_galaxy(int p, int halonr)
   Gal[p].Lx_bol = 0.0;
   Gal[p].R_index = 0.0;
   Gal[p].Q_index = 0.0;
-  
+  Gal[p].R_cool = 0.0;
 }
 
 
@@ -207,6 +207,5 @@ double get_virial_radius(int halonr)
   
   return cbrt(get_virial_mass(halonr) * fac);
 }
-
 
 
