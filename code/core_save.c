@@ -186,7 +186,7 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
     o->Heating = log10(g->Heating * UnitEnergy_in_cgs / UnitTime_in_s);
   else
     o->Heating = 0.0;
-
+  o->r_heat =  g->r_heat;
   o->QuasarModeBHaccretionMass = g->QuasarModeBHaccretionMass;
 
   o->TimeSinceMajorMerger = g->TimeSinceMajorMerger * UnitTime_in_Megayears;
@@ -236,7 +236,7 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
     
     o->R_index =  g->R_index;
     o->Q_index =  g->Q_index;
-
+    o->R_cool =  g->R_cool;
 }
 
 
