@@ -303,7 +303,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// Note: halonr is here the
 					strip_from_satellite(halonr, centralgal, p);
 
       // Determine the cooling gas given the halo properties 
-      coolingGas = cooling_recipe(p, deltaT / STEPS, time);
+      coolingGas = cooling_recipe(p, centralgal, deltaT / STEPS, time);
       cool_gas_onto_galaxy(p, coolingGas);
 
       // stars form and then explode! 
