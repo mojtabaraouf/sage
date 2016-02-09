@@ -1678,8 +1678,8 @@ class Results:
         for i in range(len(r_plot_i)):
             
             r_plot_beta[i]=  G.Rvir[w1][j] * (10 ** r_plot_i[i])
-            rho_gas_beta[i] = G.rho_zero_Makino[w1][j]  /(1+(r_plot_iso[i]/(0.22*G.Rs[w1][j]))** 2.0)**(3*0.9*G.b_gas[w1][j]/2)
-            print r_plot_iso[i], np.log10(rho_gas_iso[i]), np.log10(rho_gas_Makino[i]), np.log10(rho_gas_Capelo[i]),rho_gas_beta[i]
+            rho_gas_beta[i] = G.rho_zero_Makino[w1][j]  /(1+(r_plot_beta[i]/(0.22*G.Rs[w1][j]))** 2.0)**(3*0.9*G.b_gas[w1][j]/2)
+            print   np.log10(rho_gas_Makino[i]), np.log10(rho_gas_Capelo[i]),rho_gas_beta[i]
 
 
         plt.plot(r_plot_Makino/G.Rvir[w1][j], rho_gas_Makino,  'r-', lw = 4, alpha=0.5, label='Makino+98')
