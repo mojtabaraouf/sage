@@ -210,6 +210,7 @@ double do_Jet_uplift(double coolingGas, int centralgal, double dt, double x, dou
                 coolingGas = (1.0 - pow(Gal[centralgal].Rshocked /rcool,3-3*beta_eff)) * coolingGas;
     
     assert(coolingGas >= 0.0);
+    
     return coolingGas;
     
 }
@@ -301,16 +302,20 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
         R_0   =  0.22 * Gal[p].Rs;
         // coefficient 3 for defferent between the beta in Shabala et al. (2009)(beta = 3 * beta_eff)
         betaparameter = 3.0 *  0.9 * Gal[p].b_gas;
+        
+        // The model do not work in beta over 2
+        if (betaparameter > 2 )
+            betaparameter = 1.99;
+        
     }
     
     
     //eq (24) Shabala & Alexander (2009) or appendix of Shabala (2013)
     double AxialRatiojet = 2;
     double AGN_Active_time = 10;   // time of AGN active in Myr
-    double kj = 0.036;    // Normalization coefficient
-    
-    a_D   = pow((pow(AxialRatiojet,4.0)/(18.0 * M_PI)) * ((Gama_x + 1.0) * (Gama_c - 1.0) * pow(5.0 - betaparameter,3.0))/(9.0 * (Gama_c + (Gama_c - 1.0) * pow(AxialRatiojet, 2.0)/2.0) - 4.0 - betaparameter ),1.0/(5.0 - betaparameter));
-
+    double kj = 0.1;    // Normalization coefficient in a_D ~ 1
+//    a_D   = pow((pow(AxialRatiojet,4.0)/(18.0 * M_PI)) * ((Gama_x + 1.0) * (Gama_c - 1.0) * pow(5.0 - betaparameter,3.0))/(9.0 * (Gama_c + (Gama_c - 1.0) * pow(AxialRatiojet, 2.0)/2.0) - 4.0 - betaparameter ),1.0/(5.0 - betaparameter));
+    a_D   = 1.0;
     tau = kj * pow(2.0 *  pow(R_0 * M_PER_MPC,5) * rho_0 /(Gal[p].Qjet)  ,1.0/3.0)/SEC_PER_MEGAYEAR;
     Gal[p].Rcocoon = a_D  * R_0/Hubble_h * pow(((AGN_Active_time)/tau),3/(5 - betaparameter));
 
@@ -324,7 +329,7 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
     // AGN time Scale Kaiser & Alexander (1997)
     Gal[p].t_AGN_on =  Gal[p].Rshocked / (Cs/ UnitVelocity_in_cm_per_s);
 
-    // Temperature of shock mu mH/kB = 0.59 * mH/kB = 35.9 * 2  where velocity in km/s
+    // Temperature of shock (mu mH/kB = 0.59 * mH/kB = 71.8 s2/km2)
     Gal[p].Tshocked = (15.0/16.0) * (3.0 - betaparameter)/(11.0 - betaparameter) * (71.8)  * pow((3/(5-betaparameter)) * Gal[p].Rshocked * ( KM_PER_MPC) /( AGN_Active_time * SEC_PER_MEGAYEAR ),2.0);
     
     Gal[p].Mshocked = 16 * M_PI * (rho_0/(1000.0 * UnitDensity_in_cgs)) * pow(R_0,3)*(log(1+Gal[p].Rshocked/R_0)- Gal[p].Rshocked/(R_0+Gal[p].Rshocked));
@@ -356,7 +361,6 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
         r = (p_v + 1.0)/4.0;
         fp = (18.0 * pow(a_D, 2.0 * (5.0 - betaparameter)/3.0)) / ((Gama_x + 1) * pow(5.0 - betaparameter,2) * pow(AxialRatiojet,2));
         
-        
         // Magnetic field energy density proportional to cocoon Radius  [j/m3] [kg m-1 s-2]
         uB = (r * fp) * pow(rho_0  * pow(R_0 * M_PER_MPC,betaparameter) * pow((Gal[p].Qjet), 2), 1.0/3.0) * pow(2.0 *  Gal[p].Rshocked * M_PER_MPC  , (-4.0 - betaparameter)/3.0)/((r + 1.0) * (Gama_c - 1.0));
         A1 = (16.0 * M_PI * M_PI * re/C_speed)*pow(q/me, (p_v+1.0)/2.0)*pow(2.0*mu0, (p_v+1.0)/4.0) * (c2_p[ii]/((pow(gam2,2.0-p_v)-pow(gam1,2.0-p_v))/(2.0-p_v)));
@@ -372,7 +376,6 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
     
     if(AGN_model == 1)
     {
-//        if (temp_new > 0 && log10(Gal[p].StellarMass* 1e10 /Hubble_h) > 0 && Gal[p].RadioLuminosity[4] > 1e22)
         if (temp_new > 0 )
             temp = temp_new;
     }
@@ -392,7 +395,7 @@ double density_profile (int p)
     if (Gal[p].Mvir > 0)
     {
         //    Bullock et al. (2001) M* = 1.3 * 1e13 M_sun/h
-        conc     = ( 8/(1 + ZZ[Gal[p].SnapNum])) * pow(10,((-0.13)*(log10(Gal[p].Mvir * 1e10/Hubble_h) - log10(1.3*1e13/Hubble_h))));
+        conc     = ( 6/(1 + ZZ[Gal[p].SnapNum])) * pow(10,((-0.13)*(log10(Gal[p].Mvir * 1e10/Hubble_h) - log10(1.3*1e13/Hubble_h))));
         
         //    Hennawi et al. (2007)
 //         conc     = ( 12.3/(1 + ZZ[Gal[p].SnapNum])) * pow(10,((-0.13)*(log10(Gal[p].Mvir * 1e10/Hubble_h) - 14.15)));
