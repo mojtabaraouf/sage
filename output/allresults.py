@@ -243,7 +243,7 @@ class Results:
         plt.figure()  # New figure
         ax = plt.subplot(111)  # 1 plot on the figure
 
-        binwidth = 0.15  # mass function histogram bin width
+        binwidth = 0.1  # mass function histogram bin width
 
         # calculate all
         w = np.where(G.StellarMass > 0.0)[0]
@@ -1320,13 +1320,13 @@ class Results:
         w2 = np.where((G.Type == 1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h) >11.0))[0]
         if(len(w2) > dilute): w2 = sample(w2, dilute)
 
-        Lradio1400_4 = np.log10(G.RadioLuminosity[w,4])
+        Lradio1400_4 = np.log10(G.RadioLuminosity[w,5])
         Q_jet_1      = np.log10(G.Qjet[w])
 
-
-        Lradio1400_4_S = np.log10(G.RadioLuminosity[w2,4])
+        # for p_value = 2.6
+        Lradio1400_5_S = np.log10(G.RadioLuminosity[w2,5])
         Q_jet_S      = np.log10(G.Qjet[w2])
-        Lradio1400_4_E = np.log10(G.RadioLuminosity[w1,4])
+        Lradio1400_5_E = np.log10(G.RadioLuminosity[w1,5])
         Q_jet_E      = np.log10(G.Qjet[w1])
         #Shabala 2008
         Shabala2008 = np.array([
@@ -1356,13 +1356,13 @@ class Results:
         Heckman2014_xval = np.log10(10**(Heckman2014_1[:, 0])  /self.Hubble_h/self.Hubble_h)
         Heckman2014_yval = np.log10(10**(Heckman2014_1[:, 1])  / 10**(3.0/2.0)* 5**(3.0/2.0) / self.Hubble_h/self.Hubble_h)
         Heckman2014_xval_2 = np.log10(10**(Heckman2014_2[:, 0])/self.Hubble_h/self.Hubble_h)
-        Heckman2014_yval_2 = np.log10(10**(Heckman2014_2[:, 1])  / 20**(3.0/2.0)* 4**(3.0/2.0) )
+        Heckman2014_yval_2 = np.log10(10**(Heckman2014_2[:, 1])  / 20**(3.0/2.0)* 5**(3.0/2.0) )
                                 
         Shabala2008_xval = np.log10(10**(Shabala2008[:, 0]) /self.Hubble_h/self.Hubble_h)
         Shabala2008_yval = np.log10(10**(Shabala2008[:, 1]) /self.Hubble_h/self.Hubble_h)
 
-        plt.scatter(Lradio1400_4_E, Q_jet_E, marker='o', s=10, color='blue', alpha=0.15,label='Central Galaxies (Jet-model)')
-        plt.scatter(Lradio1400_4_S, Q_jet_S, marker='o', s=10, color='red', alpha=0.15,label='Satellite Galaxies (Jet-model)')
+        plt.scatter(Lradio1400_5_E, Q_jet_E, marker='o', s=10, color='blue', alpha=0.15,label='Central Galaxies (Jet-model)')
+        plt.scatter(Lradio1400_5_S, Q_jet_S, marker='o', s=10, color='red', alpha=0.15,label='Satellite Galaxies (Jet-model)')
 
         plt.plot(Heckman2014_xval_2, Heckman2014_yval_2, 'r--', lw = 5, alpha=0.95, label='Heckman--Best (2014) ,fw = 5')
         plt.plot(Shabala2008_xval, Shabala2008_yval, 'g--', lw = 6, alpha=0.85, label='Shabala et al. (2008)')
@@ -1427,7 +1427,7 @@ class Results:
         plt.ylabel(r'$R_{shocked}$ [kpc]')  # Set the y...
         plt.xlabel(r'$R_{vir}$ [kpc]')  # and the x-axis labels
         
-        plt.axis([50.0, 800, 0.0, 300.0])
+        plt.axis([50.0, 800, 0.0, 200.0])
         
         leg = plt.legend(loc='upper right')
         leg.draw_frame(False)  # Don't want a box frame
@@ -1455,19 +1455,19 @@ class Results:
         w = np.where((G.Type == 0) & (G.Rshocked >0.001)& (np.log10(G.CentralMvir * 1e10 / self.Hubble_h) >11.0))[0]
 #        if(len(w) > dilute): w = sample(w, dilute)
 
-        Lradio1400 = np.log10(G.RadioLuminosity[w,4])
-        R_shocked      = G.Rshocked[w]* 1000.0
+        Lradio1400 = np.log10(G.RadioLuminosity[w,5])
+        R_shocked      = G.Rshocked[w]* 1000.0/self.Hubble_h
         
         w1 = np.where((G.Type ==1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h)>13)& (G.Rshocked >0.001))[0]
 #        if(len(w1) > dilute): w1 = sample(w1, dilute)
 
-        Lradio1400_Hi = np.log10(G.RadioLuminosity[w1,4])
-        R_shocked_Hi      = G.Rshocked[w1]* 1000.0
+        Lradio1400_Hi = np.log10(G.RadioLuminosity[w1,5])
+        R_shocked_Hi      = G.Rshocked[w1]* 1000.0/self.Hubble_h
         w2 = np.where((G.Type ==1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h)<13)& (np.log10(G.CentralMvir * 1e10 / self.Hubble_h)>11)& (G.Rshocked >0.001))[0]
 #        if(len(w2) > dilute): w2 = sample(w2, dilute)
 
         Lradio1400_Lo = np.log10(G.RadioLuminosity[w2,4])
-        R_shocked_Lo      = G.Rshocked[w2]* 1000.0
+        R_shocked_Lo      = G.Rshocked[w2]* 1000.0/self.Hubble_h
         
         
         
@@ -1508,8 +1508,7 @@ class Results:
         #        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.05))
         ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
 
-        plt.axis([0, 300.0, 22, 27.0])
-        
+        plt.axis([0, 200.0, 22, 27.0])
         
         leg = plt.legend(loc='lower right')
         leg.draw_frame(False)  # Don't want a box frame
@@ -1536,24 +1535,25 @@ class Results:
         
         binwidth = 0.35  # Radio Luminosity function histogram bin width
         
-        w1 = np.where((G.RadioLuminosity[:,4] > 1e21)&(np.log10(G.CentralMvir * 1e10/self.Hubble_h) > 11))[0]
+        w1 = np.where((G.RadioLuminosity[:,5] > 1e21)&(np.log10(G.CentralMvir * 1e10/self.Hubble_h) > 11))[0]
+    #                w1 = np.where((G.Type < 2)&(G.RadioLuminosity[:,4] > 1e10))[0]
         if(len(w1) > dilute): w1 = sample(w1, dilute)
-
-        Lradio1400_4 = np.log10(G.RadioLuminosity[w1,4])
-        mi_4 = np.floor(min(Lradio1400_4)) - 2.0
-        ma_4 = np.floor(max(Lradio1400_4)) + 2.0
-        NB_4 = (ma_4 - mi_4) / binwidth
         
-        (counts_4, binedges_4) = np.histogram(Lradio1400_4, range=(mi_4, ma_4), bins=NB_4 )
+        Lradio1400_5 = np.log10(G.RadioLuminosity[w1,5])
+        mi_5 = np.floor(min(Lradio1400_5)) - 2.0
+        ma_5 = np.floor(max(Lradio1400_5)) + 2.0
+        NB_5 = (ma_5 - mi_5) / binwidth
+        
+        (counts_5, binedges_5) = np.histogram(Lradio1400_5, range=(mi_5, ma_5), bins=NB_5 )
         
         # Set the x-axis values to be the centre of the bins
-        xaxeshisto_4 = binedges_4[:-1] + 0.5 * binwidth
+        xaxeshisto_5 = binedges_5[:-1] + 0.5 * binwidth
         w = np.where(G.Type[w1] == 0)[0]
-        Lradio1400_4_E = Lradio1400_4[w]
-        (counts_4_E, binedges_4) = np.histogram(Lradio1400_4_E, range=(mi_4, ma_4), bins=NB_4 )
+        Lradio1400_5_E = Lradio1400_5[w]
+        (counts_5_E, binedges_5) = np.histogram(Lradio1400_5_E, range=(mi_5, ma_5), bins=NB_5 )
         w = np.where(G.Type[w1] == 1)[0]
-        Lradio1400_4_S = Lradio1400_4[w]
-        (counts_4_S, binedges_4) = np.histogram(Lradio1400_4_S, range=(mi_4, ma_4), bins=NB_4 )
+        Lradio1400_5_S = Lradio1400_5[w]
+        (counts_5_S, binedges_5) = np.histogram(Lradio1400_5_S, range=(mi_5, ma_5), bins=NB_5 )
         
         # Shabala+ 2008 modified data used for the MCMC fitting
         shabala08 = np.array([[21.8950605434631,    -3.917819181692233],
@@ -1609,14 +1609,14 @@ class Results:
                               
         Heckmanbest14_radio_xval = np.log10(10**(HeckmanBest2014_radio[:, 0]))  #   /self.Hubble_h/self.Hubble_h/self.Hubble_h)
         Heckmanbest14_radio_yval = ((HeckmanBest2014_radio[:, 1]))   * self.Hubble_h*self.Hubble_h*self.Hubble_h
+
                               
         plt.plot(Heckmanbest14_xval, Heckmanbest14_yval, 'r--', lw = 7, alpha=0.85, label='Heckman--Best (2014)-Jet mode AGN')
 #        plt.plot(Heckmanbest14_radio_xval, Heckmanbest14_radio_yval, 'b--', lw = 7, alpha=0.95, label='Heckman--Best (2014)-Radio-loud AGN')
 
-        plt.plot(xaxeshisto_4, counts_4   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_4/binwidth, 'b-',lw = 7, alpha=0.45, label='Jet-model -All Galaxies')
-        plt.plot(xaxeshisto_4, counts_4_E   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_4/binwidth, 'b-.',lw = 7, alpha=0.45, label='Jet-model -Central galaxies')
-        plt.plot(xaxeshisto_4, counts_4_S   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_4/binwidth, 'm-',lw = 7, alpha=0.45, label='Jet-model -Satellite galaxies')
-
+        plt.plot(xaxeshisto_5, counts_5   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5/binwidth, 'b-',lw = 7, alpha=0.45, label='Jet-model -All Galaxies')
+        plt.plot(xaxeshisto_5, counts_5_E   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5/binwidth, 'b-.',lw = 7, alpha=0.45, label='Jet-model -Central galaxies')
+        plt.plot(xaxeshisto_5, counts_5_S   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5/binwidth, 'm-',lw = 7, alpha=0.45, label='Jet-model -Satellite galaxies')
                               
                               
         plt.yscale('log', nonposy='clip')
