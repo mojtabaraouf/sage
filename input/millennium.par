@@ -6,7 +6,7 @@ FileNameGalaxies       model
 OutputDir              ./output/results/millennium/
 
 FirstFile					0
-LastFile					15
+LastFile					7
 
 
 %------------------------------------------
@@ -24,8 +24,8 @@ NumOutputs        18   ; sets the desired number of galaxy outputs; use -1 for a
 %------------------------------------------
 
 TreeName					    trees_063		; assumes the trees are named TreeName.n where n is the snapshot number
-SimulationDir				../../../trees/Millennium/treedata
-FileWithSnapList			../../../trees/Millennium/millennium.a_list
+SimulationDir				../../../trees/Mini_Millennium/treedata
+FileWithSnapList			../../../trees/Mini_Millennium/millennium.a_list
 LastSnapShotNr				63
 
 Omega				0.25
@@ -63,20 +63,20 @@ ExponentBin                 1.4     ; The factor in spec ang mom between bins
 
 SfrEfficiency				0.7
 
-FeedbackReheatingEpsilon	7.0
+FeedbackReheatingEpsilon	6.0
 FeedbackGasSigma            8.4
-FeedbackEjectionEfficiency	0.5
+FeedbackEjectionEfficiency	0.4
 
 ReIncorporationFactor		0.15
 
-RadioModeEfficiency			0.02
+RadioModeEfficiency			0.035
 QuasarModeEfficiency		0.005
 BlackHoleGrowthRate			0.05
 
 H2FractionFactor            1.0    ;Controls the normalisation of the H2/HI ratio calculation if H2prescription=0. 1.0 would be the same as Fu et al. (2010).
 H2FractionExponent          0.92   ;Also controls the H2/HI ratio calculation. 0.92 would be the same as Fu et al. (2010).
 
-QTotMin                     1.0    ;threshold Toomre Q value for instabilities
+QTotMin                     0.25    ;threshold Toomre Q value for instabilities
 GasSinkRate                 0.05
 
 DegPerTdyn                  5.0    ;degrees the gas disc precesses to come in line with stars per dynamical time
@@ -84,7 +84,7 @@ DegPerTdyn                  5.0    ;degrees the gas disc precesses to come in li
 ThreshMajorMerger			0.3		;major merger when mass ratio greater than this
 ThresholdSatDisruption		1.0		;Mvir-to-baryonic mass ratio threshold for satellite merger or disruption
 
-Yield						0.015
+Yield						0.025
 RecycleFraction				0.43	;fraction of SF mass instantaneously recycled back to cold
 FracZleaveDisk				0.0		;fraction of metals produced directly to hot component
 
@@ -100,6 +100,6 @@ EtaSN						5.0e-3	;supernova efficiency
 %------------------------------------------
 
 UnitLength_in_cm			3.08568e+24		;WATCH OUT: Mpc/h
-UnitMass_in_g				1.989e+43		;WATCH OUT: 10^10Msun
+UnitMass_in_g				1.989e+43		;WATCH OUT: 10^10Msun/h
 UnitVelocity_in_cm_per_s	100000			;WATCH OUT: km/s
 

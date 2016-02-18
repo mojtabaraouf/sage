@@ -132,7 +132,7 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
     if(RamPressureOn && Gal[gal].ColdGas>0.0)
     {
         double ExpFac = AA[Gal[centralgal].SnapNum];
-        double angle = acos(Gal[gal].DiscStars[0]*Gal[gal].DiscGas[0] + Gal[gal].DiscStars[1]*Gal[gal].DiscGas[1] + Gal[gal].DiscStars[2]*Gal[gal].DiscGas[2])*180.0/M_PI;
+        double angle = acos(Gal[gal].SpinStars[0]*Gal[gal].SpinGas[0] + Gal[gal].SpinStars[1]*Gal[gal].SpinGas[1] + Gal[gal].SpinStars[2]*Gal[gal].SpinGas[2])*180.0/M_PI;
         double Sigma_disc;
 
         r_gal2 = (pow(Gal[gal].Pos[0]-Gal[centralgal].Pos[0], 2.0) + pow(Gal[gal].Pos[1]-Gal[centralgal].Pos[1], 2.0) + pow(Gal[gal].Pos[2]-Gal[centralgal].Pos[2], 2.0)) * pow(ExpFac, 2.0);

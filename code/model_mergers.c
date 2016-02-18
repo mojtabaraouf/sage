@@ -43,18 +43,22 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
   double mi, ma, mass_ratio, central_bulge_fraction;
   double R1, R2, Eini1, Eini2, Eorb, Erad;
   double disc_mass_ratio[N_BINS], PostRetroGas[N_BINS];
-  double DiscGasSum, spinmag;
+  double DiscGasSum, DiscStarsSum, spinmag, StarChannelSum;
   int i, s;
 
+    // These lines are really just to ensure everything is in order before merging
+    DiscStarsSum = get_disc_stars(merger_centralgal);
+    DiscStarsSum = get_disc_stars(p);
+    
 	for(i=0; i<N_BINS; i++) 
 	{
-		if (Gal[merger_centralgal].DiscStarsMetals[i] > Gal[merger_centralgal].DiscStars[i])
-			printf("DiscStars, Metals = %e, %e\n", Gal[merger_centralgal].DiscStars[i], Gal[merger_centralgal].DiscStarsMetals[i]);
-		assert(Gal[merger_centralgal].DiscStarsMetals[i] <= Gal[merger_centralgal].DiscStars[i]);
-		
-		if (Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i])
-			printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
-		assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
+//		if (Gal[merger_centralgal].DiscStarsMetals[i] > Gal[merger_centralgal].DiscStars[i])
+//			printf("DiscStars, Metals = %e, %e\n", Gal[merger_centralgal].DiscStars[i], Gal[merger_centralgal].DiscStarsMetals[i]);
+//		assert(Gal[merger_centralgal].DiscStarsMetals[i] <= Gal[merger_centralgal].DiscStars[i]);
+//		
+//		if (Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i])
+//			printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
+//		assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
         
         disc_mass_ratio[i] = 0.0;
 	}
@@ -161,7 +165,7 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 	metallicity = get_metallicity(Gal[merger_centralgal].DiscGas[i], Gal[merger_centralgal].DiscGasMetals[i]);
 	assert(Gal[merger_centralgal].DiscGasMetals[i] <= Gal[merger_centralgal].DiscGas[i]);
 	
-	if(PostRetroGas[i] < 0.99*Gal[merger_centralgal].DiscGas[i])
+	if(PostRetroGas[i] < 0.99*Gal[merger_centralgal].DiscGas[i] && Gal[merger_centralgal].DiscGas[i]-PostRetroGas[i] > 1e-10)
 	{
 		unstable_gas = Gal[merger_centralgal].DiscGas[i] - PostRetroGas[i];
         
@@ -186,35 +190,38 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
         Gal[merger_centralgal].MetalsStellarMass += metallicity * net_stars;
         Gal[merger_centralgal].StarsMergeBurst += net_stars;
         Gal[merger_centralgal].SfrBulge[step] += stars / dt;
+        StarChannelSum = get_channel_stars(merger_centralgal);
         assert(Gal[merger_centralgal].StellarMass >= (Gal[merger_centralgal].StarsInSitu+Gal[merger_centralgal].StarsInstability+Gal[merger_centralgal].StarsMergeBurst)/1.01 && Gal[merger_centralgal].StellarMass <= (Gal[merger_centralgal].StarsInSitu+Gal[merger_centralgal].StarsInstability+Gal[merger_centralgal].StarsMergeBurst)*1.01);
         
         // Add the new stars from the retrograde starburst to the classical bulge
-        for(s=0; s<3; s++)
+        if(net_stars>0)
         {
-            Gal[merger_centralgal].SpinClassicalBulge[s] = Gal[merger_centralgal].SpinClassicalBulge[s]*Gal[merger_centralgal].ClassicalBulgeMass + Gal[merger_centralgal].SpinGas[s]*net_stars;
-            assert(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY);
-        }
-        Gal[merger_centralgal].ClassicalBulgeMass += net_stars;
-        Gal[merger_centralgal].ClassicalMetalsBulgeMass += metallicity * net_stars;
-        spinmag = pow(pow(Gal[merger_centralgal].SpinClassicalBulge[0],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[1],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[2],2.0),0.5);
-        for(s=0; s<3; s++)
-        {
-            Gal[merger_centralgal].SpinClassicalBulge[s] /= spinmag;
-            
-            if(Gal[merger_centralgal].SpinClassicalBulge[s] != Gal[merger_centralgal].SpinClassicalBulge[s] || Gal[merger_centralgal].SpinClassicalBulge[s] == INFINITY)
+            for(s=0; s<3; s++)
             {
-                printf("CBulgeMass, stars, unstable_gas = %e, %e, %e\n", Gal[merger_centralgal].ClassicalBulgeMass, stars, unstable_gas);
-                printf("PostRetro, DiscGas = %e, %e\n", PostRetroGas[i], Gal[merger_centralgal].DiscGas[i]);
-                printf("s, Spin, spinmag = %d, %e, %e\n", s, Gal[merger_centralgal].SpinClassicalBulge[s], spinmag);
+                Gal[merger_centralgal].SpinClassicalBulge[s] = Gal[merger_centralgal].SpinClassicalBulge[s]*Gal[merger_centralgal].ClassicalBulgeMass + Gal[merger_centralgal].SpinGas[s]*net_stars;
+                assert(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY);
             }
-            
-            assert(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY);
+            Gal[merger_centralgal].ClassicalBulgeMass += net_stars;
+            Gal[merger_centralgal].ClassicalMetalsBulgeMass += metallicity * net_stars;
+            spinmag = pow(pow(Gal[merger_centralgal].SpinClassicalBulge[0],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[1],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[2],2.0),0.5);
+            for(s=0; s<3; s++)
+            {
+                Gal[merger_centralgal].SpinClassicalBulge[s] /= spinmag;
+                
+                if(Gal[merger_centralgal].SpinClassicalBulge[s] != Gal[merger_centralgal].SpinClassicalBulge[s] || Gal[merger_centralgal].SpinClassicalBulge[s] == INFINITY)
+                {
+                    printf("CBulgeMass, stars, unstable_gas = %e, %e, %e\n", Gal[merger_centralgal].ClassicalBulgeMass, stars, unstable_gas);
+                    printf("PostRetro, DiscGas = %e, %e\n", PostRetroGas[i], Gal[merger_centralgal].DiscGas[i]);
+                    printf("s, Spin, spinmag = %d, %e, %e\n", s, Gal[merger_centralgal].SpinClassicalBulge[s], spinmag);
+                }
+                
+                assert(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY);
+            }
+            spinmag = pow(pow(Gal[merger_centralgal].SpinClassicalBulge[0],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[1],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[2],2.0),0.5);
+            if(spinmag<0.99 || spinmag>1.01 || spinmag!=spinmag)
+                printf("spinmag, spin0, spin1, spin2 = %e, %e, %e, %e\n", spinmag, Gal[merger_centralgal].SpinClassicalBulge[0], Gal[merger_centralgal].SpinClassicalBulge[1], Gal[merger_centralgal].SpinClassicalBulge[2]);
+            assert(spinmag>0.99 && spinmag<1.01 && spinmag==spinmag);
         }
-        spinmag = pow(pow(Gal[merger_centralgal].SpinClassicalBulge[0],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[1],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[2],2.0),0.5);
-        if(spinmag<0.99 || spinmag>1.01 || spinmag!=spinmag)
-            printf("spinmag, spin0, spin1, spin2 = %e, %e, %e, %e\n", spinmag, Gal[merger_centralgal].SpinClassicalBulge[0], Gal[merger_centralgal].SpinClassicalBulge[1], Gal[merger_centralgal].SpinClassicalBulge[2]);
-        assert(spinmag>0.99 && spinmag<1.01 && spinmag==spinmag);
-
 
 	}
   }
@@ -408,7 +415,7 @@ void quasar_mode_wind(int p, float BHaccrete)
 void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ratio, int centralgal, double dt, double *PostRetroGas)
 {
   int step, i, s;
-  double DiscGasSum, CentralGasOrig, spinmag, ExpFac;
+  double DiscGasSum, CentralGasOrig, spinmag, ExpFac, StarChannelSum;
 
     ExpFac = AA[Gal[t].SnapNum]; // Expansion factor needed for determining physical distances for calculating j
     
@@ -638,6 +645,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
   Gal[t].StellarMass += Gal[p].StellarMass;
   Gal[t].MetalsStellarMass += Gal[p].MetalsStellarMass;
 
+    StarChannelSum = get_channel_stars(t);
     assert(Gal[t].StellarMass >= (Gal[t].StarsInSitu+Gal[t].StarsInstability+Gal[t].StarsMergeBurst)/1.01 && Gal[t].StellarMass <= (Gal[t].StarsInSitu+Gal[t].StarsInstability+Gal[t].StarsMergeBurst)*1.01);
 
     
@@ -747,7 +755,7 @@ void disrupt_satellite_to_ICS(int centralgal, int gal)
 void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_centralgal, int centralgal, double time, double dt, int halonr, int mode, int step, double mass_ratio)
 {
  double stars, reheated_mass, ejected_mass, fac, metallicity, CentralVvir, eburst, Sigma_0gas, area, stars_sum, metals_stars;
- double r_inner, r_outer, spinmag;
+ double r_inner, r_outer, spinmag, StarChannelSum;
  //double NewStars[N_BINS], NewStarsMetals[N_BINS];
  int k, s;
 
@@ -914,6 +922,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
   Gal[merger_centralgal].SfrBulge[step] += stars_sum / dt; // This can probably be handled better.  It's a bit complicated though (as to whether it's Sfr in the bulge or disc)
   Gal[merger_centralgal].StarsMergeBurst += stars_sum;
      
+  StarChannelSum = get_channel_stars(merger_centralgal);
   assert(Gal[merger_centralgal].StellarMass >= (Gal[merger_centralgal].StarsInSitu+Gal[merger_centralgal].StarsInstability+Gal[merger_centralgal].StarsMergeBurst)/1.01 && Gal[merger_centralgal].StellarMass <= (Gal[merger_centralgal].StarsInSitu+Gal[merger_centralgal].StarsInstability+Gal[merger_centralgal].StarsMergeBurst)*1.01);
 
   // check for disk instability

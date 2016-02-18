@@ -15,13 +15,15 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	double Q_star, Q_gas, V_rot, Q_gas_min, Q_star_min, Q_tot, W, Q_stable;
 	double unstable_gas, unstable_stars, metallicity, stars, stars_sum, gas_sink;
     double r_inner, r_outer, r_av, Omega, Kappa, sigma_R, c_s;
-	double NewStars[N_BINS], NewStarsMetals[N_BINS], SNgas[N_BINS], spinmag, angle, DiscGasSum;
+	double NewStars[N_BINS], NewStarsMetals[N_BINS], SNgas[N_BINS], spinmag, angle, DiscGasSum, DiscStarSum, StarChannelSum;
+    double old_spin[3], SNgas_copy[N_BINS], SNgas_proj[N_BINS], cos_angle;
 	int i, s;
     int first, first_gas, first_star;
 	
     double star_init = Gal[p].StellarMass;
     
-    
+    DiscStarSum = get_disc_stars(p);
+    StarChannelSum = get_channel_stars(p);
     assert(Gal[p].StellarMass >= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)/1.01 && Gal[p].StellarMass <= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)*1.01);
     
     DiscGasSum = get_disc_gas(p);
@@ -29,7 +31,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
     
     c_s = 1.1e6 / UnitVelocity_in_cm_per_s; // Speed of sound assumed for cold gas, now set to be the same as vel disp of gas at 11 km/s
     
-    angle = acos(Gal[p].DiscStars[0]*Gal[p].DiscGas[0] + Gal[p].DiscStars[1]*Gal[p].DiscGas[1] + Gal[p].DiscStars[2]*Gal[p].DiscGas[2])*180.0/M_PI;
+    angle = acos(Gal[p].SpinStars[0]*Gal[p].SpinGas[0] + Gal[p].SpinStars[1]*Gal[p].SpinGas[1] + Gal[p].SpinStars[2]*Gal[p].SpinGas[2])*180.0/M_PI;
     
 	for(i=0; i<N_BINS; i++)
     {
@@ -167,13 +169,22 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
         Q_gas = c_s * Kappa * (r_outer*r_outer - r_inner*r_inner) / G / (Gal[p].DiscGas[i]-SNgas[i]);
         assert(Q_gas>0);
         if(Q_gas < 0.99*Q_gas_min) printf("Q_gas final, min = %e, %e\n", Q_gas, Q_gas_min);
-        assert(Q_gas >= 0.9*Q_gas_min);
+        assert(Q_gas >= 0.99*Q_gas_min);
+        assert(Q_gas >= 0.99*QTotMin);
+        
+//        Q_star = Kappa * sigma_R * 0.935 * (r_outer*r_outer - r_inner*r_inner) / G / Gal[p].DiscStars[i];
+//        printf("\nAt end of Q_gas check\n");
+//        printf("i, Q_gas, Q_star = %d, %e, %e\n", i, Q_gas, Q_star);
+//        printf("SNgas, DiscGas, DiscStars = %e, %e, %e\n", SNgas[i], Gal[p].DiscGas[i], Gal[p].DiscStars[i]);
+//        printf("Kappa, r_inner, r_outer, c_s = %e, %e, %e, %e\n", Kappa, r_inner, r_outer, c_s);
 	}
 	
 	gas_sink += Gal[p].BlackHoleMass; // Because this was set as -BHMass at the start, this is actually the increase in BH mass from the instab.
 	if(gas_sink>0.0 && AGNrecipeOn > 0)
 		quasar_mode_wind(p, gas_sink);
 	
+    for(i=0; i<N_BINS; i++) SNgas_copy[i] = SNgas[i];
+    
 	// Merge new-star disc with previous stellar disc
 	if(stars_sum>0.0)
 	{
@@ -186,7 +197,11 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
             NewStarsSum += NewStars[i];
         }
         //double StarPre = get_disc_stars(p);
+        for(i=0; i<3; i++) old_spin[i] = Gal[p].SpinStars[i];
 		combine_stellar_discs(p, NewStars, NewStarsMetals);
+        cos_angle = Gal[p].SpinStars[0]*old_spin[0] + Gal[p].SpinStars[1]*old_spin[1] + Gal[p].SpinStars[2]*old_spin[2];
+        project_disc(SNgas_copy, cos_angle, p, SNgas_proj);
+        
         //double StarPost = get_disc_stars(p);
         
         //if(!(StarPost-StarPre <= 1.01*NewStarsSum && StarPost-StarPre >= NewStarsSum/1.01))
@@ -200,6 +215,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
         Gal[p].StarsInstability += NewStarsSum;
         
         assert(NewStarsSum<=stars_sum);
+        StarChannelSum = get_channel_stars(p);
         
         if(!(Gal[p].StellarMass >= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)/1.01 && Gal[p].StellarMass <= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)*1.01))
             //printf("stars, insitu, instab, mergeburst = %e, %e, %e, %e\n", Gal[p].StellarMass, Gal[p].StarsInSitu, Gal[p].StarsInstability, Gal[p].StarsMergeBurst);
@@ -208,6 +224,10 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
         assert(Gal[p].StellarMass >= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)/1.01 && Gal[p].StellarMass <= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)*1.01);
 
 	}
+    else
+    {
+        for(i=0; i<N_BINS; i++) SNgas_proj[i] = 0.0;
+    }
     
 	for(i=0; i<N_BINS; i++){
 		if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
@@ -232,9 +252,9 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
         
         sigma_R = 0.5*Gal[p].Vvir*exp(-r_av/2.0/Gal[p].DiskScaleRadius);
         
-        if(Gal[p].DiscGas[i]>0.0 && angle<=10.0)
+        if(Gal[p].DiscGas[i]-SNgas[i]>0.0 && angle<=10.0)
         {
-            Q_star = Kappa * sigma_R * 0.935 * (r_outer*r_outer - r_inner*r_inner) / G / (Gal[p].DiscStars[i]+SNgas[i]);
+            Q_star = Kappa * sigma_R * 0.935 * (r_outer*r_outer - r_inner*r_inner) / G / (Gal[p].DiscStars[i]+SNgas_proj[i]);
             Q_gas = c_s * Kappa * (r_outer*r_outer - r_inner*r_inner) / G / (Gal[p].DiscGas[i]-SNgas[i]);
             
             W = 2.0*sigma_R*c_s / (sigma_R*sigma_R + c_s*c_s);
@@ -255,8 +275,9 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
             if(Q_gas < 0.9*QTotMin)
             {
                 printf("\nWarning, Q_gas too low after dealing with gas instabilities\n");
-                printf("Q_gas, Q_star, Q_tot = %e, %e, %e\n", Q_gas, Q_star, Q_tot);
-                printf("Annulus gas, gas-SN, stars+SN = %e, %e, %e\n", Gal[p].DiscGas[i], Gal[p].DiscGas[i]-SNgas[i], Gal[p].DiscStars[i]+SNgas[i]);
+                printf("i, Q_gas, Q_star, Q_tot = %d, %e, %e, %e\n", i, Q_gas, Q_star, Q_tot);
+                printf("Annulus gas, gas-SN, stars+SN = %e, %e, %e\n", Gal[p].DiscGas[i], Gal[p].DiscGas[i]-SNgas[i], Gal[p].DiscStars[i]+SNgas_proj[i]);
+                printf("Kappa, r_inner, r_outer, c_s = %e, %e, %e, %e\n", Kappa, r_inner, r_outer, c_s);
                 printf("Angle = %e\n", angle);
                 ABORT(0);
             }

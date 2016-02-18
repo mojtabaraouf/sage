@@ -12,7 +12,7 @@
 
 void starformation_and_feedback(int p, int centralgal, double time, double dt, int halonr, int step)
 {
-    double strdot, stars, reheated_mass, ejected_mass, fac, metallicity, stars_sum, area, SFE_H2, f_H2_const, Sigma_0gas, DiscGasSum, DiscPre, ColdPre;
+    double strdot, stars, reheated_mass, ejected_mass, fac, metallicity, stars_sum, area, SFE_H2, f_H2_const, Sigma_0gas, DiscGasSum, DiscStarsSum, DiscPre, ColdPre, StarChannelSum;
     double r_inner, r_outer;
     double reff, tdyn, cold_crit, strdotfull, H2sum; // For SFprescription==3
 
@@ -20,12 +20,14 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
   int i;
 
     double StarsPre = Gal[p].StellarMass;
+    StarChannelSum = get_channel_stars(p);
     assert(Gal[p].StellarMass >= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)/1.01 && Gal[p].StellarMass <= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)*1.01);
 
     double ejected_sum = 0.0;
     
   // Checks that the deconstructed disc is being treated properly and not generating NaNs
   DiscGasSum = get_disc_gas(p);
+  DiscStarsSum = get_disc_stars(p);
   assert(DiscGasSum <= 1.01*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.01);
   assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
   assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
@@ -192,7 +194,8 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
   Gal[p].StarsInSitu += NewStarSum;
     
   if(Gal[p].StellarMass >= MIN_STARS_FOR_SN)
-  {
+    {
+      StarChannelSum = get_channel_stars(p);
       assert(Gal[p].StellarMass >= (StarsPre + NewStarSum)/1.01 && Gal[p].StellarMass <= (StarsPre + NewStarSum)*1.01);
       assert(Gal[p].StellarMass >= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)/1.01 && Gal[p].StellarMass <= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)*1.01);
   }
@@ -352,7 +355,7 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
 	// Try not to get confused, where "new" here implies the newly formed stars.  In the cooling recipe, "new" meant the combined disc, here instead denoted "comb".
 	
 	J_new = 0.0;
-	for(i=0; i<3; i++)
+	for(i=0; i<N_BINS; i++)
 		J_new += NewStars[i] * (DiscBinEdge[i]+DiscBinEdge[i+1])/2.0; // The assumption that DiscBinEdge is now proportional to radius has broken down
 	
 	// Determine projection angles for combining discs
@@ -390,6 +393,7 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
         {
             printf("SpinStars somehow became %e\n", sdisc_spin_mag);
             printf("with J_sdisc, J_new = %e, %e\n", J_sdisc, J_new);
+            printf("DiscStars, DiscGas = %e, %e\n", get_disc_stars(p), get_disc_gas(p));
         }
         assert(sdisc_spin_mag >= 0.99 && sdisc_spin_mag <= 1.01);
         
@@ -548,7 +552,7 @@ void update_HI_H2(int p)
 {
     double area, f_H2, f_H2_HI, Pressure, f_sigma;
     int i;
-    double angle = acos(Gal[p].DiscStars[0]*Gal[p].DiscGas[0] + Gal[p].DiscStars[1]*Gal[p].DiscGas[1] + Gal[p].DiscStars[2]*Gal[p].DiscGas[2])*180.0/M_PI;
+    double angle = acos(Gal[p].SpinStars[0]*Gal[p].SpinGas[0] + Gal[p].SpinStars[1]*Gal[p].SpinGas[1] + Gal[p].SpinStars[2]*Gal[p].SpinGas[2])*180.0/M_PI;
     double P_0 = 5.93e-12 / UnitMass_in_g * UnitLength_in_cm * UnitTime_in_s * UnitTime_in_s;
     
     if(Gal[p].Vvir>0.0)
