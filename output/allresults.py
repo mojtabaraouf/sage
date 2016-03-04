@@ -1527,18 +1527,20 @@ class Results:
         plt.scatter(Gendre2010_FRII_xval, Gendre2010_FRII_yval, marker='*', s=199, color='red', alpha=0.95, label='Gendre+10 (FRII)')
 
         plt.ylabel(r'Log $L_{1.4~GHz}$ [W/Hz]')  # Set the y...
-        plt.xlabel(r'$R_{Shocked}$ [kpc]')  # and the x-axis labels
+        plt.xlabel(r'Log $R_{Shocked}$ [kpc]')  # and the x-axis labels
         
         # Set the x and y axis minor ticks
+        #        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.05))
         ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
-
-        plt.axis([0, 200.0, 22, 27.0])
         
-        leg = plt.legend(loc='lower right')
+        plt.axis([0, 2.5, 22, 28.0])
+        
+        
+        leg = plt.legend(loc='upper left')
         leg.draw_frame(False)  # Don't want a box frame
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('medium')
-    
+        
         outputFile = OutputDir + '18.Lradio_Rshock' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
@@ -1686,7 +1688,7 @@ class Results:
                               
                               
         plt.yscale('log', nonposy='clip')
-        plt.axis([22, 27, 1.0e-8, 3.0e-4])
+        plt.axis([22, 28, 1.0e-8, 3.0e-4])
                               
         # Set the x-axis minor ticks
         ax.xaxis.set_minor_locator(plt.MultipleLocator(0.1))
@@ -1942,7 +1944,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('small')
         
-        outputFile = OutputDir1 + '21_Cooling_Temp' + OutputFormat
+        outputFile = OutputDir + '21.Cooling_Temp' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
