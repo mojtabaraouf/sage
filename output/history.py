@@ -80,7 +80,6 @@ class Results:
 
 
     def read_gals(self, model_name, first_file, last_file, thissnap):
-
         # The input galaxy structure:
         Galdesc_full = [
             ('SnapNum'                      , np.int32),                    
@@ -124,6 +123,7 @@ class Results:
             ('DiskRadius'                   , np.float32),                  
             ('Cooling'                      , np.float32),                  
             ('Heating'                      , np.float32),
+            ('r_heat'                       , np.float32),            
             ('QuasarModeBHaccretionMass'    , np.float32),
             ('TimeSinceMajorMerger'         , np.float32),
             ('TimeSinceMinorMerger'         , np.float32),
@@ -134,8 +134,8 @@ class Results:
             ('Qjet'                         , np.float32),
             ('Rcocoon'                      , np.float32),
             ('Rshocked'                     , np.float32),
+            ('t_AGN_returne'                , np.float32),
             ('t_AGN_on'                     , np.float32),
-            ('t_cooling'                    , np.float32),
             ('Tshocked'                     , np.float32),
             ('Mshocked'                     , np.float32),
             ('RadioLuminosity'              , (np.float32,7)),
@@ -149,9 +149,13 @@ class Results:
             ('Temp_Gas'                     , np.float32),
             ('Lx_bol'                       , np.float32),
             ('R_index'                      , np.float32),
-            ('Q_index'                      , np.float32)
-
-                        
+            ('Q_index'                      , np.float32),
+            ('R_cool'                       , np.float32),
+            ('fcool'                        , np.float32),
+            ('t_static'                     , np.float32),
+            ('t_AGN_off'                    , np.float32),
+            ('time_to_next_on'              , np.float32),
+            ('delta'                        , np.float32)
             ]
         names = [Galdesc_full[i][0] for i in xrange(len(Galdesc_full))]
         formats = [Galdesc_full[i][1] for i in xrange(len(Galdesc_full))]
