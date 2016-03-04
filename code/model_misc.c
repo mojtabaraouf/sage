@@ -90,8 +90,8 @@ void init_galaxy(int p, int halonr)
   Gal[p].Qjet = 0.0;
   Gal[p].Rcocoon = 0.0;
   Gal[p].Rshocked = 0.0;
-  Gal[p].t_AGN_on = -1.0;
-  Gal[p].t_cooling = -1.0;
+  Gal[p].t_AGN_returne = 0.0;
+  Gal[p].t_AGN_on = 0.0;
   Gal[p].Tshocked = 0.0;
   Gal[p].Mshocked = 0.0;
   for(j = 0; j < 7; j++)
@@ -110,6 +110,11 @@ void init_galaxy(int p, int halonr)
   Gal[p].R_index = 0.0;
   Gal[p].Q_index = 0.0;
   Gal[p].R_cool = 0.0;
+  Gal[p].fcool = 0.0;
+  Gal[p].t_static = 0.0;
+  Gal[p].t_AGN_off = 0.0;
+  Gal[p].time_to_next_on = 0.0;
+  Gal[p].delta = 0.0;
 }
 
 
