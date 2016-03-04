@@ -126,8 +126,8 @@ class Results:
             ('Qjet'                         , np.float32),
             ('Rcocoon'                      , np.float32),
             ('Rshocked'                     , np.float32),
+            ('t_AGN_returne'                , np.float32),
             ('t_AGN_on'                     , np.float32),
-            ('t_cooling'                    , np.float32),
             ('Tshocked'                     , np.float32),
             ('Mshocked'                     , np.float32),
             ('RadioLuminosity'              , (np.float32, 7)),
@@ -142,7 +142,12 @@ class Results:
             ('Lx_bol'                       , np.float32),
             ('R_index'                      , np.float32),
             ('Q_index'                      , np.float32),
-            ('R_cool'                       , np.float32)            
+            ('R_cool'                       , np.float32),
+            ('fcool'                        , np.float32),
+            ('t_static'                     , np.float32),
+            ('t_AGN_off'                    , np.float32),
+            ('time_to_next_on'              , np.float32),
+            ('delta'                        , np.float32)
             ]
         names = [Galdesc_full[i][0] for i in xrange(len(Galdesc_full))]
         formats = [Galdesc_full[i][1] for i in xrange(len(Galdesc_full))]
@@ -1320,7 +1325,7 @@ class Results:
         w2 = np.where((G.Type == 1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h) >11.0))[0]
         if(len(w2) > dilute): w2 = sample(w2, dilute)
 
-        Lradio1400_4 = np.log10(G.RadioLuminosity[w,5])
+        Lradio1400_5 = np.log10(G.RadioLuminosity[w,5])
         Q_jet_1      = np.log10(G.Qjet[w])
 
         # for p_value = 2.6
@@ -1452,22 +1457,22 @@ class Results:
         plt.figure()  # New figure
         ax = plt.subplot(111)  # 1 plot on the figure
         
-        w = np.where((G.Type == 0) & (G.Rshocked >0.001)& (np.log10(G.CentralMvir * 1e10 / self.Hubble_h) >11.0))[0]
-#        if(len(w) > dilute): w = sample(w, dilute)
-
+        w = np.where((G.Type == 0) & (G.Rshocked >0.0001)& (np.log10(G.CentralMvir * 1e10 / self.Hubble_h) >11.0))[0]
+        if(len(w) > dilute): w = sample(w, dilute)
+        mass = np.log10(G.StellarMass[w] * 1e10 / self.Hubble_h)
         Lradio1400 = np.log10(G.RadioLuminosity[w,5])
-        R_shocked      = G.Rshocked[w]* 1000.0/self.Hubble_h
+        R_shocked      = np.log10(G.Rshocked[w]* 1000.0/self.Hubble_h)
         
-        w1 = np.where((G.Type ==1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h)>13)& (G.Rshocked >0.001))[0]
-#        if(len(w1) > dilute): w1 = sample(w1, dilute)
+        w1 = np.where((G.Type ==1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h)>13)& (G.Rshocked >0.0001))[0]
+        if(len(w1) > dilute): w1 = sample(w1, dilute)
 
         Lradio1400_Hi = np.log10(G.RadioLuminosity[w1,5])
-        R_shocked_Hi      = G.Rshocked[w1]* 1000.0/self.Hubble_h
+        R_shocked_Hi      = np.log10(G.Rshocked[w1]* 1000.0/self.Hubble_h)
         w2 = np.where((G.Type ==1) & (np.log10(G.CentralMvir * 1e10 / self.Hubble_h)<13)& (np.log10(G.CentralMvir * 1e10 / self.Hubble_h)>11)& (G.Rshocked >0.001))[0]
-#        if(len(w2) > dilute): w2 = sample(w2, dilute)
+        if(len(w2) > dilute): w2 = sample(w2, dilute)
 
-        Lradio1400_Lo = np.log10(G.RadioLuminosity[w2,4])
-        R_shocked_Lo      = G.Rshocked[w2]* 1000.0/self.Hubble_h
+        Lradio1400_Lo = np.log10(G.RadioLuminosity[w2,5])
+        R_shocked_Lo      = np.log10(G.Rshocked[w2]* 1000.0/self.Hubble_h)
         
         
         
@@ -1487,25 +1492,44 @@ class Results:
                                     [390.11800635348067, 5.773782468179141E23],
                                     [936.5523719538558, 1.073259900813307E25],
                                     ], dtype=np.float32)
+        Gendre2010_FRI= np.array([
+                                    [5.1323908361550235, 2.005736894159895E22, 11.0],
+                                    [5.248385471540101, 8.793977836134125E22 , 11.5],
+                                    [83.03553296858263, 2.3923899116825847E25, 11.5],
+                                    ], dtype=np.float32)
+        Gendre2010_FRII= np.array([
+                                    [4.2526476719508794, 3.128598004878272E22, 10.5],
+                                    [5.065412382783366, 1.2961846939896264E23, 11.5],
+                                    [17.104138564850306, 1.691126589505699E23, 11.0],
+                                    [41.96295131773274, 1.583242901419614E23, 10.5],
+                                    [128.55888635760584, 1.984215220139971E25, 11.5],
+                                    [275.689369297745, 1.2034875257263966E25, 11.5],
+                                    ], dtype=np.float32)
+
+                                    
         Shabala2008_LS_xval = Shabala2008_LS[:,0]/2.0
-        Shabala2008_LS_yval = np.log10(Shabala2008_LS[:,1]/ self.Hubble_h/ self.Hubble_h/ self.Hubble_h)
+        Shabala2008_LS_yval = np.log10(Shabala2008_LS[:,1])
         
         Shabala2008_LS_2_xval = Shabala2008_LS_2[:,0]/2.0
-        Shabala2008_LS_2_yval = np.log10(Shabala2008_LS_2[:,1]/ self.Hubble_h/ self.Hubble_h/ self.Hubble_h)
+        Shabala2008_LS_2_yval = np.log10(Shabala2008_LS_2[:,1])
 
+        Gendre2010_FRI_xval = np.log10(Gendre2010_FRI[:,0]/2.0)
+        Gendre2010_FRI_yval = np.log10(Gendre2010_FRI[:,1])
 
-        plt.scatter(R_shocked, Lradio1400, marker='o', s=30, color='grey', alpha=0.25, label='Central-Galaxies')
-        plt.scatter(R_shocked_Hi, Lradio1400_Hi, marker='o', s=30, c='r', alpha=0.25, label='Satellite-Galaxies-Hi')
-        plt.scatter(R_shocked_Lo, Lradio1400_Lo, marker='o', s=30, c='b', alpha=0.45, label='Satellite-Galaxies-Lo')
+        Gendre2010_FRII_xval = np.log10(Gendre2010_FRII[:,0]/2.0)
+        Gendre2010_FRII_yval = np.log10(Gendre2010_FRII[:,1])
 
-        
-        plt.plot(Shabala2008_LS_xval, Shabala2008_LS_yval, 'g--', lw = 7, alpha=0.95, label='Shabala et al. (2008)')
+        plt.scatter(R_shocked, Lradio1400, marker='o', s=30, c='b', alpha=0.15, label='Central-Galaxies')
+#        plt.scatter(R_shocked_Hi, Lradio1400_Hi, marker='o', s=30, c='r', alpha=0.25, label='Satellite-Galaxies-Hi')
+#        plt.scatter(R_shocked_Lo, Lradio1400_Lo, marker='o', s=30, c='b', alpha=0.45, label='Satellite-Galaxies-Lo')
+#        plt.plot(Shabala2008_LS_xval, Shabala2008_LS_yval, 'g--', lw = 7, alpha=0.95, label='Shabala et al. (2008)')
+        plt.scatter(Gendre2010_FRI_xval, Gendre2010_FRI_yval, marker='^', s=199, color='brown', alpha=0.95, label='Gendre+10 (FRI)')
+        plt.scatter(Gendre2010_FRII_xval, Gendre2010_FRII_yval, marker='*', s=199, color='red', alpha=0.95, label='Gendre+10 (FRII)')
 
         plt.ylabel(r'Log $L_{1.4~GHz}$ [W/Hz]')  # Set the y...
         plt.xlabel(r'$R_{Shocked}$ [kpc]')  # and the x-axis labels
         
         # Set the x and y axis minor ticks
-        #        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.05))
         ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
 
         plt.axis([0, 200.0, 22, 27.0])
@@ -1533,12 +1557,12 @@ class Results:
         plt.figure()  # New figure
         ax = plt.subplot(111)  # 1 plot on the figure
         
-        binwidth = 0.35  # Radio Luminosity function histogram bin width
+        binwidth = 0.3  # Radio Luminosity function histogram bin width
         
-        w1 = np.where((G.RadioLuminosity[:,5] > 1e21)&(np.log10(G.CentralMvir * 1e10/self.Hubble_h) > 11))[0]
-    #                w1 = np.where((G.Type < 2)&(G.RadioLuminosity[:,4] > 1e10))[0]
-        if(len(w1) > dilute): w1 = sample(w1, dilute)
-        
+
+        w1 = np.where((G.RadioLuminosity[:,5] > 0)& (G.RadioLuminosity[:,5] < 1e50)&(np.log10(G.CentralMvir * 1e10/self.Hubble_h) > 11))[0]
+#        if(len(w1) > dilute): w1 = sample(w1, dilute)
+
         Lradio1400_5 = np.log10(G.RadioLuminosity[w1,5])
         mi_5 = np.floor(min(Lradio1400_5)) - 2.0
         ma_5 = np.floor(max(Lradio1400_5)) + 2.0
@@ -1548,13 +1572,53 @@ class Results:
         
         # Set the x-axis values to be the centre of the bins
         xaxeshisto_5 = binedges_5[:-1] + 0.5 * binwidth
-        w = np.where(G.Type[w1] == 0)[0]
-        Lradio1400_5_E = Lradio1400_5[w]
-        (counts_5_E, binedges_5) = np.histogram(Lradio1400_5_E, range=(mi_5, ma_5), bins=NB_5 )
-        w = np.where(G.Type[w1] == 1)[0]
-        Lradio1400_5_S = Lradio1400_5[w]
-        (counts_5_S, binedges_5) = np.histogram(Lradio1400_5_S, range=(mi_5, ma_5), bins=NB_5 )
         
+        
+        w = np.where(np.log10(G.StellarMass[w1] * 1e10/self.Hubble_h)< 10.5)
+        Lradio1400_5_1 = Lradio1400_5[w]
+        (counts_5_1, binedges_5) = np.histogram(Lradio1400_5_1, range=(mi_5, ma_5), bins=NB_5 )
+        
+        w = np.where(np.log10(G.StellarMass[w1] * 1e10/self.Hubble_h)< 10.6)
+        Lradio1400_5_2 = Lradio1400_5[w]
+        (counts_5_2, binedges_5) = np.histogram(Lradio1400_5_2, range=(mi_5, ma_5), bins=NB_5 )
+        
+        w = np.where(np.log10(G.StellarMass[w1] * 1e10/self.Hubble_h)< 10.7)
+        Lradio1400_5_3 = Lradio1400_5[w]
+        (counts_5_3, binedges_5) = np.histogram(Lradio1400_5_3, range=(mi_5, ma_5), bins=NB_5 )
+        
+        w = np.where(np.log10(G.StellarMass[w1] * 1e10/self.Hubble_h)< 10.8)
+        Lradio1400_5_4 = Lradio1400_5[w]
+        (counts_5_4, binedges_5) = np.histogram(Lradio1400_5_4, range=(mi_5, ma_5), bins=NB_5 )
+
+        w = np.where(np.log10(G.StellarMass[w1] * 1e10/self.Hubble_h)< 10.9)
+        Lradio1400_5_5 = Lradio1400_5[w]
+        (counts_5_5, binedges_5) = np.histogram(Lradio1400_5_5, range=(mi_5, ma_5), bins=NB_5 )
+
+        w = np.where(np.log10(G.StellarMass[w1] * 1e10/self.Hubble_h)< 11.0)
+        Lradio1400_5_6 = Lradio1400_5[w]
+        (counts_5_6, binedges_5) = np.histogram(Lradio1400_5_6, range=(mi_5, ma_5), bins=NB_5 )
+        
+        w = np.where(np.log10(G.StellarMass[w1] * 1e10/self.Hubble_h)< 11.1)
+        Lradio1400_5_7 = Lradio1400_5[w]
+        (counts_5_7, binedges_5) = np.histogram(Lradio1400_5_7, range=(mi_5, ma_5), bins=NB_5 )
+        
+        w = np.where(np.log10(G.StellarMass[w1] * 1e10/self.Hubble_h)< 11.2)
+        Lradio1400_5_8 = Lradio1400_5[w]
+        (counts_5_8, binedges_5) = np.histogram(Lradio1400_5_8, range=(mi_5, ma_5), bins=NB_5 )
+
+        w = np.where(np.log10(G.StellarMass[w1] * 1e10/self.Hubble_h)< 11.3)
+        Lradio1400_5_9 = Lradio1400_5[w]
+        (counts_5_9, binedges_5) = np.histogram(Lradio1400_5_9, range=(mi_5, ma_5), bins=NB_5 )
+        w = np.where(np.log10(G.StellarMass[w1] * 1e10/self.Hubble_h)< 11.4)
+        Lradio1400_5_10 = Lradio1400_5[w]
+        (counts_5_10, binedges_5) = np.histogram(Lradio1400_5_10, range=(mi_5, ma_5), bins=NB_5 )
+        w = np.where(np.log10(G.StellarMass[w1] * 1e10/self.Hubble_h)< 11.5)
+        Lradio1400_5_11 = Lradio1400_5[w]
+        (counts_5_11, binedges_5) = np.histogram(Lradio1400_5_11, range=(mi_5, ma_5), bins=NB_5 )
+        w = np.where(np.log10(G.StellarMass[w1] * 1e10/self.Hubble_h)< 11.6)
+        Lradio1400_5_12 = Lradio1400_5[w]
+        (counts_5_12, binedges_5) = np.histogram(Lradio1400_5_12, range=(mi_5, ma_5), bins=NB_5 )
+
         # Shabala+ 2008 modified data used for the MCMC fitting
         shabala08 = np.array([[21.8950605434631,    -3.917819181692233],
                               [22.2948526432552,   -3.9842210188804437],
@@ -1568,7 +1632,7 @@ class Results:
                               [25.49358498336134,   -7.451084333515425],
                               [25.49876986841843,   -7.986147131809531] ], dtype=np.float32)
                               # Max thesis
-
+                              
         HeckmanBest2014 = np.array([
                                    [21.997862863932504,  6.20527276386501E-5],
                                    [23.02105429376662,  2.4520014625693308E-5],
@@ -1581,7 +1645,8 @@ class Results:
                                    [25.408018814805402,  4.577502526265837E-7],
                                    [25.68333399232533,  1.8305328229999118E-7],
                                    [26.306581928637677,  1.924150093649187E-8],
-                                   [26.992412416210005,  1.552246355517814E-9]], dtype=np.float32)
+                                   [26.992412416210005,  1.552246355517814E-9],
+                                    ], dtype=np.float32)
         HeckmanBest2014_radio = np.array([
                                          [22.057815903066597, 1.942144902262784E-6],
                                          [22.971383991130573, 9.281551561066824E-7],
@@ -1596,27 +1661,28 @@ class Results:
                                          [26.667153003281015, 2.148176133550013E-8],
                                          [26.873616262120898, 1.2321018544427695E-8]], dtype=np.float32)
                                                                 
-                                                                
-                              
 
-        shabala08_xval = np.log10(10**(shabala08[:, 0]) /self.Hubble_h/self.Hubble_h)
-        shabala08_yval = (10**(shabala08[:, 1]))/(0.7**3) * self.Hubble_h*self.Hubble_h*self.Hubble_h
-        plt.plot(shabala08_xval, shabala08_yval, 'g-.', lw = 7, alpha=0.85, label='Shabala et al. (2008)')
+        shabala08_xval = np.log10(10**(shabala08[:, 0]) )
+        shabala08_yval = (10**(shabala08[:, 1]))
+        
                               
+        Heckmanbest14_xval = np.log10(10**(HeckmanBest2014[:, 0]) )
+        Heckmanbest14_yval = ((HeckmanBest2014[:, 1]))
                               
-        Heckmanbest14_xval = np.log10(10**(HeckmanBest2014[:, 0])   /self.Hubble_h/self.Hubble_h)
-        Heckmanbest14_yval = ((HeckmanBest2014[:, 1]))/(0.7**3)  * self.Hubble_h*self.Hubble_h*self.Hubble_h
-                              
-        Heckmanbest14_radio_xval = np.log10(10**(HeckmanBest2014_radio[:, 0]))  #   /self.Hubble_h/self.Hubble_h/self.Hubble_h)
-        Heckmanbest14_radio_yval = ((HeckmanBest2014_radio[:, 1]))   * self.Hubble_h*self.Hubble_h*self.Hubble_h
+        Heckmanbest14_radio_xval = np.log10(10**(HeckmanBest2014_radio[:, 0])  )
+        Heckmanbest14_radio_yval = ((HeckmanBest2014_radio[:, 1]))
 
-                              
-        plt.plot(Heckmanbest14_xval, Heckmanbest14_yval, 'r--', lw = 7, alpha=0.85, label='Heckman--Best (2014)-Jet mode AGN')
-#        plt.plot(Heckmanbest14_radio_xval, Heckmanbest14_radio_yval, 'b--', lw = 7, alpha=0.95, label='Heckman--Best (2014)-Radio-loud AGN')
+        plt.plot(xaxeshisto_5, counts_5_1   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5, 'p-',lw = 5, alpha=0.15, label='$M_* < 10^{10.5}$')
+        plt.plot(xaxeshisto_5, counts_5_2   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5, 'p-',lw = 5, alpha=0.35, label='$M_* < 10^{10.6}$')
+        plt.plot(xaxeshisto_5, counts_5_3   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5, 'p-',lw = 5, alpha=0.15, label='$M_* < 10^{10.7}$')
+        plt.plot(xaxeshisto_5, counts_5_4   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5, 'p-',lw = 5, alpha=0.35, label='$M_* < 10^{10.8}$')
+        plt.plot(xaxeshisto_5, counts_5_5   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5, 'p-',lw = 5, alpha=0.15, label='$M_* < 10^{10.9}$')
+        plt.plot(xaxeshisto_5, counts_5_6   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5, 'p-',lw = 5, alpha=0.15, label='$M_* < 10^{11}$')
+        plt.plot(xaxeshisto_5, counts_5_9   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5, 'b-',lw = 5, alpha=0.95, label='$M_* < 10^{12}$')
 
-        plt.plot(xaxeshisto_5, counts_5   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5/binwidth, 'b-',lw = 7, alpha=0.45, label='Jet-model -All Galaxies')
-        plt.plot(xaxeshisto_5, counts_5_E   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5/binwidth, 'b-.',lw = 7, alpha=0.45, label='Jet-model -Central galaxies')
-        plt.plot(xaxeshisto_5, counts_5_S   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5/binwidth, 'm-',lw = 7, alpha=0.45, label='Jet-model -Satellite galaxies')
+        plt.plot(shabala08_xval, shabala08_yval, 'g-.', lw = 7, alpha=0.85, label='Sh08')
+        plt.plot(Heckmanbest14_xval, Heckmanbest14_yval, 'r-.', lw = 7, alpha=0.85, label='HB14-JM')
+#        plt.plot(Heckmanbest14_radio_xval, Heckmanbest14_radio_yval, 'r--', lw = 7, alpha=0.95, label='HB14-RL')
                               
                               
         plt.yscale('log', nonposy='clip')
@@ -1710,6 +1776,180 @@ class Results:
         
         # Add this plot to our output list
         OutputList.append(outputFile)
+    # ---------------------------------------------------------
+
+    def cooling_Temp(self, G):
+    
+        print 'Plotting the b_gas -- Rshock relation'
+        
+        seed(2222)
+        
+        plt.figure()  # New figure
+        ax = plt.subplot(111)  # 1 plot on the figure
+        
+        w = np.where((G.Type == 0)&(np.log10(G.CentralMvir * 1e10 /self.Hubble_h) > 10) & (G.Cooling>39) & (G.Temp_Gas>1e4))[0]
+#        if(len(w) > dilute): w = sample(w, dilute)
+
+        E_cooling = G.Cooling[w]-40.0 #- 2*np.log10(self.Hubble_h)
+        temp_x      = G.Temp_Gas[w] * 8.617328149741e-8  # [K_b T] in [kev]
+#        temp_x =35.9*(G.Vvir[w]*G.Vvir[w]) / 11604.5 / 1.0e3
+
+        plt.scatter(np.log10(temp_x), E_cooling, marker='o', s=20, c='b', alpha=0.1, label='Jet-Modle(+Heat, +Uplift) ')
+
+        m_0, b_0  = np.polyfit(np.log10(temp_x), E_cooling, 1)
+        plt.plot(np.log10(temp_x), m_0*(np.log10(temp_x))+b_0, 'b-', lw = 4,label='Linear fit', alpha=0.55)
+
+        w = np.where((G.Type == 1)&(np.log10(G.CentralMvir* 1e10 /self.Hubble_h) > 11))[0]
+        if(len(w) > dilute): w = sample(w, dilute)
+
+        E_cooling = G.Cooling[w]-40.0 #- 3*np.log10(self.Hubble_h)
+        temp_x      = G.Temp_Gas[w] * 8.617328149741e-8  # [K_b T] in [kev]
+
+
+#        plt.scatter(np.log10(temp_x), E_cooling, marker='o', s=20, c='r', alpha=0.25, label='Satellite-Galaxies Jet-model (Heat, Uplift) ')
+        #Peres et al.  1998
+        Obs = np.array([
+                [6.2, 2.7, 3.7, 0.2, 6.2, 4.8, 1.1, 1.2, 46.0, 58.0            ],
+                [0.0, 0.0, 0.0, 0.0, 5.1, 0.0, 0.0, 0.0, -1.0, 0.0             ],
+                [0.0, 0.0, 0.0, 0.0, 2.4, 0.3, 0.02, 0.02, -1.0, 131.0         ],
+                [3.6, 0.3, 0.7, 0.1, 3.6, 0.5, 0.03, 0.04, -1.0, -1.0          ],
+                [5.8, 0.0, 0.7, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0             ],
+                [0.0, 0.0, 0.0, 0.0, 7.8, 0.9, 1.6, 0.9, -1.0, 0.0             ],
+                [4.1, 7.8, 0.3, 0.7, 4.1, 7.0, 1.2, 1.2, 690.0, -1.0           ],
+                [5.5, 6.8, 999.9, 0.0, 5.5, 13.7, 0.4, 0.4, 42000.0, 21200.0   ],
+                [3.0, 3.8, 1.3, 0.3, 3.0, 5.0, 0.3, 0.3, -1.0, 24.1            ],
+                [0.0, 0.0, 0.0, 0.0, 5.5, 0.4, 1.0, 0.4, -1.0, -1.0            ],
+                [6.8, 14.5, 0.5, 0.3, 6.8, 17.3, 1.7, 2.7, -1.0, 35.5          ],
+                [6.2, 0.1, 0.03, 0.03, 6.2, 0.0, 0.7, 0.0, -1.0, -1.0          ],
+                [4.7, 1.9, 0.2, 0.1, 4.7, 2.0, 0.1, 0.2, 44.0, -1.0            ],
+                [0.0, 0.0, 0.0, 0.0, 5.2, 0.0, 0.1, 0.0, 1922.0, -1.0          ],
+                [4.3, 0.1, 0.1, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0             ],
+                [8.5, 34.9, 1.8, 1.8, 8.5, 43.6, 4.6, 2.8, 480.0, 2370.0       ],
+                [6.6, 4.5, 0.6, 1.0, 6.6, 4.1, 2.3, 0.6, -1.0, -1.0            ],
+                [8.7, 0.0, 0.0, 0.0, 8.7, 0.0, 0.7, 0.0, -1.0, 9.0             ],
+                [3.8, 4.7, 999.9, 0.0, 3.8, 4.7, 1.0, 1.2, 14000.0, 40800.0    ],
+                [3.3, 0.1, 0.01, 0.01, 3.3, 0.15, 0.04, 0.1, -1.0, 0.0         ],
+                [0.0, 0.0, 0.0, 0.0, 3.5, 0.0, 0.0, 0.0, -1.0, 0.0             ],
+                [2.4, 0.1, 999.9, 0.0, 2.4, 0.3, 0.01, 0.01, 61000.0, 22400.0  ],
+                [3.6, 0.4, 999.9, 0.0, 3.6, 0.5, 0.1, 0.1, 1530.0, -1.0        ],
+                [8.0, 0.01, 0.0, 0.0, 8.0, 0.0, 0.0, 0.0, 84.0, 207.0          ],
+                [4.7, 0.2, 0.2, 0.1, 0.0, 0.0, 0.0, 0.0, 112.0, 99.0           ],
+                [0.0, 0.0, 0.0, 0.0, 4.4, 0.0, 0.3, 0.0, 440.0, 1160.0         ],
+                [5.5, 5.4, 4.1, 0.9, 0.0, 0.0, 0.0, 0.0, -1.0, -1.0            ],
+                [0.0, 0.0, 0.0, 0.0, 7.0, 3.3, 1.0, 1.0, -1.0, -1.0            ],
+                [10.1, 18.0, 1.0, 1.0, 10.1, 26.1, 9.5, 1.5, -1.0, 0.0         ],
+                [4.6, 0.02, 0.03, 999.9, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0         ],
+                [6.5, 0.8, 0.4, 0.6, 6.5, 1.0, 0.9, 0.2, -1.0, 4.5             ],
+                [0.0, 0.0, 0.0, 0.0, 3.8, 0.5, 0.3, 0.3, -1.0, 0.0             ],
+                [7.6, 1.8, 0.6, 0.7, 7.6, 1.6, 1.2, 0.5, -1.0, 8.4             ],
+                [5.1, 10.4, 0.4, 0.4, 5.1, 8.5, 0.6, 0.2, 260.0, 930.0         ],
+                [7.8, 16.8, 3.5, 1.1, 7.8, 17.8, 1.2, 2.9, 89.0, 550.0         ],
+                [3.4, 1.7, 0.2, 0.1, 3.4, 1.9, 0.4, 0.02, 1030.0, 5400.0       ],
+                [3.0, 1.4, 0.4, 0.5, 3.0, 2.3, 0.1, 0.6, -1.0, 126.0           ],
+                [8.4, 0.5, 0.2, 0.2, 0.0, 0.0, 0.0, 0.0, -1.0, 14.0            ],
+                [0.0, 0.0, 0.0, 0.0, 4.1, 0.6, 0.1, 0.3, -1.0, 15.0            ],
+                [11.0, 11.2, 2.1, 2.8, 11.0, 13.0, 1.8, 4.6, -1.0, 0.0         ],
+                [4.7, 3.0, 0.2, 0.5, 4.7, 2.7, 0.3, 0.1, 480.0, 3700.0         ],
+                [9.0, 40.3, 8.8, 4.2, 9.0, 40.1, 4.6, 4.6, -1.0, 70.1          ],
+                [0.0, 0.0, 0.0, 0.0, 7.9, 0.7, 1.7, 999.9, -1.0, -1.0          ],
+                [0.0, 0.0, 0.0, 0.0, 7.1, 6.6, 0.8, 4.0, -1.0, 2.41            ],
+                [7.5, 0.0, 0.26, 0.0, 7.5, 0.0, 0.2, 0.0, -1.0, 0.0            ],
+                [9.0, 1.3, 0.1, 0.01, 9.0, 3.8, 0.9, 2.6, -1.0, 29.1           ],
+                [0.0, 0.0, 0.0, 0.0, 7.3, 0.0, 0.1, 0.0, -1.0, 0.0             ],
+                [9.9, 0.1, 2.6, 999.9, 9.9, 0.5, 1.5, 999.9, -1.0, 0.0         ],
+                [7.3, 8.1, 0.3, 0.4, 7.3, 9.3, 0.8, 1.1, 210000.0, -1.0        ],
+                [0.0, 0.0, 0.0, 0.0, 6.5, 0.0, 0.2, 0.0, -1.0, -1.0            ],
+                [6.0, 8.2, 0.7, 0.9, 6.0, 8.2, 1.3, 1.9, 410.0, 1880.0         ],
+                [0.0, 0.0, 0.0, 0.0, 3.3, 1.1, 0.3, 0.2, -1.0, 28.4            ],
+                [3.5, 1.5, 0.4, 0.1, 3.5, 1.6, 0.2, 0.2, 117.0, 1290.0         ],
+                ], dtype=np.float32)
+    
+        cut = 10000.0
+        
+        OtempH = Obs[:, 0]
+        OlumH = Obs[:, 1] * 1.0e4
+        OlumHerrU = Obs[:, 2] * 1.0e4
+        OlumHerrD = Obs[:, 3] * 1.0e4
+                
+        OtempP = Obs[:, 4]
+        OlumP = Obs[:, 5] * 1.0e4
+        OlumPerrU = Obs[:, 6] * 1.0e4
+        OlumPerrD = Obs[:, 7] * 1.0e4
+                
+        radioL = Obs[:, 8]
+        radioS = Obs[:, 9]
+                
+        w = np.where((OlumHerrU < cut*OtempH) & ((OlumHerrD < cut*OtempH)))[0]
+        xplot= np.log10(OtempH[w])
+        yplot = np.log10(OlumH[w])
+        yerr2 = np.log10(OlumH[w]+OlumHerrU[w]) -  yplot
+        yerr1 = yplot - np.log10(OlumH[w]-OlumHerrD[w])
+        plt.errorbar(xplot, yplot, yerr=[yerr1,yerr2], color='c', lw=2.0, alpha=0.6, marker='s', markersize=8, ls='none', label='P98 HRI', mew=1)
+
+        w = np.where((OlumPerrU < cut*OtempP) & ((OlumPerrD < cut*OtempP)))[0]
+        xplot = np.log10(OtempP[w])
+        yplot = np.log10(OlumP[w])
+        yerr2 = np.log10(OlumP[w]+OlumPerrU[w])-yplot
+        yerr1 = yplot-np.log10(OlumP[w]-OlumPerrD[w])
+        plt.errorbar(xplot, yplot, yerr=[yerr1,yerr2], color='c', lw=2.0, alpha=0.6, marker='*', markersize=12, ls='none', label='P98 PSPC', mew=1)
+
+        # Data from Ponman et al 1996
+        P_temp = np.array([0.89, 0.44, 0.3, 0.61, 0.91, 0.67, 0.82, 1.09, 0.82, 0.64, 0.96, 0.82, 0.54, 0.59, 0.68, 0.75, 0.87])
+        P_temp_err = np.array([0.12, 0.08, 0.05, 0.3, 0.18, 0.11, 0.03, 0.21, 0.27, 0.19, 0.04, 0.19, 0.15, 0.0, 0.12, 0.08, 0.05])
+        P_loglum = np.array([42.31, 41.8, 41.68, 41.77, 42.35, 42.12, 42.16, 41.58, 41.98, 41.89, 43.04, 41.69, 41.27, 42.43, 41.48, 42.16, 42.78])
+        P_loglum_err = np.array([0.08, 0.12, 0.06, 0.11, 0.11, 0.06, 0.02, 0.14, 0.21, 0.11, 0.03, 0.1, 0.26, 0.24, 0.09, 0.04, 0.02])
+                
+        P_xplot = np.log10(P_temp)
+        P_xerr = np.log10(P_temp+P_temp_err) - P_xplot
+        plt.errorbar(P_xplot, P_loglum-40, xerr=P_xerr, yerr=P_loglum_err, color='brown', alpha=0.6, marker='>', markersize=8, ls='none', label=r'P96', mew=1, lw=2)
+
+        # Data from Bharadwaj et al (2015)
+        B_temp = np.array([1.9, 1.79, 2.1, 1.43, 0.98, 1.98, 3.58, 2.01, 3.25, 2.06, 1.45, 14.3, 0.81, 1.25, 1.40, 1.06, 0.97, 1.05, 1.96, 2.05, 2.13, 0.64, 2.05, 1.43, 1.78, 0.91])
+        B_temp_errH = np.array([0.09, 0.07, 0.05, 0.04, 0.02, 0.04, 0.14, 0.03, 0.08, 0.08, 0.02, 0.04, 0.02, 0.01, 0.01, 0.01, 0.01, 0.01, 0.12, 0.1, 0.1, 0.01, 0.1, 0.06, 0.29, 0.01])
+        B_temp_errL = np.array([0.09, 0.07, 0.07, 0.05, 0.02, 0.05, 0.14, 0.03, 0.08, 0.09, 0.02, 0.04, 0.02, 0.01, 0.01, 0.01, 0.02, 0.01, 0.15, 0.12, 0.05, 0.01, 0.12, 0.1, 0.22, 0.01])
+        B_lum = np.array([2.69, 1.22, 2.02, 0.399, 0.358, 3.42, 3.1, 2.86, 6.92, 3.22, 1.67, 0.413, 0.232, 0.929, 2., 1.25, 0.293, 0.445, 0.444, 2.66, 3.63, 0.111, 2.62, 0.602, 1.98, 0.666])
+        B_lum_err = np.array([0.38, 0.17, 0.24, 0.053, 0.139, 0.17, 0.25, 0.05, 0.58, 0.42, 0.02, 0.066, 0.032, 0.15, 0.11, 0.1, 0.04, 0.076, 0.064, 0.22, 0.56, 0.012, 0.74, 1.09, 0.33, 0.045])
+                
+        B_xplot = np.log10(B_temp)
+        B_xerr1 = np.log10(B_temp+B_temp_errH) - B_xplot
+        B_xerr2 = B_xplot - np.log10(B_temp-B_temp_errL)
+        B_yplot = np.log10(B_lum)+3.0
+        B_yerr = np.log10(B_lum+B_lum_err)+3.0 - B_yplot
+        plt.errorbar(B_xplot, B_yplot, xerr=[B_xerr1, B_xerr2], yerr=B_yerr, color='orange', alpha=0.6, marker='^', markersize=8, ls='none', label=r'B15', mew=1, lw=2.0)
+        
+        # Anderson et al. 2015
+        A_Ltot = np.array([43.82, 43.46, 43.39, 42.98, 42.64, 42.34, 41.80, 41.52, 41.29, 40.97, 40.58, 40.40, 39.96, 40.10, 39.60, 38.96, 39.94, 40.00, 39.60])
+        A_Ltot_uncert_m = np.array([0.03, 0.02, 0.01, 0.01, 0.01, 0.01, 0.02, 0.02, 0.02, 0.04, 0.07, 0.09, 0.27, 0.19, 0.97, 0.86, 0.21, 0.19, 0.97])
+        A_Ltot_uncert_b = np.array([0.21, 0.11, 0.09, 0.06, 0.05, 0.06, 0.06, 0.05, 0.07, 0.11, 0.10, 0.19, 0.46, 0.63, 0.78, 0.83, 0.28, 0.47, 0.86])
+        A_Ltot_uncert = np.max(np.array([A_Ltot_uncert_m, A_Ltot_uncert_b]), axis=0)
+        A_temp = np.array([5.0, 4.0, 3.4, 2.5, 1.9, 1.5, 1.1, 0.8, 0.6, 0.5, 0.4, 0.3, 0.2, 0.2, 0.1, 0.1, 0.1, 0.1, 0.1])
+        plt.errorbar(np.log10(A_temp), A_Ltot-40, yerr=A_Ltot_uncert, marker='_', alpha=0.8, color='purple', markersize=15, ls='none', label=r'A15', mew=2, lw=2)
+
+
+        plt.xlabel(r' $log_{10} \ T_{gas}$ [Kev]')  # Set the y...
+        plt.ylabel(r' $log_{10}$ (Net cooling $[10^{40}erg~ s^{-1}])$')  # and the x-axis labels
+        
+        # Set the x and y axis minor ticks
+        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.05))
+        ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
+        #        plt.xscale('log', nonposy='clip')
+        #        plt.yscale('log', nonposy='clip')
+        plt.axis([-0.5, 1.2, -2, 7])
+        
+        
+        leg = plt.legend(loc='upper left')
+        leg.draw_frame(False)  # Don't want a box frame
+        for t in leg.get_texts():  # Reduce the size of the text
+            t.set_fontsize('small')
+        
+        outputFile = OutputDir1 + '21_Cooling_Temp' + OutputFormat
+        plt.savefig(outputFile)  # Save the figure
+        print 'Saved file to', outputFile
+        plt.close()
+        
+        # Add this plot to our output list
+        OutputList.append(outputFile)
+        
 # =================================================================
 
 
@@ -1789,3 +2029,4 @@ if __name__ == '__main__':
     res.Lradio_Rshock(G)
     res.RadioLF(G)
     res.Density_profile(G)
+    res.cooling_Temp(G)
