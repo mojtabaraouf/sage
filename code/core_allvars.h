@@ -115,8 +115,8 @@ struct GALAXY_OUTPUT
   float Qjet;
   float Rcocoon;
   float Rshocked;
+  float t_AGN_returne;
   float t_AGN_on;
-  float t_cooling;
   float Tshocked;
   float Mshocked;
   float RadioLuminosity[7];
@@ -132,7 +132,11 @@ struct GALAXY_OUTPUT
   float R_index;
   float Q_index;
   float R_cool;
-    
+  float fcool;
+  float t_static;
+  float t_AGN_off;
+  float time_to_next_on;
+  float delta;
     
 };
 
@@ -210,8 +214,8 @@ struct GALAXY
   float Qjet;
   float Rcocoon;
   float Rshocked;
+  float t_AGN_returne;
   float t_AGN_on;
-  float t_cooling;
   float Tshocked;
   float Mshocked;
   float RadioLuminosity[7];
@@ -227,6 +231,12 @@ struct GALAXY
   float R_index;
   float Q_index;
   float R_cool;  
+  float fcool;
+  float t_static;
+  float t_AGN_off;
+  float time_to_next_on;
+  float delta;
+    
     
 }
 *Gal, *HaloGal;
