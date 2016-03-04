@@ -211,8 +211,8 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
     o->Qjet =  g->Qjet;
     o->Rcocoon =  g->Rcocoon;
     o->Rshocked =  g->Rshocked;
+    o->t_AGN_returne =  g->t_AGN_returne;
     o->t_AGN_on =  g->t_AGN_on;
-    o->t_cooling =  g->t_cooling * UnitTime_in_Megayears;
     o->Tshocked =  g->Tshocked;
     o->Mshocked =  g->Mshocked;
     
@@ -237,9 +237,13 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
     o->R_index =  g->R_index;
     o->Q_index =  g->Q_index;
     o->R_cool =  g->R_cool;
+    o->fcool =  g->fcool;
+    o->t_static =  g->t_static;
+    o->t_AGN_off=  g->t_AGN_off;
+    o->time_to_next_on = g->time_to_next_on;
+    o->delta=  g->delta;
+
 }
-
-
 
 void finalize_galaxy_file(int filenr)
 {
