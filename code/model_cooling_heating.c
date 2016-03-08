@@ -318,7 +318,7 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
         {
 //            Gal[p].Qjet = 1.066e39 * ((Gal[p].BlackHoleMass * 1e10/Hubble_h)/ 1e9 ) * (AGNrate/Hubble_h /(0.1 * EDDrate));
 //            [W]- kg m2/s3
-            Gal[p].Qjet =  0.3 * AGNrate * 2.9979e8 * 2.9979e8 * (UnitMass_in_g/Hubble_h/1e3/UnitTime_in_s);
+            Gal[p].Qjet =  0.1 * AGNrate * 2.9979e8 * 2.9979e8 * (UnitMass_in_g/Hubble_h/1e3/UnitTime_in_s);
             Gal[p].R_index =1.0;
         }
         else
@@ -358,12 +358,12 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
     double AGN_Active_time ;   // time of AGN active in Myr
     
     // Turner & Shabala et al.  (2016)
-    Gal[p].t_AGN_on = 50.0 * pow(Gal[p].StellarMass * 1e10/1e11,0.7);
+    Gal[p].t_AGN_on = 100.0 * pow(Gal[p].StellarMass * 1e10/1e11,0.7);
     AGN_Active_time = Gal[p].t_AGN_on;
     
     a_D   = pow((pow(AxialRatiojet,4.0)/(18.0 * M_PI)) * ((Gama_x + 1.0) * (Gama_c - 1.0) * pow(5.0 - betaparameter,3.0))/(9.0 * (Gama_c + (Gama_c - 1.0) * pow(AxialRatiojet, 2.0)/2.0) - 4.0 - betaparameter ),1.0/(5.0 - betaparameter));
     
-    tau = pow(2.0 *  pow(R_0 * M_PER_MPC,5) * rho_0  /(Gal[p].Qjet)  ,1.0/3.0)/SEC_PER_MEGAYEAR;
+    tau = pow(pow(R_0 * M_PER_MPC,5) * rho_0  /(Gal[p].Qjet)  ,1.0/3.0)/SEC_PER_MEGAYEAR;
     Gal[p].Rcocoon = a_D * R_0 * pow(((AGN_Active_time)/tau),3/(5 - betaparameter));
 
     // Maximum radius of shocked gas expansion-- Leahy et al. (1989), Subrahmanyan et al. (1996)
@@ -387,7 +387,7 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
     double mu0 = 1.25663706e-6;   // m kg s-2 A-2  or m kg  Coulomb^-2
     double C_speed = 2.9979e8;    // m/s
     double gam1 = 1.0;   // ? relate to the initial electron energy distribution n(gama) = ke gama_i^ (-p)
-    double gam2 = 1e5;   // ? and are minimum and Maximum of Lorentz factor
+    double gam2 = 1e6;   // ? and are minimum and Maximum of Lorentz factor
     double A1;  //1.01236164e-09(p_v = 2.5,gam1 =1.0) or 3.54582781e-08(p_v = 2.5,gam1=1e3)--> kg-1 m s
     
     int ii = 0;
@@ -405,7 +405,7 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
         c2_p[5] =  0.00204273;  //@ p_v = 2.6
         c2_p[6] =  0.00185219;  //@ p_v = 2.7
         
-        V = M_PI * pow(AxialRatiojet,2) * pow(2.0 * Gal[p].Rshocked/Hubble_h * (M_PER_MPC) , 3.0);
+        V = M_PI * pow(AxialRatiojet,2) * pow(2.0 * Gal[p].Rshocked * (M_PER_MPC) , 3.0);
         r = (p_v + 1.0)/4.0;
         fp = (18.0 * pow(a_D, 2.0 * (5.0 - betaparameter)/3.0)) / ((Gama_x + 1) * pow(5.0 - betaparameter,2) * pow(AxialRatiojet,2));
         
@@ -439,7 +439,7 @@ double density_profile (int p)
     rho_crit = 3 * hubble_of_z_sq / (8 * M_PI * G) * UnitDensity_in_cgs/1000.0; // kg/m3
     
     //    Bullock et al. (2001) M* = 1.3 * 1e13 M_sun/h
-    conc     = ( 6/zplus1) * pow(10,((-0.13)*(log10(Gal[p].Mvir * 1e10/Hubble_h) - log10(1.3*1e13/Hubble_h))));
+    conc     = ( 5/zplus1) * pow(10,((-0.13)*(log10(Gal[p].Mvir * 1e10/Hubble_h) - log10(1.3*1e13/Hubble_h))));
     
     Rvir = Gal[p].Rvir; // Mpc
     Rs = Rvir/conc; // in Mpc
