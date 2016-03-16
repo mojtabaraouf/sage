@@ -222,8 +222,8 @@ double do_Jet_uplift(double coolingGas, int p, double dt, double x, double rcool
     C_s = pow(5.0/3.0 * 0.5 * Gal[p].Vvir*Gal[p].Vvir,0.5);
     
     // Time for gas to returne from r = Rshocked to r = 0
-//    Gal[p].t_AGN_returne =  5.0 *(Gal[p].Rshocked / C_s) * UnitTime_in_Megayears;
-    Gal[p].t_AGN_returne =  5.0 *(Gal[p].Rshocked / Gal[p].Vvir) * UnitTime_in_Megayears;
+    Gal[p].t_AGN_returne =  5.0 *(Gal[p].Rshocked / C_s) * UnitTime_in_Megayears;
+//    Gal[p].t_AGN_returne =  5.0 *(Gal[p].Rshocked / Gal[p].Vvir) * UnitTime_in_Megayears;
     
     // Time of next AGN on
     Gal[p].time_to_next_on = Gal[p].t_AGN_off + AGN_Active_time;
@@ -353,7 +353,6 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
         
         // coefficient 3 for defferent between the beta in Shabala et al. (2009)(beta = 3 * beta_eff)
         betaparameter = 3.0 *  0.9 * Gal[p].b_gas;
-//        betaparameter = 2.0;
         // The model just work for beta less than 2
         if (betaparameter > 2 )
             betaparameter = 1.99;
