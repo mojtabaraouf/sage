@@ -39,7 +39,6 @@ do {                                                                \
 
 
 // relate to Radio luminosity prediction
-#define  Cs          34320.0     // cm/s
 #define  Gama_c      4.0/3.0
 #define  Gama_x      5.0/3.0
 #define  gamma_isothermal 1.5
