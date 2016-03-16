@@ -1541,12 +1541,6 @@ class Results:
         Shabala2008_LS_2_xval = np.log10(Shabala2008_LS_2[:,0]/2.0)
         Shabala2008_LS_2_yval = np.log10(Shabala2008_LS_2[:,1])
 
-        Gendre2010_FRI_xval = np.log10(Gendre2010_FRI[:,0]/2.0/self.Hubble_h)
-        Gendre2010_FRI_yval = np.log10(Gendre2010_FRI[:,1])
-
-        Gendre2010_FRII_xval = np.log10(Gendre2010_FRII[:,0]/2.0/self.Hubble_h)
-        Gendre2010_FRII_yval = np.log10(Gendre2010_FRII[:,1])
-
         plt.scatter(R_shocked, Lradio1400, marker='o', s=10, color = 'grey', alpha=0.05)
 #        plt.scatter(R_shocked_Hi, Lradio1400_Hi, marker='o', s=30, c='r', alpha=0.25, label='Satellite-Galaxies-Hi')
 #        plt.scatter(R_shocked_Lo, Lradio1400_Lo, marker='o', s=30, c='b', alpha=0.45, label='Satellite-Galaxies-Lo')
@@ -1920,7 +1914,7 @@ class Results:
         X = np.log10(temp_x)
         Y = E_cooling
         bins = np.linspace(X.min(),X.max(), total_bins)
-        print bins
+#        print bins
         delta = bins[1]-bins[0]
         idx  = np.digitize(X,bins)
         running_median = [np.median(Y[idx==k]) for k in range(total_bins)]
