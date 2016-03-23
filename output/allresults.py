@@ -44,7 +44,6 @@ TRANSPARENT = False
 
 OutputList = []
 
-
 class Results:
 
     """ The following methods of this class generate the figures and plot them.
@@ -390,923 +389,6 @@ class Results:
         OutputList.append(outputFile)
 
 
-# ---------------------------------------------------------
-
-    def BaryonicMassFunction(self, G):
-
-        print 'Plotting the baryonic mass function'
-
-        plt.figure()  # New figure
-        ax = plt.subplot(111)  # 1 plot on the figure
-
-        binwidth = 0.15  # mass function histogram bin width
-      
-        # calculate BMF
-        w = np.where(G.StellarMass + G.ColdGas > 0.0)[0]
-        mass = np.log10((G.StellarMass[w] + G.ColdGas[w]) * 1.0e10 / self.Hubble_h)
-
-        mi = np.floor(min(mass)) - 2
-        ma = np.floor(max(mass)) + 2
-        NB = (ma - mi) / binwidth
-
-        (counts, binedges) = np.histogram(mass, range=(mi, ma), bins=NB)
-
-        # Set the x-axis values to be the centre of the bins
-        xaxeshisto = binedges[:-1] + 0.5 * binwidth
-       
-        # Bell et al. 2003 BMF (h=1.0 converted to h=0.73)
-        M = np.arange(7.0, 13.0, 0.01)
-        Mstar = np.log10(5.3*1.0e10 /self.Hubble_h/self.Hubble_h)
-        alpha = -1.21
-        phistar = 0.0108 *self.Hubble_h*self.Hubble_h*self.Hubble_h
-        xval = 10.0 ** (M-Mstar)
-        yval = np.log(10.) * phistar * xval ** (alpha+1) * np.exp(-xval)
-        
-        if(whichimf == 0):
-            # converted diet Salpeter IMF to Salpeter IMF
-            plt.plot(np.log10(10.0**M /0.7), yval, 'b-', lw=2.0, label='Bell et al. 2003')  # Plot the SMF
-        elif(whichimf == 1):
-            # converted diet Salpeter IMF to Salpeter IMF, then to Chabrier IMF
-            plt.plot(np.log10(10.0**M /0.7 /1.8), yval, 'g--', lw=1.5, label='Bell et al. 2003')  # Plot the SMF
-
-        # Overplot the model histograms
-        plt.plot(xaxeshisto, counts / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h / binwidth, 'k-', label='Model')
-
-        plt.yscale('log', nonposy='clip')
-        plt.axis([8.0, 12.5, 1.0e-6, 1.0e-1])
-
-        # Set the x-axis minor ticks
-        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.1))
-
-        plt.ylabel(r'$\phi\ (\mathrm{Mpc}^{-3}\ \mathrm{dex}^{-1})$')  # Set the y...
-        plt.xlabel(r'$\log_{10}\ M_{\mathrm{bar}}\ (M_{\odot})$')  # and the x-axis labels
-
-        leg = plt.legend(loc='lower left', numpoints=1,
-                         labelspacing=0.1)
-        leg.draw_frame(False)  # Don't want a box frame
-        for t in leg.get_texts():  # Reduce the size of the text
-            t.set_fontsize('medium')
-
-        outputFile = OutputDir + '2.BaryonicMassFunction' + OutputFormat
-        plt.savefig(outputFile)  # Save the figure
-        print 'Saved file to', outputFile
-        plt.close()
-
-        # Add this plot to our output list
-        OutputList.append(outputFile)
-
-
-# ---------------------------------------------------------
-   
-    def GasMassFunction(self, G):
-
-        print 'Plotting the cold gas mass function'
-
-        plt.figure()  # New figure
-        ax = plt.subplot(111)  # 1 plot on the figure
-
-        binwidth = 0.1  # mass function histogram bin width
-
-        # calculate all
-        w = np.where(G.ColdGas > 0.0)[0]
-        mass = np.log10(G.ColdGas[w] * 1.0e10 / self.Hubble_h)
-        sSFR = (G.SfrDisk[w] + G.SfrBulge[w]) / (G.StellarMass[w] * 1.0e10 / self.Hubble_h)
-        mi = np.floor(min(mass)) - 2
-        ma = np.floor(max(mass)) + 2
-        NB = (ma - mi) / binwidth
-
-        (counts, binedges) = np.histogram(mass, range=(mi, ma), bins=NB)
-
-        # Set the x-axis values to be the centre of the bins
-        xaxeshisto = binedges[:-1] + 0.5 * binwidth
-        
-        # additionally calculate red
-        w = np.where(sSFR < 10.0**sSFRcut)[0]
-        massRED = mass[w]
-        (countsRED, binedges) = np.histogram(massRED, range=(mi, ma), bins=NB)
-
-        # additionally calculate blue
-        w = np.where(sSFR > 10.0**sSFRcut)[0]
-        massBLU = mass[w]
-        (countsBLU, binedges) = np.histogram(massBLU, range=(mi, ma), bins=NB)
-
-        # Baldry+ 2008 modified data used for the MCMC fitting
-        Zwaan = np.array([[6.933,   -0.333],
-            [7.057,   -0.490],
-            [7.209,   -0.698],
-            [7.365,   -0.667],
-            [7.528,   -0.823],
-            [7.647,   -0.958],
-            [7.809,   -0.917],
-            [7.971,   -0.948],
-            [8.112,   -0.927],
-            [8.263,   -0.917],
-            [8.404,   -1.062],
-            [8.566,   -1.177],
-            [8.707,   -1.177],
-            [8.853,   -1.312],
-            [9.010,   -1.344],
-            [9.161,   -1.448],
-            [9.302,   -1.604],
-            [9.448,   -1.792],
-            [9.599,   -2.021],
-            [9.740,   -2.406],
-            [9.897,   -2.615],
-            [10.053,  -3.031],
-            [10.178,  -3.677],
-            [10.335,  -4.448],
-            [10.492,  -5.083]        ], dtype=np.float32)
-        
-        ObrRaw = np.array([
-            [7.300,   -1.104],
-            [7.576,   -1.302],
-            [7.847,   -1.250],
-            [8.133,   -1.240],
-            [8.409,   -1.344],
-            [8.691,   -1.479],
-            [8.956,   -1.792],
-            [9.231,   -2.271],
-            [9.507,   -3.198],
-            [9.788,   -5.062 ]        ], dtype=np.float32)
-
-        ObrCold = np.array([
-            [8.009,   -1.042],
-            [8.215,   -1.156],
-            [8.409,   -0.990],
-            [8.604,   -1.156],
-            [8.799,   -1.208],
-            [9.020,   -1.333],
-            [9.194,   -1.385],
-            [9.404,   -1.552],
-            [9.599,   -1.677],
-            [9.788,   -1.812],
-            [9.999,   -2.312],
-            [10.172,  -2.656],
-            [10.362,  -3.500],
-            [10.551,  -3.635],
-            [10.740,  -5.010]        ], dtype=np.float32)
-
-        ObrCold_xval = np.log10(10**(ObrCold[:, 0])  /self.Hubble_h/self.Hubble_h)
-        ObrCold_yval = (10**(ObrCold[:, 1]) * self.Hubble_h*self.Hubble_h*self.Hubble_h)
-        Zwaan_xval = np.log10(10**(Zwaan[:, 0]) /self.Hubble_h/self.Hubble_h)
-        Zwaan_yval = (10**(Zwaan[:, 1]) * self.Hubble_h*self.Hubble_h*self.Hubble_h)
-        ObrRaw_xval = np.log10(10**(ObrRaw[:, 0])  /self.Hubble_h/self.Hubble_h)
-        ObrRaw_yval = (10**(ObrRaw[:, 1]) * self.Hubble_h*self.Hubble_h*self.Hubble_h)
-
-        plt.plot(ObrCold_xval, ObrCold_yval, color='black', lw = 7, alpha=0.25, label='Obr. \& Raw. 2009 (Cold Gas)')
-        plt.plot(Zwaan_xval, Zwaan_yval, color='cyan', lw = 7, alpha=0.25, label='Zwaan et al. 2005 (HI)')
-        plt.plot(ObrRaw_xval, ObrRaw_yval, color='magenta', lw = 7, alpha=0.25, label='Obr. \& Raw. 2009 (H2)')
-
-        
-        # Overplot the model histograms
-        plt.plot(xaxeshisto, counts    / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h / binwidth, 'k-', label='Model - Cold Gas')
-
-        plt.yscale('log', nonposy='clip')
-        plt.axis([8.0, 11.5, 1.0e-6, 1.0e-1])
-
-        # Set the x-axis minor ticks
-        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.1))
-
-        plt.ylabel(r'$\phi\ (\mathrm{Mpc}^{-3}\ \mathrm{dex}^{-1})$')  # Set the y...
-        plt.xlabel(r'$\log_{10} M_{\mathrm{X}}\ (M_{\odot})$')  # and the x-axis labels
-
-        leg = plt.legend(loc='lower left', numpoints=1,
-                         labelspacing=0.1)
-        leg.draw_frame(False)  # Don't want a box frame
-        for t in leg.get_texts():  # Reduce the size of the text
-            t.set_fontsize('medium')
-
-        outputFile = OutputDir + '3.GasMassFunction' + OutputFormat
-        plt.savefig(outputFile)  # Save the figure
-        print 'Saved file to', outputFile
-        plt.close()
-
-        # Add this plot to our output list
-        OutputList.append(outputFile)
-
-
-# ---------------------------------------------------------
-    
-    def BaryonicTullyFisher(self, G):
-    
-        print 'Plotting the baryonic TF relationship'
-    
-        seed(2222)
-    
-        plt.figure()  # New figure
-        ax = plt.subplot(111)  # 1 plot on the figure
-    
-        # w = np.where((G.Type == 0) & (G.StellarMass + G.ColdGas > 0.0) & (G.Vmax > 0.0))[0]
-        w = np.where((G.Type == 0) & (G.StellarMass + G.ColdGas > 0.0) & 
-          (G.BulgeMass / G.StellarMass > 0.1) & (G.BulgeMass / G.StellarMass < 0.5))[0]
-        if(len(w) > dilute): w = sample(w, dilute)
-    
-        mass = np.log10((G.StellarMass[w] + G.ColdGas[w]) * 1.0e10 / self.Hubble_h)
-        vel = np.log10(G.Vmax[w])
-                    
-        plt.scatter(vel, mass, marker='o', s=1, c='k', alpha=0.5, label='Model Sb/c galaxies')
-                
-        # overplot Stark, McGaugh & Swatters 2009 (assumes h=0.75? ... what IMF?)
-        w = np.arange(0.5, 10.0, 0.5)
-        TF = 3.94*w + 1.79
-        plt.plot(w, TF, 'b-', lw=2.0, label='Stark, McGaugh \& Swatters 2009')
-            
-        plt.ylabel(r'$\log_{10}\ M_{\mathrm{bar}}\ (M_{\odot})$')  # Set the y...
-        plt.xlabel(r'$\log_{10}V_{max}\ (km/s)$')  # and the x-axis labels
-            
-        # Set the x and y axis minor ticks
-        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.05))
-        ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
-            
-        plt.axis([1.4, 2.6, 8.0, 12.0])
-            
-        leg = plt.legend(loc='lower right')
-        leg.draw_frame(False)  # Don't want a box frame
-        for t in leg.get_texts():  # Reduce the size of the text
-            t.set_fontsize('medium')
-            
-        outputFile = OutputDir + '4.BaryonicTullyFisher' + OutputFormat
-        plt.savefig(outputFile)  # Save the figure
-        print 'Saved file to', outputFile
-        plt.close()
-            
-        # Add this plot to our output list
-        OutputList.append(outputFile)
-
-
-# ---------------------------------------------------------
-    
-    def SpecificStarFormationRate(self, G):
-    
-        print 'Plotting the specific SFR'
-    
-        seed(2222)
-    
-        plt.figure()  # New figure
-        ax = plt.subplot(111)  # 1 plot on the figure
-
-        w = np.where(G.StellarMass > 0.01)[0]
-        if(len(w) > dilute): w = sample(w, dilute)
-        
-        mass = np.log10(G.StellarMass[w] * 1.0e10 / self.Hubble_h)
-        sSFR = np.log10( (G.SfrDisk[w] + G.SfrBulge[w]) / (G.StellarMass[w] * 1.0e10 / self.Hubble_h) )
-        plt.scatter(mass, sSFR, marker='o', s=1, c='k', alpha=0.5, label='Model galaxies')
-                
-        # overplot dividing line between SF and passive
-        w = np.arange(7.0, 13.0, 1.0)
-        plt.plot(w, w/w*sSFRcut, 'b:', lw=2.0)
-            
-        plt.ylabel(r'$\log_{10}\ s\mathrm{SFR}\ (\mathrm{yr^{-1}})$')  # Set the y...
-        plt.xlabel(r'$\log_{10} M_{\mathrm{stars}}\ (M_{\odot})$')  # and the x-axis labels
-            
-        # Set the x and y axis minor ticks
-        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.05))
-        ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
-            
-        plt.axis([8.0, 12.0, -16.0, -8.0])
-            
-        leg = plt.legend(loc='lower right')
-        leg.draw_frame(False)  # Don't want a box frame
-        for t in leg.get_texts():  # Reduce the size of the text
-            t.set_fontsize('medium')
-            
-        outputFile = OutputDir + '5.SpecificStarFormationRate' + OutputFormat
-        plt.savefig(outputFile)  # Save the figure
-        print 'Saved file to', outputFile
-        plt.close()
-            
-        # Add this plot to our output list
-        OutputList.append(outputFile)
-
-
-# ---------------------------------------------------------
-
-    def GasFraction(self, G):
-    
-        print 'Plotting the gas fractions'
-    
-        seed(2222)
-    
-        plt.figure()  # New figure
-        ax = plt.subplot(111)  # 1 plot on the figure
-
-        w = np.where((G.Type == 0) & (G.StellarMass + G.ColdGas > 0.0) & 
-          (G.BulgeMass / G.StellarMass > 0.1) & (G.BulgeMass / G.StellarMass < 0.5))[0]
-        if(len(w) > dilute): w = sample(w, dilute)
-        
-        mass = np.log10(G.StellarMass[w] * 1.0e10 / self.Hubble_h)
-        fraction = G.ColdGas[w] / (G.StellarMass[w] + G.ColdGas[w])
-                    
-        plt.scatter(mass, fraction, marker='o', s=1, c='k', alpha=0.5, label='Model Sb/c galaxies')
-            
-        plt.ylabel(r'$\mathrm{Cold\ Mass\ /\ (Cold+Stellar\ Mass)}$')  # Set the y...
-        plt.xlabel(r'$\log_{10} M_{\mathrm{stars}}\ (M_{\odot})$')  # and the x-axis labels
-            
-        # Set the x and y axis minor ticks
-        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.05))
-        ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
-            
-        plt.axis([8.0, 12.0, 0.0, 1.0])
-            
-        leg = plt.legend(loc='upper right')
-        leg.draw_frame(False)  # Don't want a box frame
-        for t in leg.get_texts():  # Reduce the size of the text
-            t.set_fontsize('medium')
-            
-        outputFile = OutputDir + '6.GasFraction' + OutputFormat
-        plt.savefig(outputFile)  # Save the figure
-        print 'Saved file to', outputFile
-        plt.close()
-            
-        # Add this plot to our output list
-        OutputList.append(outputFile)
-
-
-# ---------------------------------------------------------
-
-    def Metallicity(self, G):
-    
-        print 'Plotting the metallicities'
-    
-        seed(2222)
-    
-        plt.figure()  # New figure
-        ax = plt.subplot(111)  # 1 plot on the figure
-
-        w = np.where((G.Type == 0) & (G.ColdGas / (G.StellarMass + G.ColdGas) > 0.1) & (G.StellarMass > 0.01))[0]
-        if(len(w) > dilute): w = sample(w, dilute)
-        
-        mass = np.log10(G.StellarMass[w] * 1.0e10 / self.Hubble_h)
-        Z = np.log10((G.MetalsColdGas[w] / G.ColdGas[w]) / 0.02) + 9.0
-                    
-        plt.scatter(mass, Z, marker='o', s=1, c='k', alpha=0.5, label='Model galaxies')
-            
-        # overplot Tremonti et al. 2003 (h=0.7)
-        w = np.arange(7.0, 13.0, 0.1)
-        Zobs = -1.492 + 1.847*w - 0.08026*w*w
-        if(whichimf == 0):
-            # Conversion from Kroupa IMF to Slapeter IMF
-            plt.plot(np.log10((10**w *1.5)), Zobs, 'b-', lw=2.0, label='Tremonti et al. 2003')
-        elif(whichimf == 1):
-            # Conversion from Kroupa IMF to Slapeter IMF to Chabrier IMF
-            plt.plot(np.log10((10**w *1.5 /1.8)), Zobs, 'b-', lw=2.0, label='Tremonti et al. 2003')
-            
-        plt.ylabel(r'$12\ +\ \log_{10}[\mathrm{O/H}]$')  # Set the y...
-        plt.xlabel(r'$\log_{10} M_{\mathrm{stars}}\ (M_{\odot})$')  # and the x-axis labels
-            
-        # Set the x and y axis minor ticks
-        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.05))
-        ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
-            
-        plt.axis([8.0, 12.0, 8.0, 9.5])
-            
-        leg = plt.legend(loc='lower right')
-        leg.draw_frame(False)  # Don't want a box frame
-        for t in leg.get_texts():  # Reduce the size of the text
-            t.set_fontsize('medium')
-            
-        outputFile = OutputDir + '7.Metallicity' + OutputFormat
-        plt.savefig(outputFile)  # Save the figure
-        print 'Saved file to', outputFile
-        plt.close()
-            
-        # Add this plot to our output list
-        OutputList.append(outputFile)
-    
-
-# ---------------------------------------------------------
-
-    def BlackHoleBulgeRelationship(self, G):
-    
-        print 'Plotting the black hole-bulge relationship'
-    
-        seed(2222)
-    
-        plt.figure()  # New figure
-        ax = plt.subplot(111)  # 1 plot on the figure
-    
-        w = np.where((G.BulgeMass > 0.01) & (G.BlackHoleMass > 0.00001))[0]
-        if(len(w) > dilute): w = sample(w, dilute)
-    
-        bh = np.log10(G.BlackHoleMass[w] * 1.0e10 / self.Hubble_h)
-        bulge = np.log10(G.BulgeMass[w] * 1.0e10 / self.Hubble_h)
-                    
-        plt.scatter(bulge, bh, marker='o', s=1, c='k', alpha=0.5, label='Model galaxies')
-                
-        # overplot Haring & Rix 2004
-        w = 10. ** np.arange(20)
-        BHdata = 10. ** (8.2 + 1.12 * np.log10(w / 1.0e11))
-        plt.plot(np.log10(w), np.log10(BHdata), 'b-', label="Haring \& Rix 2004")
-
-        plt.ylabel(r'$\log\ M_{\mathrm{BH}}\ (M_{\odot})$')  # Set the y...
-        plt.xlabel(r'$\log\ M_{\mathrm{bulge}}\ (M_{\odot})$')  # and the x-axis labels
-            
-        # Set the x and y axis minor ticks
-        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.05))
-        ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
-            
-        plt.axis([8.0, 12.0, 6.0, 10.0])
-            
-        leg = plt.legend(loc='upper left')
-        leg.draw_frame(False)  # Don't want a box frame
-        for t in leg.get_texts():  # Reduce the size of the text
-            t.set_fontsize('medium')
-            
-        outputFile = OutputDir + '8.BlackHoleBulgeRelationship' + OutputFormat
-        plt.savefig(outputFile)  # Save the figure
-        print 'Saved file to', outputFile
-        plt.close()
-            
-        # Add this plot to our output list
-        OutputList.append(outputFile)
-
-
-# ---------------------------------------------------------
-    
-    def QuiescentFraction(self, G):
-    
-        print 'Plotting the quiescent fraction vs stellar mass'
-    
-        seed(2222)
-    
-        plt.figure()  # New figure
-        ax = plt.subplot(111)  # 1 plot on the figure
-        
-        groupscale = 12.5
-        
-        w = np.where(G.StellarMass > 0.0)[0]
-        StellarMass = np.log10(G.StellarMass[w] * 1.0e10 / self.Hubble_h)
-        CentralMvir = np.log10(G.CentralMvir[w] * 1.0e10 / self.Hubble_h)
-        Type = G.Type[w]
-        sSFR = (G.SfrDisk[w] + G.SfrBulge[w]) / (G.StellarMass[w] * 1.0e10 / self.Hubble_h)
-
-        MinRange = 9.5
-        MaxRange = 12.0
-        Interval = 0.1
-        Nbins = int((MaxRange-MinRange)/Interval)
-        Range = np.arange(MinRange, MaxRange, Interval)
-        
-        Mass = []
-        Fraction = []
-        CentralFraction = []
-        SatelliteFraction = []
-        SatelliteFractionLo = []
-        SatelliteFractionHi = []
-
-        for i in xrange(Nbins-1):
-            
-            w = np.where((StellarMass >= Range[i]) & (StellarMass < Range[i+1]))[0]
-            if len(w) > 0:
-                wQ = np.where((StellarMass >= Range[i]) & (StellarMass < Range[i+1]) & (sSFR < 10.0**sSFRcut))[0]
-                Fraction.append(1.0*len(wQ) / len(w))
-            else:
-                Fraction.append(0.0)
-
-            w = np.where((Type == 0) & (StellarMass >= Range[i]) & (StellarMass < Range[i+1]))[0]
-            if len(w) > 0:
-                wQ = np.where((Type == 0) & (StellarMass >= Range[i]) & (StellarMass < Range[i+1]) & (sSFR < 10.0**sSFRcut))[0]
-                CentralFraction.append(1.0*len(wQ) / len(w))
-            else:
-                CentralFraction.append(0.0)
-
-            w = np.where((Type == 1) & (StellarMass >= Range[i]) & (StellarMass < Range[i+1]))[0]
-            if len(w) > 0:
-                wQ = np.where((Type == 1) & (StellarMass >= Range[i]) & (StellarMass < Range[i+1]) & (sSFR < 10.0**sSFRcut))[0]
-                SatelliteFraction.append(1.0*len(wQ) / len(w))
-                wQ = np.where((Type == 1) & (StellarMass >= Range[i]) & (StellarMass < Range[i+1]) & (sSFR < 10.0**sSFRcut) & (CentralMvir < groupscale))[0]
-                SatelliteFractionLo.append(1.0*len(wQ) / len(w))
-                wQ = np.where((Type == 1) & (StellarMass >= Range[i]) & (StellarMass < Range[i+1]) & (sSFR < 10.0**sSFRcut) & (CentralMvir > groupscale))[0]
-                SatelliteFractionHi.append(1.0*len(wQ) / len(w))                
-            else:
-                SatelliteFraction.append(0.0)
-                SatelliteFractionLo.append(0.0)
-                SatelliteFractionHi.append(0.0)
-                
-            Mass.append((Range[i] + Range[i+1]) / 2.0)                
-            # print '  ', Mass[i], Fraction[i], CentralFraction[i], SatelliteFraction[i]
-        
-        Mass = np.array(Mass)
-        Fraction = np.array(Fraction)
-        CentralFraction = np.array(CentralFraction)
-        SatelliteFraction = np.array(SatelliteFraction)
-        SatelliteFractionLo = np.array(SatelliteFractionLo)
-        SatelliteFractionHi = np.array(SatelliteFractionHi)
-        
-        w = np.where(Fraction > 0)[0]
-        plt.plot(Mass[w], Fraction[w], label='All')
-
-        w = np.where(CentralFraction > 0)[0]
-        plt.plot(Mass[w], CentralFraction[w], color='Blue', label='Centrals')
-
-        w = np.where(SatelliteFraction > 0)[0]
-        plt.plot(Mass[w], SatelliteFraction[w], color='Red', label='Satellites')
-
-        w = np.where(SatelliteFractionLo > 0)[0]
-        plt.plot(Mass[w], SatelliteFractionLo[w], 'r--', label='Satellites-Lo')
-
-        w = np.where(SatelliteFractionHi > 0)[0]
-        plt.plot(Mass[w], SatelliteFractionHi[w], 'r-.', label='Satellites-Hi')
-        
-        plt.xlabel(r'$\log_{10} M_{\mathrm{stellar}}\ (M_{\odot})$')  # Set the x-axis label
-        plt.ylabel(r'$\mathrm{Quescient\ Fraction}$')  # Set the y-axis label
-            
-        # Set the x and y axis minor ticks
-        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.05))
-        ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
-            
-        plt.axis([9.5, 12.0, 0.0, 1.05])
-            
-        leg = plt.legend(loc='lower right')
-        leg.draw_frame(False)  # Don't want a box frame
-        for t in leg.get_texts():  # Reduce the size of the text
-            t.set_fontsize('medium')
-            
-        outputFile = OutputDir + '9.QuiescentFraction' + OutputFormat
-        plt.savefig(outputFile)  # Save the figure
-        print 'Saved file to', outputFile
-        plt.close()
-            
-        # Add this plot to our output list
-        OutputList.append(outputFile)
-
-
-# --------------------------------------------------------
-
-    def BulgeMassFraction(self, G):
-    
-        print 'Plotting the mass fraction of galaxies'
-    
-        seed(2222)
-
-        fBulge = G.BulgeMass / G.StellarMass
-        fDisk = 1.0 - (G.BulgeMass) / G.StellarMass
-        mass = np.log10(G.StellarMass * 1.0e10 / self.Hubble_h)
-        sSFR = np.log10((G.SfrDisk + G.SfrBulge) / (G.StellarMass * 1.0e10 / self.Hubble_h))
-        
-        binwidth = 0.2
-        shift = binwidth/2.0
-        mass_range = np.arange(8.5-shift, 12.0+shift, binwidth)
-        bins = len(mass_range)
-        
-        fBulge_ave = np.zeros(bins)
-        fBulge_var = np.zeros(bins)
-        fDisk_ave = np.zeros(bins)
-        fDisk_var = np.zeros(bins)
-        
-        for i in xrange(bins-1):
-            w = np.where( (mass >= mass_range[i]) & (mass < mass_range[i+1]))[0]
-            # w = np.where( (mass >= mass_range[i]) & (mass < mass_range[i+1]) & (sSFR < sSFRcut))[0]
-            if(len(w) > 0):
-                fBulge_ave[i] = np.mean(fBulge[w])
-                fBulge_var[i] = np.var(fBulge[w])
-                fDisk_ave[i] = np.mean(fDisk[w])
-                fDisk_var[i] = np.var(fDisk[w])
-
-        w = np.where(fBulge_ave > 0.0)[0]
-        plt.plot(mass_range[w]+shift, fBulge_ave[w], 'r-', label='bulge')
-        plt.fill_between(mass_range[w]+shift, 
-            fBulge_ave[w]+fBulge_var[w], 
-            fBulge_ave[w]-fBulge_var[w], 
-            facecolor='red', alpha=0.25)
-
-        w = np.where(fDisk_ave > 0.0)[0]
-        plt.plot(mass_range[w]+shift, fDisk_ave[w], 'k-', label='disk stars')
-        plt.fill_between(mass_range[w]+shift, 
-            fDisk_ave[w]+fDisk_var[w], 
-            fDisk_ave[w]-fDisk_var[w], 
-            facecolor='black', alpha=0.25)
-
-        plt.axis([mass_range[0], mass_range[bins-1], 0.0, 1.05])
-
-        plt.ylabel(r'$\mathrm{Stellar\ Mass\ Fraction}$')  # Set the y...
-        plt.xlabel(r'$\log_{10} M_{\mathrm{stars}}\ (M_{\odot})$')  # and the x-axis labels
-
-        leg = plt.legend(loc='upper right', numpoints=1, labelspacing=0.1)
-        leg.draw_frame(False)  # Don't want a box frame
-        for t in leg.get_texts():  # Reduce the size of the text
-                t.set_fontsize('medium')
-
-        outputFile = OutputDir + '10.BulgeMassFraction' + OutputFormat
-        plt.savefig(outputFile)  # Save the figure
-        print 'Saved file to', outputFile
-        plt.close()
-
-        # Add this plot to our output list
-        OutputList.append(outputFile)
-
-
-# ---------------------------------------------------------
-    
-    def BaryonFraction(self, G):
-    
-        print 'Plotting the average baryon fraction vs halo mass'
-    
-        seed(2222)
-    
-        plt.figure()  # New figure
-        ax = plt.subplot(111)  # 1 plot on the figure
-        
-        HaloMass = np.log10(G.Mvir * 1.0e10 / self.Hubble_h)
-        Baryons = G.StellarMass + G.ColdGas + G.HotGas + G.EjectedMass + G.IntraClusterStars + G.BlackHoleMass
-        fileNr = np.floor(G.GalaxyIndex / 1.0e12)
-        
-        MinHalo = 11.0
-        MaxHalo = 16.0
-        Interval = 0.1
-        Nbins = int((MaxHalo-MinHalo)/Interval)
-        HaloRange = np.arange(MinHalo, MaxHalo, Interval)
-        
-        MeanCentralHaloMass = []
-        MeanBaryonFraction = []
-        MeanBaryonFractionU = []
-        MeanBaryonFractionL = []
-
-        MeanStars = []
-        MeanCold = []
-        MeanHot = []
-        MeanEjected = []
-        MeanICS = []
-        MeanBH = []
-
-        for i in xrange(Nbins-1):
-            
-            w1 = np.where((G.Type == 0) & (HaloMass >= HaloRange[i]) & (HaloMass < HaloRange[i+1]))[0]
-            HalosFound = len(w1)
-            
-            if HalosFound > 2:  
-                
-                BaryonFraction = []
-                CentralHaloMass = []
-                
-                Stars = []
-                Cold = []
-                Hot = []
-                Ejected = []
-                ICS = []
-                BH = []
-                
-                for j in xrange(HalosFound):
-                    
-                    w2 = np.where((G.SAGEHaloIndex == G.SAGEHaloIndex[w1[j]]) & (G.SAGETreeIndex == G.SAGETreeIndex[w1[j]]) & (fileNr == fileNr[w1[j]]))[0]
-                    CentralAndSatellitesFound = len(w2)
-                    
-                    if CentralAndSatellitesFound > 0:
-                        BaryonFraction.append(sum(Baryons[w2]) / G.Mvir[w1[j]])
-                        CentralHaloMass.append(np.log10(G.Mvir[w1[j]] * 1.0e10 / self.Hubble_h))
-
-                        Stars.append(sum(G.StellarMass[w2]) / G.Mvir[w1[j]])
-                        Cold.append(sum(G.ColdGas[w2]) / G.Mvir[w1[j]])
-                        Hot.append(sum(G.HotGas[w2]) / G.Mvir[w1[j]])
-                        Ejected.append(sum(G.EjectedMass[w2]) / G.Mvir[w1[j]])
-                        ICS.append(sum(G.IntraClusterStars[w2]) / G.Mvir[w1[j]])
-                        BH.append(sum(G.BlackHoleMass[w2]) / G.Mvir[w1[j]])                        
-                                
-                MeanCentralHaloMass.append(np.mean(CentralHaloMass))
-                MeanBaryonFraction.append(np.mean(BaryonFraction))
-                MeanBaryonFractionU.append(np.mean(BaryonFraction) + np.var(BaryonFraction))
-                MeanBaryonFractionL.append(np.mean(BaryonFraction) - np.var(BaryonFraction))
-                
-                MeanStars.append(np.mean(Stars))
-                MeanCold.append(np.mean(Cold))
-                MeanHot.append(np.mean(Hot))
-                MeanEjected.append(np.mean(Ejected))
-                MeanICS.append(np.mean(ICS))
-                MeanBH.append(np.mean(BH))
-                
-                print '  ', i, HaloRange[i], HalosFound, np.mean(BaryonFraction)
-        
-        plt.plot(MeanCentralHaloMass, MeanBaryonFraction, 'k-', label='TOTAL')#, color='purple', alpha=0.3)
-        plt.fill_between(MeanCentralHaloMass, MeanBaryonFractionU, MeanBaryonFractionL, 
-            facecolor='purple', alpha=0.25, label='TOTAL')
-        
-        plt.plot(MeanCentralHaloMass, MeanStars, 'k--', label='Stars')
-        plt.plot(MeanCentralHaloMass, MeanCold, label='Cold', color='blue')
-        plt.plot(MeanCentralHaloMass, MeanHot, label='Hot', color='red')
-        plt.plot(MeanCentralHaloMass, MeanEjected, label='Ejected', color='green')
-        plt.plot(MeanCentralHaloMass, MeanICS, label='ICS', color='yellow')
-        # plt.plot(MeanCentralHaloMass, MeanBH, 'k:', label='BH')
-        
-        plt.xlabel(r'$\mathrm{Central}\ \log_{10} M_{\mathrm{vir}}\ (M_{\odot})$')  # Set the x-axis label
-        plt.ylabel(r'$\mathrm{Baryon\ Fraction}$')  # Set the y-axis label
-            
-        # Set the x and y axis minor ticks
-        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.05))
-        ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
-            
-        plt.axis([10.8, 15.0, 0.0, 0.23])
-            
-        leg = plt.legend(bbox_to_anchor=[0.99, 0.6])
-        leg.draw_frame(False)  # Don't want a box frame
-        for t in leg.get_texts():  # Reduce the size of the text
-            t.set_fontsize('medium')
-            
-        outputFile = OutputDir + '11.BaryonFraction' + OutputFormat
-        plt.savefig(outputFile)  # Save the figure
-        print 'Saved file to', outputFile
-        plt.close()
-            
-        # Add this plot to our output list
-        OutputList.append(outputFile)
-
-
-# --------------------------------------------------------
-
-    def SpinDistribution(self, G):
-    
-        print 'Plotting the spin distribution of all galaxies'
-
-        # set up figure
-        plt.figure()
-        ax = plt.subplot(111)
-    
-        SpinParameter = np.sqrt(G.Spin[:,0]*G.Spin[:,0] + G.Spin[:,1]*G.Spin[:,1] + G.Spin[:,2]*G.Spin[:,2]) / (np.sqrt(2) * G.Vvir * G.Rvir);
-        
-        mi = -0.02
-        ma = 0.5
-        binwidth = 0.01
-        NB = (ma - mi) / binwidth
-
-        (counts, binedges) = np.histogram(SpinParameter, range=(mi, ma), bins=NB)
-        xaxeshisto = binedges[:-1] + 0.5 * binwidth
-        plt.plot(xaxeshisto, counts, 'k-', label='simulation')
-
-        plt.axis([mi, ma, 0.0, max(counts)*1.15])
-
-        plt.ylabel(r'$\mathrm{Number}$')  # Set the y...
-        plt.xlabel(r'$\mathrm{Spin\ Parameter}$')  # and the x-axis labels
-
-        leg = plt.legend(loc='upper right', numpoints=1, labelspacing=0.1)
-        leg.draw_frame(False)  # Don't want a box frame
-        for t in leg.get_texts():  # Reduce the size of the text
-                t.set_fontsize('medium')
-
-        outputFile = OutputDir + '12.SpinDistribution' + OutputFormat
-        plt.savefig(outputFile)  # Save the figure
-        print 'Saved file to', outputFile
-        plt.close()
-
-        # Add this plot to our output list
-        OutputList.append(outputFile)
-
-
-# --------------------------------------------------------
-
-    def VelocityDistribution(self, G):
-    
-        print 'Plotting the velocity distribution of all galaxies'
-    
-        seed(2222)
-    
-        mi = -40.0
-        ma = 40.0
-        binwidth = 0.5
-        NB = (ma - mi) / binwidth
-
-        # set up figure
-        plt.figure()
-        ax = plt.subplot(111)
-
-        pos_x = G.Pos[:,0] / self.Hubble_h
-        pos_y = G.Pos[:,1] / self.Hubble_h
-        pos_z = G.Pos[:,2] / self.Hubble_h
-
-        vel_x = G.Vel[:,0]
-        vel_y = G.Vel[:,1]
-        vel_z = G.Vel[:,2]
-
-        dist_los = np.sqrt(pos_x*pos_x + pos_y*pos_y + pos_z*pos_z)
-        vel_los = (pos_x/dist_los)*vel_x + (pos_y/dist_los)*vel_y + (pos_z/dist_los)*vel_z
-        dist_red = dist_los + vel_los/(self.Hubble_h*100.0)
-
-        tot_gals = len(pos_x)
-
-
-        (counts, binedges) = np.histogram(vel_los/(self.Hubble_h*100.0), range=(mi, ma), bins=NB)
-        xaxeshisto = binedges[:-1] + 0.5 * binwidth
-        plt.plot(xaxeshisto, counts / binwidth / tot_gals, 'k-', label='los-velocity')
-
-        (counts, binedges) = np.histogram(vel_x/(self.Hubble_h*100.0), range=(mi, ma), bins=NB)
-        xaxeshisto = binedges[:-1] + 0.5 * binwidth
-        plt.plot(xaxeshisto, counts / binwidth / tot_gals, 'r-', label='x-velocity')
-
-        (counts, binedges) = np.histogram(vel_y/(self.Hubble_h*100.0), range=(mi, ma), bins=NB)
-        xaxeshisto = binedges[:-1] + 0.5 * binwidth
-        plt.plot(xaxeshisto, counts / binwidth / tot_gals, 'g-', label='y-velocity')
-
-        (counts, binedges) = np.histogram(vel_z/(self.Hubble_h*100.0), range=(mi, ma), bins=NB)
-        xaxeshisto = binedges[:-1] + 0.5 * binwidth
-        plt.plot(xaxeshisto, counts / binwidth / tot_gals, 'b-', label='z-velocity')
-
-
-        plt.yscale('log', nonposy='clip')
-        plt.axis([mi, ma, 1e-5, 0.5])
-        # plt.axis([mi, ma, 0, 0.13])
-
-        plt.ylabel(r'$\mathrm{Box\ Normalised\ Count}$')  # Set the y...
-        plt.xlabel(r'$\mathrm{Velocity / H}_{0}$')  # and the x-axis labels
-
-        leg = plt.legend(loc='upper left', numpoints=1, labelspacing=0.1)
-        leg.draw_frame(False)  # Don't want a box frame
-        for t in leg.get_texts():  # Reduce the size of the text
-                t.set_fontsize('medium')
-
-        outputFile = OutputDir + '13.VelocityDistribution' + OutputFormat
-        plt.savefig(outputFile)  # Save the figure
-        print 'Saved file to', outputFile
-        plt.close()
-
-        # Add this plot to our output list
-        OutputList.append(outputFile)
-
-
-# --------------------------------------------------------
-
-    def MassReservoirScatter(self, G):
-    
-        print 'Plotting the mass in stellar, cold, hot, ejected, ICS reservoirs'
-    
-        seed(2222)
-    
-        plt.figure()  # New figure
-        ax = plt.subplot(111)  # 1 plot on the figure
-    
-        w = np.where((G.Type == 0) & (G.Mvir > 1.0) & (G.StellarMass > 0.0))[0]
-        if(len(w) > dilute): w = sample(w, dilute)
-
-        mvir = np.log10(G.Mvir[w] * 1.0e10)
-        plt.scatter(mvir, np.log10(G.StellarMass[w] * 1.0e10), marker='o', s=0.3, c='k', alpha=0.5, label='Stars')
-        plt.scatter(mvir, np.log10(G.ColdGas[w] * 1.0e10), marker='o', s=0.3, color='blue', alpha=0.5, label='Cold gas')
-        plt.scatter(mvir, np.log10(G.HotGas[w] * 1.0e10), marker='o', s=0.3, color='red', alpha=0.5, label='Hot gas')
-        plt.scatter(mvir, np.log10(G.EjectedMass[w] * 1.0e10), marker='o', s=0.3, color='green', alpha=0.5, label='Ejected gas')
-        plt.scatter(mvir, np.log10(G.IntraClusterStars[w] * 1.0e10), marker='o', s=10, color='yellow', alpha=0.5, label='Intracluster stars')    
-
-        plt.ylabel(r'$\mathrm{stellar,\ cold,\ hot,\ ejected,\ ICS\ mass}$')  # Set the y...
-        plt.xlabel(r'$\log\ M_{\mathrm{vir}}\ (h^{-1}\ M_{\odot})$')  # and the x-axis labels
-        
-        plt.axis([10.0, 14.0, 7.5, 12.5])
-
-        leg = plt.legend(loc='upper left')
-        leg.draw_frame(False)  # Don't want a box frame
-        for t in leg.get_texts():  # Reduce the size of the text
-            t.set_fontsize('medium')
-
-        plt.text(13.5, 8.0, r'$\mathrm{All}')
-            
-        outputFile = OutputDir + '14.MassReservoirScatter' + OutputFormat
-        plt.savefig(outputFile)  # Save the figure
-        print 'Saved file to', outputFile
-        plt.close()
-            
-        # Add this plot to our output list
-        OutputList.append(outputFile)
-
-
-# --------------------------------------------------------
-
-    def SpatialDistribution(self, G):
-    
-        print 'Plotting the spatial distribution of all galaxies'
-    
-        seed(2222)
-    
-        plt.figure()  # New figure
-    
-        w = np.where((G.Mvir > 0.0) & (G.StellarMass > 0.1))[0]
-        if(len(w) > dilute): w = sample(w, dilute)
-
-        xx = G.Pos[w,0]
-        yy = G.Pos[w,1]
-        zz = G.Pos[w,2]
-
-        buff = self.BoxSize*0.1
-
-        ax = plt.subplot(221)  # 1 plot on the figure
-        plt.scatter(xx, yy, marker='o', s=0.3, c='k', alpha=0.5)
-        plt.axis([0.0-buff, self.BoxSize+buff, 0.0-buff, self.BoxSize+buff])
-
-        plt.ylabel(r'$\mathrm{x}$')  # Set the y...
-        plt.xlabel(r'$\mathrm{y}$')  # and the x-axis labels
-        
-        ax = plt.subplot(222)  # 1 plot on the figure
-        plt.scatter(xx, zz, marker='o', s=0.3, c='k', alpha=0.5)
-        plt.axis([0.0-buff, self.BoxSize+buff, 0.0-buff, self.BoxSize+buff])
-
-        plt.ylabel(r'$\mathrm{x}$')  # Set the y...
-        plt.xlabel(r'$\mathrm{z}$')  # and the x-axis labels
-        
-        ax = plt.subplot(223)  # 1 plot on the figure
-        plt.scatter(yy, zz, marker='o', s=0.3, c='k', alpha=0.5)
-        plt.axis([0.0-buff, self.BoxSize+buff, 0.0-buff, self.BoxSize+buff])
-        plt.ylabel(r'$\mathrm{y}$')  # Set the y...
-        plt.xlabel(r'$\mathrm{z}$')  # and the x-axis labels
-            
-        outputFile = OutputDir + '15.SpatialDistribution' + OutputFormat
-        plt.savefig(outputFile)  # Save the figure
-        print 'Saved file to', outputFile
-        plt.close()
-            
-        # Add this plot to our output list
-        OutputList.append(outputFile)
 
 # ---------------------------------------------------------
 
@@ -1399,7 +481,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
                 t.set_fontsize('medium')
                                 
-        outputFile = OutputDir1 + '16_Lradio_Qjet' + OutputFormat
+        outputFile = OutputDir + '16_Lradio_Qjet' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -1469,7 +551,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('medium')
         
-        outputFile = OutputDir1 + '17_Rshocked_Rvir' + OutputFormat
+        outputFile = OutputDir + '17_Rshocked_Rvir' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -1562,7 +644,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('medium')
     
-        outputFile = OutputDir1 + '18_Lradio_Rshock' + OutputFormat
+        outputFile = OutputDir + '18_Lradio_Rshock' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -1645,7 +727,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('medium')
     
-        outputFile = OutputDir1 + '19_Lradio_Mass' + OutputFormat
+        outputFile = OutputDir + '19_Lradio_Mass' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -1705,7 +787,7 @@ class Results:
             t.set_fontsize('medium')
 
 
-        outputFile = OutputDir1 + '20_Temp_hist' + OutputFormat
+        outputFile = OutputDir + '20_Temp_hist' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -1796,7 +878,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
                 t.set_fontsize('medium')
                               
-        outputFile = OutputDir1 + '21_RadioLF' + OutputFormat
+        outputFile = OutputDir + '21_RadioLF' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -1880,7 +962,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('large')
         
-        outputFile = OutputDir1 + '22_Density_profile' + OutputFormat
+        outputFile = OutputDir + '22_Density_profile' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -2066,7 +1148,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('small')
         
-        outputFile = OutputDir1 + '23_Cooling_Temp' + OutputFormat
+        outputFile = OutputDir + '23_Cooling_Temp' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -2124,7 +1206,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('medium')
         
-        outputFile = OutputDir1 + '24_Rshock_hist' + OutputFormat
+        outputFile = OutputDir + '24_Rshock_hist' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -2205,7 +1287,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('medium')
         
-        outputFile = OutputDir1 + '25_Lradio_BHmass' + OutputFormat
+        outputFile = OutputDir + '25_Lradio_BHmass' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -2256,7 +1338,7 @@ if __name__ == '__main__':
     if opt.DirName[-1] != '/':
         opt.DirName += '/'
 
-    OutputDir = opt.DirName + 'plots/'
+#    OutputDir = opt.DirName + 'plots/'
 
     if not os.path.exists(OutputDir):
         os.makedirs(OutputDir)
@@ -2272,20 +1354,6 @@ if __name__ == '__main__':
     G = res.read_gals(fin_base, FirstFile, LastFile)
 
     res.StellarMassFunction(G)
-    res.BaryonicMassFunction(G)
-    res.GasMassFunction(G)
-    res.BaryonicTullyFisher(G)
-    res.SpecificStarFormationRate(G)
-    res.GasFraction(G)
-    res.Metallicity(G)
-    res.BlackHoleBulgeRelationship(G)
-    res.QuiescentFraction(G)
-    res.BulgeMassFraction(G)
-    res.BaryonFraction(G)
-    res.SpinDistribution(G)
-    res.VelocityDistribution(G)
-    res.MassReservoirScatter(G)
-    res.SpatialDistribution(G)
     res.Lradio_Qjet(G)
     res.Rshocked_Rvir(G)
     res.Lradio_Rshock(G)
