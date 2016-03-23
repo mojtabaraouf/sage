@@ -214,10 +214,11 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 		Gal[p].SfrDisk[step] += stars_sum / dt; // Some of these stars may quickly be transferred to the bulge, so simply updating SfrDisk might be crude
         Gal[p].StarsInstability += NewStarsSum;
         
-        assert(NewStarsSum<=stars_sum);
+        if(!(NewStarsSum<=stars_sum)) printf("NewStarsSum, stars_sum = %e, %e\n", NewStarsSum, stars_sum);
+        assert(NewStarsSum<=1.001*stars_sum);
         StarChannelSum = get_channel_stars(p);
         
-        if(!(Gal[p].StellarMass >= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)/1.01 && Gal[p].StellarMass <= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)*1.01))
+        if(!(Gal[p].StellarMass >= StarChannelSum/1.01 && Gal[p].StellarMass <= StarChannelSum*1.01))
             //printf("stars, insitu, instab, mergeburst = %e, %e, %e, %e\n", Gal[p].StellarMass, Gal[p].StarsInSitu, Gal[p].StarsInstability, Gal[p].StarsMergeBurst);
             printf("stars actual, sum channels = %e, %e\n", Gal[p].StellarMass, Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst);
         
@@ -272,15 +273,15 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
             if(Q_tot>=QTotMin || Q_star>=Q_star_min)
                 continue;
             
-            if(Q_gas < 0.9*QTotMin)
-            {
-                printf("\nWarning, Q_gas too low after dealing with gas instabilities\n");
-                printf("i, Q_gas, Q_star, Q_tot = %d, %e, %e, %e\n", i, Q_gas, Q_star, Q_tot);
-                printf("Annulus gas, gas-SN, stars+SN = %e, %e, %e\n", Gal[p].DiscGas[i], Gal[p].DiscGas[i]-SNgas[i], Gal[p].DiscStars[i]+SNgas_proj[i]);
-                printf("Kappa, r_inner, r_outer, c_s = %e, %e, %e, %e\n", Kappa, r_inner, r_outer, c_s);
-                printf("Angle = %e\n", angle);
-                ABORT(0);
-            }
+//            if(Q_gas < 0.9*QTotMin)
+//            {
+//                printf("\nWarning, Q_gas too low after dealing with gas instabilities\n");
+//                printf("i, Q_gas, Q_star, Q_tot = %d, %e, %e, %e\n", i, Q_gas, Q_star, Q_tot);
+//                printf("Annulus gas, gas-SN, stars+SN = %e, %e, %e\n", Gal[p].DiscGas[i], Gal[p].DiscGas[i]-SNgas[i], Gal[p].DiscStars[i]+SNgas_proj[i]);
+//                printf("Kappa, r_inner, r_outer, c_s = %e, %e, %e, %e\n", Kappa, r_inner, r_outer, c_s);
+//                printf("Angle = %e\n", angle);
+//                ABORT(0);
+//            }
         }
         else
         {
@@ -292,6 +293,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
         
 		if(Q_star<Q_star_min)
 		{
+            double j_lose, j_gain, m_up, m_down;
             if(first==1)
                 Gal[p].TotInstabEvents += 1;
             
@@ -314,25 +316,52 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
                 assert(Gal[p].DiscStarsMetals[i]<=Gal[p].DiscStars[i]);
                 Gal[p].DiscStars[i] -= unstable_stars;
                 Gal[p].DiscStarsMetals[i] = metallicity * Gal[p].DiscStars[i];
-                Gal[p].TotSinkStar[i] = unstable_stars;
-                if(i!=0)
+                Gal[p].TotSinkStar[i] += unstable_stars;
+                
+                
+                if(i==N_BINS-1)
                 {
                     Gal[p].DiscStars[i-1] += unstable_stars;
                     Gal[p].DiscStarsMetals[i-1] += metallicity * unstable_stars;
-                    assert(Gal[p].DiscStarsMetals[i-1]<=Gal[p].DiscStars[i-1]);
+                    assert(Gal[p].DiscStarsMetals[i-1] <= Gal[p].DiscStars[i-1]);
                 }
-                else
+                else // Conserve angular momentum while moving stars to restore stability
                 {
-                    for(s=0; s<3; s++)
-                        Gal[p].SpinSecularBulge[s] = Gal[p].SpinSecularBulge[s]*Gal[p].SecularBulgeMass + Gal[p].SpinStars[s]*unstable_stars;
-                    
-                    Gal[p].SecularBulgeMass += unstable_stars;
-                    Gal[p].SecularMetalsBulgeMass += metallicity * unstable_stars;
-                    
-                    spinmag = pow(pow(Gal[p].SpinSecularBulge[0],2.0)+pow(Gal[p].SpinSecularBulge[1],2.0)+pow(Gal[p].SpinSecularBulge[2],2.0),0.5);
-                    for(s=0; s<3; s++)
+                    j_gain = (DiscBinEdge[i+2]-DiscBinEdge[i])/2.0;
+                    if(i!=0)
+                    {
+                        j_lose = (DiscBinEdge[i+1]-DiscBinEdge[i-1])/2.0;
+                        m_up = j_lose / (j_gain + j_lose) * unstable_stars;
+                        m_down = m_up * j_gain / j_lose;
+                        assert((m_up+m_down)<=1.01*unstable_stars && (m_up+m_down)>=0.99*unstable_stars);
+                        
+                        Gal[p].DiscStars[i-1] += m_down;
+                        Gal[p].DiscStarsMetals[i-1] += metallicity * m_down;
+                        assert(Gal[p].DiscStarsMetals[i-1]<=Gal[p].DiscStars[i-1]);
+                    }
+                    else
+                    {
+                        j_lose = (DiscBinEdge[i+1]-DiscBinEdge[i])/2.0;
+                        m_up = j_lose / (j_gain + j_lose) * unstable_stars;
+                        m_down = m_up * j_gain / j_lose;
+                        assert((m_up+m_down)<=1.01*unstable_stars && (m_up+m_down)>=0.99*unstable_stars);
+
+                        for(s=0; s<3; s++)
+                            Gal[p].SpinSecularBulge[s] = Gal[p].SpinSecularBulge[s]*Gal[p].SecularBulgeMass + Gal[p].SpinStars[s]*m_down;
+                        
+                        Gal[p].SecularBulgeMass += m_down;
+                        Gal[p].SecularMetalsBulgeMass += metallicity * m_down;
+                        
+                        spinmag = pow(pow(Gal[p].SpinSecularBulge[0],2.0)+pow(Gal[p].SpinSecularBulge[1],2.0)+pow(Gal[p].SpinSecularBulge[2],2.0),0.5);
+                        for(s=0; s<3; s++)
                         Gal[p].SpinSecularBulge[s] /= spinmag;
+                    }
+                    
+                    Gal[p].DiscStars[i+1] += m_up;
+                    Gal[p].DiscStarsMetals[i+1] += metallicity * m_up;
+                    assert(Gal[p].DiscStarsMetals[i+1]<=Gal[p].DiscStars[i+1]);
                 }
+
             }
 		}
 	}
@@ -358,6 +387,8 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
     
     double ejected_sum = 0.0;
     
+    double j_lose, j_gain, m_up, m_down;
+    
 	// Let gas sink -- I may well want to change this formula
     gas_sink = GasSinkRate * unstable_gas;
     
@@ -370,20 +401,56 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
     Gal[p].DiscGasMetals[i] -= metallicity * gas_sink;
     
     Gal[p].TotSinkGas[i] += gas_sink;
+    
+    if(i==N_BINS-1)
+    {
+        Gal[p].DiscGas[i-1] += gas_sink;
+        Gal[p].DiscGasMetals[i-1] += metallicity * gas_sink;
+        assert(Gal[p].DiscGasMetals[i-1] <= Gal[p].DiscGas[i-1]);
+    }
+    else // Conserve angular momentum while moving gas to restore stability
+    {
+        j_gain = (DiscBinEdge[i+2]-DiscBinEdge[i])/2.0;
+        if(i==0)
+        {
+            j_lose = (DiscBinEdge[i+1]-DiscBinEdge[i])/2.0;
+            m_up = j_lose / (j_gain + j_lose) * gas_sink;
+            m_down = m_up * j_gain / j_lose;
+            Gal[p].BlackHoleMass += m_down;
+            Gal[p].ColdGas -= m_down;
+            Gal[p].MetalsColdGas -= metallicity * m_down;
+            assert(Gal[p].MetalsColdGas<=Gal[p].ColdGas);
+        }
+        else
+        {
+            j_lose = (DiscBinEdge[i+1]-DiscBinEdge[i-1])/2.0;
+            m_up = j_lose / (j_gain + j_lose) * gas_sink;
+            m_down = m_up * j_gain / j_lose;
+            Gal[p].DiscGas[i-1] += m_down;
+            Gal[p].DiscGasMetals[i-1] += metallicity * m_down;
+            assert(Gal[p].DiscGasMetals[i-1] <= Gal[p].DiscGas[i-1]);
+        }
+        
+        Gal[p].DiscGas[i+1] += m_up;
+        Gal[p].DiscGasMetals[i+1] += metallicity * m_up;
+        assert(Gal[p].DiscGasMetals[i+1] <= Gal[p].DiscGas[i+1]);
+    }
 
-    if(direct_to_BH>0 || i==0)
-	{
-		Gal[p].BlackHoleMass += gas_sink;
-        assert(Gal[p].BlackHoleMass>=0);
-		Gal[p].ColdGas -= gas_sink;
-		Gal[p].MetalsColdGas -= metallicity * gas_sink;
-	}
-	else
-	{
-		Gal[p].DiscGas[i-1] += gas_sink;
-		Gal[p].DiscGasMetals[i-1] += metallicity * gas_sink;
-		assert(Gal[p].DiscGasMetals[i-1] <= Gal[p].DiscGas[i-1]);
-	}
+    
+    
+//    if(direct_to_BH>0 || i==0)
+//	{
+//		Gal[p].BlackHoleMass += gas_sink;
+//        assert(Gal[p].BlackHoleMass>=0);
+//		Gal[p].ColdGas -= gas_sink;
+//		Gal[p].MetalsColdGas -= metallicity * gas_sink;
+//	}
+//	else
+//	{
+//		Gal[p].DiscGas[i-1] += gas_sink;
+//		Gal[p].DiscGasMetals[i-1] += metallicity * gas_sink;
+//		assert(Gal[p].DiscGasMetals[i-1] <= Gal[p].DiscGas[i-1]);
+//	}
 
 	// Calculate new stars formed in that annulus
 	gas_sf = unstable_gas - gas_sink;

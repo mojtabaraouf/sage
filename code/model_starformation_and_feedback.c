@@ -197,7 +197,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
     {
       StarChannelSum = get_channel_stars(p);
       assert(Gal[p].StellarMass >= (StarsPre + NewStarSum)/1.01 && Gal[p].StellarMass <= (StarsPre + NewStarSum)*1.01);
-      assert(Gal[p].StellarMass >= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)/1.01 && Gal[p].StellarMass <= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)*1.01);
+      assert(Gal[p].StellarMass >= StarChannelSum/1.01 && Gal[p].StellarMass <= StarChannelSum*1.01);
   }
 
 

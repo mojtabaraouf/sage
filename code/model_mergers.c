@@ -926,9 +926,9 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
   assert(Gal[merger_centralgal].StellarMass >= (Gal[merger_centralgal].StarsInSitu+Gal[merger_centralgal].StarsInstability+Gal[merger_centralgal].StarsMergeBurst)/1.01 && Gal[merger_centralgal].StellarMass <= (Gal[merger_centralgal].StarsInSitu+Gal[merger_centralgal].StarsInstability+Gal[merger_centralgal].StarsMergeBurst)*1.01);
 
   // check for disk instability
-  // if(DiskInstabilityOn && mode == 0)
+//   if(DiskInstabilityOn && mode == 0)
+//     check_disk_instability(merger_centralgal, centralgal, time, dt, step);
   //   if(mass_ratio < ThreshMajorMerger)
-  //     check_disk_instability(merger_centralgal, centralgal, time, dt, step);
  }
 }
 

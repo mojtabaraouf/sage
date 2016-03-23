@@ -71,13 +71,13 @@ ReIncorporationFactor		0.15
 
 RadioModeEfficiency			0.035
 QuasarModeEfficiency		0.005
-BlackHoleGrowthRate			0.05
+BlackHoleGrowthRate			0.03
 
 H2FractionFactor            1.0    ;Controls the normalisation of the H2/HI ratio calculation if H2prescription=0. 1.0 would be the same as Fu et al. (2010).
 H2FractionExponent          0.92   ;Also controls the H2/HI ratio calculation. 0.92 would be the same as Fu et al. (2010).
 
-QTotMin                     0.25    ;threshold Toomre Q value for instabilities
-GasSinkRate                 0.05
+QTotMin                     1.0    ;threshold Toomre Q value for instabilities
+GasSinkRate                 0.3
 
 DegPerTdyn                  5.0    ;degrees the gas disc precesses to come in line with stars per dynamical time
 
