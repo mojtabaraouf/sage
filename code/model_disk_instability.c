@@ -325,7 +325,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
                     Gal[p].DiscStarsMetals[i-1] += metallicity * unstable_stars;
                     assert(Gal[p].DiscStarsMetals[i-1] <= Gal[p].DiscStars[i-1]);
                 }
-                else // Conserve angular momentum while moving stars to restore stability
+                else if(r_inner > 0.2*Gal[p].DiskScaleRadius/2.4142) // Conserve angular momentum while moving stars to restore stability
                 {
                     j_gain = (DiscBinEdge[i+2]-DiscBinEdge[i])/2.0;
                     if(i!=0)
@@ -339,27 +339,30 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
                         Gal[p].DiscStarsMetals[i-1] += metallicity * m_down;
                         assert(Gal[p].DiscStarsMetals[i-1]<=Gal[p].DiscStars[i-1]);
                     }
-                    else
+                    else // In principle, this shouldn't happen, but I guess there could be a really tiny DiskScaleRadius on the odd occasion
                     {
                         j_lose = (DiscBinEdge[i+1]-DiscBinEdge[i])/2.0;
                         m_up = j_lose / (j_gain + j_lose) * unstable_stars;
                         m_down = m_up * j_gain / j_lose;
                         assert((m_up+m_down)<=1.01*unstable_stars && (m_up+m_down)>=0.99*unstable_stars);
-
-                        for(s=0; s<3; s++)
-                            Gal[p].SpinSecularBulge[s] = Gal[p].SpinSecularBulge[s]*Gal[p].SecularBulgeMass + Gal[p].SpinStars[s]*m_down;
                         
+                        for(s=0; s<3; s++) Gal[p].SpinSecularBulge[s] = Gal[p].SpinSecularBulge[s]*Gal[p].SecularBulgeMass/(Gal[p].SecularBulgeMass+m_down);
                         Gal[p].SecularBulgeMass += m_down;
                         Gal[p].SecularMetalsBulgeMass += metallicity * m_down;
                         
-                        spinmag = pow(pow(Gal[p].SpinSecularBulge[0],2.0)+pow(Gal[p].SpinSecularBulge[1],2.0)+pow(Gal[p].SpinSecularBulge[2],2.0),0.5);
-                        for(s=0; s<3; s++)
-                        Gal[p].SpinSecularBulge[s] /= spinmag;
                     }
                     
                     Gal[p].DiscStars[i+1] += m_up;
                     Gal[p].DiscStarsMetals[i+1] += metallicity * m_up;
                     assert(Gal[p].DiscStarsMetals[i+1]<=Gal[p].DiscStars[i+1]);
+                }
+                else // Transfer unstable stars directly into the pseudobulge.  The annuli are already within it!
+                {
+                    for(s=0; s<3; s++)
+                        Gal[p].SpinSecularBulge[s] = (Gal[p].SpinSecularBulge[s]*Gal[p].SecularBulgeMass + Gal[p].SpinStars[s]*unstable_stars) / (Gal[p].SpinSecularBulge[s] * unstable_stars);
+                    Gal[p].SecularBulgeMass += unstable_stars;
+                    Gal[p].SecularMetalsBulgeMass += metallicity * unstable_stars;
+
                 }
 
             }

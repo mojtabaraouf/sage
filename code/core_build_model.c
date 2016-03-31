@@ -153,13 +153,14 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
 
           Gal[ngal].deltaMvir = get_virial_mass(halonr, ngal) - Gal[ngal].Mvir;
 
-          if(get_virial_mass(halonr, ngal) > Gal[ngal].Mvir)
-          {
+          //if(get_virial_mass(halonr, ngal) > Gal[ngal].Mvir)
+          //{
             Gal[ngal].Rvir = get_virial_radius(halonr, ngal);  //use the maximum Rvir in model
             Gal[ngal].Vvir = get_virial_velocity(halonr, ngal);  //use the maximum Vvir in model
-          }
+          //}
 
           Gal[ngal].Mvir = get_virial_mass(halonr, ngal);
+            Gal[ngal].DiskScaleRadius = get_disk_radius(halonr, ngal); // Previously was only done for FirstHaloInFOFgroup
 
           Gal[ngal].Cooling = 0.0;
           Gal[ngal].Heating = 0.0;
@@ -179,7 +180,6 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
             Gal[ngal].mergeIntoID = -1;
             Gal[ngal].MergTime = 999.9;            
 
-            Gal[ngal].DiskScaleRadius = get_disk_radius(halonr, ngal);
 
             Gal[ngal].Type = 0;
           }
@@ -308,7 +308,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 	  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
-	
+        
       // don't treat galaxies that have already merged 
       if(Gal[p].mergeType > 0)
         continue;
@@ -318,7 +318,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
       
       if(Gal[p].dT < 0.0)
         Gal[p].dT = deltaT;
-
+        
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
       // for central galaxy only 
       if(p == centralgal)

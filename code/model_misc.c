@@ -142,7 +142,11 @@ double get_disk_radius(int halonr, int p)
     radius = (SpinParameter / 1.414) * Gal[p].Rvir;
     
     if(radius < 0.0 || radius!=radius || radius==INFINITY)
-    radius = 0.0;
+    {
+        //printf("Reset DSR from %e to 0\n", radius);
+        if(!(SpinMagnitude>0)) printf("SpinMagntiude 0\n");
+        radius = 0.0;
+    }
     
     return radius;
     

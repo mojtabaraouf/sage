@@ -314,7 +314,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 		  coolingGasBin = coolingGas - coolingGasBinSum;
 		
         if(Gal[p].DiscGasMetals[i]>Gal[p].DiscGas[i])
-          printf("Disc Gas, metals = %e, %e\n", Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
+          printf("317, Disc Gas, metals = %e, %e\n", Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
           
 	    Gal[p].DiscGas[i] += coolingGasBin;
 		Gal[p].DiscGasMetals[i] += metallicity * coolingGasBin;
@@ -322,7 +322,12 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 			RetroGas[i] = coolingGasBin;
           
         if(Gal[p].DiscGasMetals[i]>Gal[p].DiscGas[i] || Gal[p].DiscGasMetals[i]!=Gal[p].DiscGasMetals[i] || Gal[p].DiscGas[i]!=Gal[p].DiscGas[i])
-          printf("Disc Gas, metals = %e, %e\n", Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
+          {
+              printf("326, Disc Gas, metals = %e, %e\n", Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
+              printf("coolingGas, coolingGasBin, metallicity = %e, %e, %e\n", coolingGas, coolingGasBin, metallicity);
+              printf("Vvir, DiskScaleRadius = %e, %e\n", Gal[p].Vvir, Gal[p].DiskScaleRadius);
+              printf("Rvir, Spin = %e, %e, %e, %e\n", Gal[p].Rvir, Halo[Gal[p].HaloNr].Spin[0], Halo[Gal[p].HaloNr].Spin[1], Halo[Gal[p].HaloNr].Spin[2]);
+          }
           
 		assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
 		coolingGasBinSum += coolingGasBin;
