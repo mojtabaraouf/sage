@@ -402,8 +402,7 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
     double c2_p[7];
 
     // limit on Qjet and Rshock and just for avoiding the infinity value in radio luminosity
-    // t_off sould be bigger than t_returne lead to fcool > 0
-    if (Gal[p].Rshocked > 0 & Gal[p].Qjet < 1e40 & Gal[p].fcool > 0)
+    if (Gal[p].Rshocked > 0 & Gal[p].Qjet < 1e40)
     {
      for(p_v = 2.1; p_v < 2.8; p_v+=0.1)  //  ? The Fiducial Values
      {
