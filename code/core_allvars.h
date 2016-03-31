@@ -136,7 +136,6 @@ struct GALAXY_OUTPUT
   float t_AGN_off;
   float time_to_next_on;
   float delta;
-    
 };
 
 
@@ -235,8 +234,6 @@ struct GALAXY
   float t_AGN_off;
   float time_to_next_on;
   float delta;
-    
-    
 }
 *Gal, *HaloGal;
 
