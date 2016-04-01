@@ -565,7 +565,7 @@ void precess_gas(int p, double dt, int halonr)
     for(i=0; i<3; i++)
     {
         if(Gal[p].ClassicalBulgeMass>0.5*Gal[p].StellarMass){
-            StarSpin[i] = Gal[p].SpinClassicalBulge[i];
+            StarSpin[i] = Gal[p].SpinClassicalBulge[i] / pow(pow(Gal[p].SpinClassicalBulge[0],2.0)+pow(Gal[p].SpinClassicalBulge[1],2.0)+pow(Gal[p].SpinClassicalBulge[2],2.0),0.5);
             assert(fabs(StarSpin[0]+StarSpin[1]+StarSpin[2]) > 0.0);}
         else{
             StarSpin[i] = Gal[p].SpinStars[i];

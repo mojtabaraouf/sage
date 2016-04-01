@@ -198,29 +198,37 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
         {
             for(s=0; s<3; s++)
             {
-                Gal[merger_centralgal].SpinClassicalBulge[s] = Gal[merger_centralgal].SpinClassicalBulge[s]*Gal[merger_centralgal].ClassicalBulgeMass + Gal[merger_centralgal].SpinGas[s]*net_stars;
+                assert(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY);
+                Gal[merger_centralgal].SpinClassicalBulge[s] = (Gal[merger_centralgal].SpinClassicalBulge[s]*Gal[merger_centralgal].ClassicalBulgeMass + Gal[merger_centralgal].SpinGas[s]*net_stars)/(Gal[merger_centralgal].ClassicalBulgeMass+net_stars);
+                if(!(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY))
+                {
+                    printf("205: Reset classical bulge spin to zero\n");
+                    Gal[merger_centralgal].SpinClassicalBulge[s] = 0.0;
+                }
                 assert(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY);
             }
+            
             Gal[merger_centralgal].ClassicalBulgeMass += net_stars;
             Gal[merger_centralgal].ClassicalMetalsBulgeMass += metallicity * net_stars;
-            spinmag = pow(pow(Gal[merger_centralgal].SpinClassicalBulge[0],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[1],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[2],2.0),0.5);
-            for(s=0; s<3; s++)
-            {
-                Gal[merger_centralgal].SpinClassicalBulge[s] /= spinmag;
-                
-                if(Gal[merger_centralgal].SpinClassicalBulge[s] != Gal[merger_centralgal].SpinClassicalBulge[s] || Gal[merger_centralgal].SpinClassicalBulge[s] == INFINITY)
-                {
-                    printf("CBulgeMass, stars, unstable_gas = %e, %e, %e\n", Gal[merger_centralgal].ClassicalBulgeMass, stars, unstable_gas);
-                    printf("PostRetro, DiscGas = %e, %e\n", PostRetroGas[i], Gal[merger_centralgal].DiscGas[i]);
-                    printf("s, Spin, spinmag = %d, %e, %e\n", s, Gal[merger_centralgal].SpinClassicalBulge[s], spinmag);
-                }
-                
-                assert(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY);
-            }
-            spinmag = pow(pow(Gal[merger_centralgal].SpinClassicalBulge[0],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[1],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[2],2.0),0.5);
-            if(spinmag<0.99 || spinmag>1.01 || spinmag!=spinmag)
-                printf("spinmag, spin0, spin1, spin2 = %e, %e, %e, %e\n", spinmag, Gal[merger_centralgal].SpinClassicalBulge[0], Gal[merger_centralgal].SpinClassicalBulge[1], Gal[merger_centralgal].SpinClassicalBulge[2]);
-            assert(spinmag>0.99 && spinmag<1.01 && spinmag==spinmag);
+            
+//            spinmag = pow(pow(Gal[merger_centralgal].SpinClassicalBulge[0],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[1],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[2],2.0),0.5);
+//            for(s=0; s<3; s++)
+//            {
+//                Gal[merger_centralgal].SpinClassicalBulge[s] /= spinmag;
+//                
+//                if(Gal[merger_centralgal].SpinClassicalBulge[s] != Gal[merger_centralgal].SpinClassicalBulge[s] || Gal[merger_centralgal].SpinClassicalBulge[s] == INFINITY)
+//                {
+//                    printf("CBulgeMass, stars, unstable_gas = %e, %e, %e\n", Gal[merger_centralgal].ClassicalBulgeMass, stars, unstable_gas);
+//                    printf("PostRetro, DiscGas = %e, %e\n", PostRetroGas[i], Gal[merger_centralgal].DiscGas[i]);
+//                    printf("s, Spin, spinmag = %d, %e, %e\n", s, Gal[merger_centralgal].SpinClassicalBulge[s], spinmag);
+//                }
+//                
+//                assert(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY);
+//            }
+//            spinmag = pow(pow(Gal[merger_centralgal].SpinClassicalBulge[0],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[1],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[2],2.0),0.5);
+//            if(spinmag<0.99 || spinmag>1.01 || spinmag!=spinmag)
+//                printf("spinmag, spin0, spin1, spin2 = %e, %e, %e, %e\n", spinmag, Gal[merger_centralgal].SpinClassicalBulge[0], Gal[merger_centralgal].SpinClassicalBulge[1], Gal[merger_centralgal].SpinClassicalBulge[2]);
+//            assert(spinmag>0.99 && spinmag<1.01 && spinmag==spinmag);
         }
 
 	}
@@ -262,7 +270,7 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
         printf("BulgeMass, BulgeRadius = %e, %e\n", Gal[merger_centralgal].ClassicalBulgeMass, BR);
         printf("Efinal, centralfraction = %e, %e\n", Efinal, central_bulge_fraction);
         printf("Disk radii central, sat = %e, %e\n", Gal[merger_centralgal].DiskScaleRadius, Gal[p].DiskScaleRadius);
-        ABORT(0);
+        //ABORT(0);
     }
       
       if(BR!=BR || BR==INFINITY)
@@ -270,7 +278,7 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
           printf("BulgeRadius = %e\n", BR);
           printf("SM, CGM = %e, %e\n", Gal[merger_centralgal].StellarMass, Gal[merger_centralgal].ColdGas);
           printf("Eini1, Eini2, Eorb, Erad = %e, %e, %e, %e\n", Eini1, Eini2, Eorb, Erad);
-          ABORT(0);
+          //ABORT(0);
       }
   }
 }
@@ -416,7 +424,6 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 {
   int step, i, s;
   double DiscGasSum, CentralGasOrig, spinmag, ExpFac, StarChannelSum;
-
     ExpFac = AA[Gal[t].SnapNum]; // Expansion factor needed for determining physical distances for calculating j
     
 	CentralGasOrig = get_disc_gas(t);
@@ -430,7 +437,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 	
 	for(i=0; i<N_BINS; i++) 
 	{
-		if (Gal[t].DiscStarsMetals[i] > Gal[t].DiscStars[i])
+		if(Gal[t].DiscStarsMetals[i] > Gal[t].DiscStars[i])
 			printf("DiscStars, Metals = %e, %e\n", Gal[t].DiscStars[i], Gal[t].DiscStarsMetals[i]);
 		assert(Gal[t].DiscStarsMetals[i] <= Gal[t].DiscStars[i]);
         assert(disc_mass_ratio[i]==0.0);
@@ -438,7 +445,6 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 	
   Gal[t].ColdGas += DiscGasSum;
   Gal[t].MetalsColdGas += Gal[p].MetalsColdGas;
-
 
   if(mass_ratio<ThreshMajorMerger) // Minor mergers, combine discs by conserving angular momentum
   {
@@ -477,7 +483,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 			if(i_min==N_BINS) break;
 		}
 		i_min -= 1;
-	
+        
 		i_max=i_min;
 		while(DiscBinEdge[i_max]<=sat_sam_max)
 		{
@@ -533,23 +539,30 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
     // Now just going to throw stars into the bulge.  Ang mom conservation will average itself out.
     if(Gal[p].StellarMass>0.0)
     {
-          
-        for(s=0; s<3; s++)
-            Gal[t].SpinClassicalBulge[s] = Gal[t].SpinClassicalBulge[s]*Gal[t].ClassicalBulgeMass + sat_sam[s]*Gal[p].StellarMass/sat_sam_mag;
-        Gal[t].ClassicalBulgeMass += Gal[p].StellarMass;
-        Gal[t].ClassicalMetalsBulgeMass += Gal[p].MetalsStellarMass;
-        spinmag = pow(pow(Gal[t].SpinClassicalBulge[0],2.0)+pow(Gal[t].SpinClassicalBulge[1],2.0)+pow(Gal[t].SpinClassicalBulge[2],2.0),0.5);
         for(s=0; s<3; s++)
         {
             assert(Gal[t].SpinClassicalBulge[s] == Gal[t].SpinClassicalBulge[s] && Gal[t].SpinClassicalBulge[s] != INFINITY);
-            Gal[t].SpinClassicalBulge[s] /= spinmag;
+            Gal[t].SpinClassicalBulge[s] = (Gal[t].SpinClassicalBulge[s]*Gal[t].ClassicalBulgeMass + sat_sam[s]*Gal[p].StellarMass)/(Gal[t].ClassicalBulgeMass+Gal[p].StellarMass);//sat_sam_mag;
+            if(!(Gal[t].SpinClassicalBulge[s] == Gal[t].SpinClassicalBulge[s] && Gal[t].SpinClassicalBulge[s] != INFINITY))
+            {
+                printf("548: Reset classical bulge spin to zero\n");
+                Gal[t].SpinClassicalBulge[s] = 0.0;
+            }
+            assert(Gal[t].SpinClassicalBulge[s] == Gal[t].SpinClassicalBulge[s] && Gal[t].SpinClassicalBulge[s] != INFINITY);
         }
-
-        spinmag = pow(pow(Gal[t].SpinClassicalBulge[0],2.0)+pow(Gal[t].SpinClassicalBulge[1],2.0)+pow(Gal[t].SpinClassicalBulge[2],2.0),0.5);
-        if(spinmag<0.99 || spinmag>1.01 || spinmag!=spinmag)
-            printf("spinmag, spin0, spin1, spin2 = %e, %e, %e, %e\n", spinmag, Gal[t].SpinClassicalBulge[0], Gal[t].SpinClassicalBulge[1], Gal[t].SpinClassicalBulge[2]);
-        assert(spinmag>0.99 && spinmag<1.01 && spinmag==spinmag);
-        
+        Gal[t].ClassicalBulgeMass += Gal[p].StellarMass;
+        Gal[t].ClassicalMetalsBulgeMass += Gal[p].MetalsStellarMass;
+//        spinmag = pow(pow(Gal[t].SpinClassicalBulge[0],2.0)+pow(Gal[t].SpinClassicalBulge[1],2.0)+pow(Gal[t].SpinClassicalBulge[2],2.0),0.5);
+//        for(s=0; s<3; s++)
+//        {
+//            assert(Gal[t].SpinClassicalBulge[s] == Gal[t].SpinClassicalBulge[s] && Gal[t].SpinClassicalBulge[s] != INFINITY);
+//            Gal[t].SpinClassicalBulge[s] /= spinmag;
+//        }
+//
+//        spinmag = pow(pow(Gal[t].SpinClassicalBulge[0],2.0)+pow(Gal[t].SpinClassicalBulge[1],2.0)+pow(Gal[t].SpinClassicalBulge[2],2.0),0.5);
+//        if(spinmag<0.99 || spinmag>1.01 || spinmag!=spinmag)
+//            printf("spinmag, spin0, spin1, spin2 = %e, %e, %e, %e\n", spinmag, Gal[t].SpinClassicalBulge[0], Gal[t].SpinClassicalBulge[1], Gal[t].SpinClassicalBulge[2]);
+//        assert(spinmag>0.99 && spinmag<1.01 && spinmag==spinmag);
     }
       
   }
@@ -583,7 +596,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 		project_disc(Gal[p].DiscGas, cos_angle_p, p, NewDiscP);
 		project_disc(Gal[t].DiscGasMetals, cos_angle_t, t, NewDiscMetalsT);		
 		project_disc(Gal[p].DiscGasMetals, cos_angle_p, p, NewDiscMetalsP);
-		
+        
 		for(i=0; i<N_BINS; i++)
 		{
 			Gal[p].DiscGas[i] = NewDiscP[i];
@@ -603,7 +616,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
             
             assert(disc_mass_ratio[i]<=1.0 && disc_mass_ratio[i]>=0.0);
 		}
-		
+        
 		DiscGasSum = get_disc_gas(p);
 		assert(DiscGasSum <= 1.01*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.01);
 		DiscGasSum = get_disc_gas(t);
@@ -631,6 +644,37 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 
 	DiscGasSum = get_disc_gas(t);
 	assert(DiscGasSum <= 1.01*Gal[t].ColdGas && DiscGasSum >= Gal[t].ColdGas/1.01);
+
+      // Set spin of classical bulge.  The mass itself will be transfered there in stars_to_bulge
+      // First need to know the pos and vel of the centre of momentum
+      double COM[3], vCOM[3], j_t[3], j_p[3], m_t, m_p;
+      m_t = dmax(Gal[t].Mvir, Gal[t].StellarMass+Gal[t].HotGas+Gal[t].ColdGas+Gal[t].BlackHoleMass);
+      m_p = dmax(Gal[p].Mvir, Gal[p].StellarMass+Gal[p].HotGas+Gal[p].ColdGas+Gal[p].BlackHoleMass);
+      for(i=0; i<3; i++)
+      {
+         COM[i] = (Gal[t].Pos[i]*m_t + Gal[p].Pos[i]*m_p)/(m_t+m_p);
+        vCOM[i] = (Gal[t].Vel[i]*m_t + Gal[p].Vel[i]*m_p)/(m_t+m_p);
+      }
+
+      j_p[0] = (Gal[p].Pos[1]-COM[1])*(Gal[p].Vel[2]-vCOM[2])*ExpFac - (Gal[p].Pos[2]-COM[2])*(Gal[p].Vel[1]-vCOM[1])*ExpFac;
+      j_p[1] = (Gal[p].Pos[2]-COM[2])*(Gal[p].Vel[0]-vCOM[0])*ExpFac - (Gal[p].Pos[0]-COM[0])*(Gal[p].Vel[2]-vCOM[2])*ExpFac;
+      j_p[2] = (Gal[p].Pos[0]-COM[0])*(Gal[p].Vel[1]-vCOM[1])*ExpFac - (Gal[p].Pos[1]-COM[1])*(Gal[p].Vel[0]-vCOM[0])*ExpFac;
+      j_t[0] = (Gal[t].Pos[1]-COM[1])*(Gal[t].Vel[2]-vCOM[2])*ExpFac - (Gal[t].Pos[2]-COM[2])*(Gal[t].Vel[1]-vCOM[1])*ExpFac;
+      j_t[1] = (Gal[t].Pos[2]-COM[2])*(Gal[t].Vel[0]-vCOM[0])*ExpFac - (Gal[t].Pos[0]-COM[0])*(Gal[t].Vel[2]-vCOM[2])*ExpFac;
+      j_t[2] = (Gal[t].Pos[0]-COM[0])*(Gal[t].Vel[1]-vCOM[1])*ExpFac - (Gal[t].Pos[1]-COM[1])*(Gal[t].Vel[0]-vCOM[0])*ExpFac;
+
+      for(s=0; s<3; s++)
+      {
+          assert(Gal[t].SpinClassicalBulge[s] == Gal[t].SpinClassicalBulge[s] && Gal[t].SpinClassicalBulge[s] != INFINITY);
+          Gal[t].SpinClassicalBulge[s] = (Gal[p].StellarMass*j_p[s] + Gal[t].StellarMass*j_t[s]) / (Gal[p].StellarMass+Gal[t].StellarMass);
+          if(!(Gal[t].SpinClassicalBulge[s] == Gal[t].SpinClassicalBulge[s] && Gal[t].SpinClassicalBulge[s] != INFINITY))
+          {
+              printf("SM_p, SM_t, j_p, j_t = %e, %e, %e, %e\n", Gal[p].StellarMass, Gal[t].StellarMass, j_p[s], j_t[s]);
+              Gal[t].SpinClassicalBulge[s] = 0.0;
+          }
+          assert(Gal[t].SpinClassicalBulge[s] == Gal[t].SpinClassicalBulge[s] && Gal[t].SpinClassicalBulge[s] != INFINITY);
+
+      }
 
     Gal[t].ClassicalBulgeMass += Gal[p].StellarMass;
 	Gal[t].ClassicalMetalsBulgeMass += Gal[p].MetalsStellarMass;
@@ -690,8 +734,8 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 void stars_to_bulge(int t, int p)
 {
   int step, i;
-    double spinmag;
-  
+    //double spinmag;
+    
   // generate bulge 
   Gal[t].ClassicalBulgeMass = Gal[t].StellarMass;
   Gal[t].ClassicalMetalsBulgeMass = Gal[t].MetalsStellarMass;
@@ -717,18 +761,19 @@ void stars_to_bulge(int t, int p)
     Gal[t].SfrDiskColdGasMetals[step] = 0.0;
   }
     
-    // Set spin of new bulge
-    Gal[t].SpinClassicalBulge[0] = (Gal[p].Pos[1]-Gal[t].Pos[1])*(Gal[p].Vel[2]-Gal[t].Vel[2]) - (Gal[p].Pos[2]-Gal[t].Pos[2])*(Gal[p].Vel[1]-Gal[t].Vel[1]);
-    Gal[t].SpinClassicalBulge[1] = (Gal[p].Pos[2]-Gal[t].Pos[2])*(Gal[p].Vel[0]-Gal[t].Vel[0]) - (Gal[p].Pos[0]-Gal[t].Pos[0])*(Gal[p].Vel[2]-Gal[t].Vel[2]);
-    Gal[t].SpinClassicalBulge[2] = (Gal[p].Pos[0]-Gal[t].Pos[0])*(Gal[p].Vel[1]-Gal[t].Vel[1]) - (Gal[p].Pos[1]-Gal[t].Pos[1])*(Gal[p].Vel[0]-Gal[t].Vel[0]);
-    spinmag = pow(pow(Gal[t].SpinClassicalBulge[0],2.0)+pow(Gal[t].SpinClassicalBulge[1],2.0)+pow(Gal[t].SpinClassicalBulge[2],2.0),0.5);
-    for(i=0;i<3;i++)
-    {
-        Gal[t].SpinClassicalBulge[i] /= spinmag;
-        Gal[t].SpinSecularBulge[i] = 0.0;
-    }
-    spinmag = pow(pow(Gal[t].SpinClassicalBulge[0],2.0)+pow(Gal[t].SpinClassicalBulge[1],2.0)+pow(Gal[t].SpinClassicalBulge[2],2.0),0.5);
-    assert(spinmag>0.99 && spinmag<1.01);
+//    // Set spin of new bulge
+//    Gal[t].SpinClassicalBulge[0] = (Gal[p].Pos[1]-Gal[t].Pos[1])*(Gal[p].Vel[2]-Gal[t].Vel[2]) - (Gal[p].Pos[2]-Gal[t].Pos[2])*(Gal[p].Vel[1]-Gal[t].Vel[1]);
+//    Gal[t].SpinClassicalBulge[1] = (Gal[p].Pos[2]-Gal[t].Pos[2])*(Gal[p].Vel[0]-Gal[t].Vel[0]) - (Gal[p].Pos[0]-Gal[t].Pos[0])*(Gal[p].Vel[2]-Gal[t].Vel[2]);
+//    Gal[t].SpinClassicalBulge[2] = (Gal[p].Pos[0]-Gal[t].Pos[0])*(Gal[p].Vel[1]-Gal[t].Vel[1]) - (Gal[p].Pos[1]-Gal[t].Pos[1])*(Gal[p].Vel[0]-Gal[t].Vel[0]);
+//  
+//    spinmag = pow(pow(Gal[t].SpinClassicalBulge[0],2.0)+pow(Gal[t].SpinClassicalBulge[1],2.0)+pow(Gal[t].SpinClassicalBulge[2],2.0),0.5);
+//    for(i=0;i<3;i++)
+//    {
+//        Gal[t].SpinClassicalBulge[i] /= spinmag;
+//        Gal[t].SpinSecularBulge[i] = 0.0;
+//    }
+//    spinmag = pow(pow(Gal[t].SpinClassicalBulge[0],2.0)+pow(Gal[t].SpinClassicalBulge[1],2.0)+pow(Gal[t].SpinClassicalBulge[2],2.0),0.5);
+//    assert(spinmag>0.99 && spinmag<1.01);
 }
 
 
@@ -904,13 +949,18 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
      // Update bulge spin
      for(s=0; s<3; s++)
      {
-         Gal[merger_centralgal].SpinClassicalBulge[s] = Gal[merger_centralgal].SpinClassicalBulge[s]*Gal[merger_centralgal].ClassicalBulgeMass + Gal[merger_centralgal].SpinGas[s]*stars_sum;
-         //printf("BulgeSpin, BulgeMass, SpinGas, stars_sum = %e, %e, %e, %e\n", Gal[merger_centralgal].SpinClassicalBulge[s], Gal[merger_centralgal].ClassicalBulgeMass, Gal[merger_centralgal].SpinGas[s], stars_sum);
+         assert(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY);
+         Gal[merger_centralgal].SpinClassicalBulge[s] = (Gal[merger_centralgal].SpinClassicalBulge[s]*Gal[merger_centralgal].ClassicalBulgeMass + Gal[merger_centralgal].SpinGas[s]*stars_sum) / (Gal[merger_centralgal].ClassicalBulgeMass+stars_sum);
+         if(!(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY))
+         {
+             printf("BulgeSpin, BulgeMass, SpinGas, stars_sum = %e, %e, %e, %e\n", Gal[merger_centralgal].SpinClassicalBulge[s], Gal[merger_centralgal].ClassicalBulgeMass, Gal[merger_centralgal].SpinGas[s], stars_sum);
+             Gal[merger_centralgal].SpinClassicalBulge[s] = 0.0;
+         }
          assert(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY);
      }
-     spinmag = pow(pow(Gal[merger_centralgal].SpinClassicalBulge[0],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[1],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[2],2.0),0.5);
-     for(s=0; s<3; s++)
-         Gal[merger_centralgal].SpinClassicalBulge[s] /= spinmag;
+//     spinmag = pow(pow(Gal[merger_centralgal].SpinClassicalBulge[0],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[1],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[2],2.0),0.5);
+//     for(s=0; s<3; s++)
+//         Gal[merger_centralgal].SpinClassicalBulge[s] /= spinmag;
      
      // Now adding all new stars directly to the bulge
      Gal[merger_centralgal].StellarMass += stars_sum; // Recycling fraction already taken into account when adding to stars_sum etc above

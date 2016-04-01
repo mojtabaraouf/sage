@@ -251,7 +251,7 @@ double get_disc_gas(int p)
     
     if((Gal[p].ColdGas < 1e-15 && Gal[p].ColdGas!=0.0) || (DiscGasSum < 1e-15 && DiscGasSum!=0.0) || (Gal[p].ColdGas<=0 && Gal[p].MetalsColdGas>0.0))
     {
-        printf("get_disc_gas initial DiscGasSum, ColdGas = %e, %e\n", DiscGasSum, Gal[p].ColdGas);
+        //printf("get_disc_gas initial DiscGasSum, ColdGas = %e, %e\n", DiscGasSum, Gal[p].ColdGas);
         Gal[p].ColdGas = 0.0;
         Gal[p].MetalsColdGas = 0.0;
         for(l=0; l<N_BINS; l++)
