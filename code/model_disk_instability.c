@@ -325,7 +325,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
                     Gal[p].DiscStarsMetals[i-1] += metallicity * unstable_stars;
                     assert(Gal[p].DiscStarsMetals[i-1] <= Gal[p].DiscStars[i-1]);
                 }
-                else if(r_inner > 0.2*Gal[p].DiskScaleRadius/2.4142) // Conserve angular momentum while moving stars to restore stability
+                else if(r_inner > 0.2*Gal[p].DiskScaleRadius || DiskInstabilityOn<2) // Conserve angular momentum while moving stars to restore stability
                 {
                     j_gain = (DiscBinEdge[i+2]-DiscBinEdge[i])/2.0;
                     if(i!=0)
@@ -346,7 +346,12 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
                         m_down = m_up * j_gain / j_lose;
                         assert((m_up+m_down)<=1.01*unstable_stars && (m_up+m_down)>=0.99*unstable_stars);
                         
-                        for(s=0; s<3; s++) Gal[p].SpinSecularBulge[s] = Gal[p].SpinSecularBulge[s]*Gal[p].SecularBulgeMass/(Gal[p].SecularBulgeMass+m_down);
+                        for(s=0; s<3; s++)
+                        {
+                            assert(Gal[p].SpinSecularBulge[s]==Gal[p].SpinSecularBulge[s] && Gal[p].SpinSecularBulge[s]!=INFINITY);
+                            Gal[p].SpinSecularBulge[s] = Gal[p].SpinSecularBulge[s]*Gal[p].SecularBulgeMass/(Gal[p].SecularBulgeMass+m_down);
+                            assert(Gal[p].SpinSecularBulge[s]==Gal[p].SpinSecularBulge[s] && Gal[p].SpinSecularBulge[s]!=INFINITY);
+                        }
                         Gal[p].SecularBulgeMass += m_down;
                         Gal[p].SecularMetalsBulgeMass += metallicity * m_down;
                         
@@ -358,8 +363,15 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
                 }
                 else // Transfer unstable stars directly into the pseudobulge.  The annuli are already within it!
                 {
+                    j_lose = (DiscBinEdge[i+1]+DiscBinEdge[i])/2.0;
                     for(s=0; s<3; s++)
-                        Gal[p].SpinSecularBulge[s] = (Gal[p].SpinSecularBulge[s]*Gal[p].SecularBulgeMass + Gal[p].SpinStars[s]*unstable_stars) / (Gal[p].SpinSecularBulge[s] * unstable_stars);
+                    {
+                        assert(Gal[p].SpinSecularBulge[s]==Gal[p].SpinSecularBulge[s] && Gal[p].SpinSecularBulge[s]!=INFINITY);
+                        Gal[p].SpinSecularBulge[s] = (Gal[p].SpinSecularBulge[s]*Gal[p].SecularBulgeMass + Gal[p].SpinStars[s]*unstable_stars*j_lose) / (Gal[p].SecularBulgeMass + unstable_stars);
+                        if(!(Gal[p].SpinSecularBulge[s]==Gal[p].SpinSecularBulge[s] && Gal[p].SpinSecularBulge[s]!=INFINITY))
+                        printf("SecBulgeMass, unstable_stars = %e, %e\n", Gal[p].SecularBulgeMass, unstable_stars);
+                        assert(Gal[p].SpinSecularBulge[s]==Gal[p].SpinSecularBulge[s] && Gal[p].SpinSecularBulge[s]!=INFINITY);
+                    }
                     Gal[p].SecularBulgeMass += unstable_stars;
                     Gal[p].SecularMetalsBulgeMass += metallicity * unstable_stars;
 
@@ -564,7 +576,7 @@ void precess_gas(int p, double dt, int halonr)
     // Axis of symmetry assumed to be the bulge in a bulge-dominated system, else it's the disc
     for(i=0; i<3; i++)
     {
-        if(Gal[p].ClassicalBulgeMass>0.5*Gal[p].StellarMass){
+        if(Gal[p].ClassicalBulgeMass>0.5*Gal[p].StellarMass && fabs(Gal[p].SpinClassicalBulge[0]+Gal[p].SpinClassicalBulge[1]+Gal[p].SpinClassicalBulge[2]) > 0.0){
             StarSpin[i] = Gal[p].SpinClassicalBulge[i] / pow(pow(Gal[p].SpinClassicalBulge[0],2.0)+pow(Gal[p].SpinClassicalBulge[1],2.0)+pow(Gal[p].SpinClassicalBulge[2],2.0),0.5);
             assert(fabs(StarSpin[0]+StarSpin[1]+StarSpin[2]) > 0.0);}
         else{
