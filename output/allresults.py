@@ -707,11 +707,16 @@ class Results:
             
         Best2012_HE_xval = Best2012_HE[:,0]
         Best2012_HE_yval = Best2012_HE[:,1]
+        if(whichimf == 1):  Best2012_HE_yval = Best2012_HE_yval - 0.26
 
         Best2012_LE_xval = Best2012_LE[:,0]
         Best2012_LE_yval = Best2012_LE[:,1]
-        plt.scatter(Best2012_HE_xval, Best2012_HE_yval, marker = 'o',color='red', s=100, alpha=0.95, label='Best \& Heckman (2012)-HERGs')
-        plt.scatter(Best2012_LE_xval, Best2012_LE_yval, marker = 'd', color='green', s=100, alpha=0.95, label='Best \& Heckman (2012)-LERGs')
+        if(whichimf == 1):  Best2012_LE_yval = Best2012_LE_yval - 0.26
+        
+        plt.errorbar(Best2012_HE_xval, Best2012_HE_yval, yerr=0.0, color='red', alpha=0.6, marker='o', markersize=17, ls='none', label=r'Best \& Heckman (2012)-HERGs', mew=1, lw=2.0)
+        
+        plt.errorbar(Best2012_LE_xval, Best2012_LE_yval, yerr=0.0, color='orange', alpha=0.6, marker='d', markersize=17, ls='none', label=r'Best \& Heckman (2012)-LERGs', mew=1, lw=2.0)
+        
         plt.xlabel(r'Log  $(L_{1.4 GHz} Radio)$ [W/Hz]')  # Set the y...
         plt.ylabel(r'Log $M_*$')  # and the x-axis labels
         
@@ -806,7 +811,7 @@ class Results:
         binwidth = 0.6  # Radio Luminosity function histogram bin width
         
 
-        w1 = np.where((G.RadioLuminosity[:,5] > 1e0)& (G.RadioLuminosity[:,5] < 1e30)&(np.log10(G.CentralMvir * 1e10/self.Hubble_h) > 11))[0]
+        w1 = np.where((G.RadioLuminosity[:,5] > 0)& (G.RadioLuminosity[:,5] < 1e30)&(np.log10(G.CentralMvir * 1e10/self.Hubble_h) > 11)& (G.fcool>0))[0]
 #        if(len(w1) > dilute): w1 = sample(w1, dilute)
 
         Lradio1400_5 = np.log10(G.RadioLuminosity[w1,5])
@@ -846,13 +851,6 @@ class Results:
                              ], dtype=np.float32)
                              
                              
-#        xplot= np.log10(10**(Best2012[:,0]+0.15))
-#        yplot = (10**Best2012[:,1] )
-#        yerr2 = 10**(Best2012[:,1]+Best2012[:,2]) -  yplot
-#        yerr1 = yplot - 10**(Best2012[:,1]-Best2012[:,3])
-##        plt.errorbar(xplot, yplot, yerr=[yerr1,yerr2], color='c', lw=2.0, alpha=0.6, marker='s', markersize=3, ls='none', label='Best 2012 (All-Radio)', mew=1)
-#        plt.fill_between(xplot, yplot+yerr2, yplot-yerr1,facecolor='red', alpha=0.35)
-
         xplot= np.log10(10**(Best2012[:,0]+0.15))
         yplot = (10**Best2012[:,4])
         yerr2 = 10**(Best2012[:,4]+Best2012[:,5]) -  yplot
@@ -1164,7 +1162,6 @@ class Results:
         print 'Plotting the Rshock_Rheat_hist relation'
         
         seed(2222)
-#        plt.figure(figsize=(16,6))  # New figure
         plt.figure()  # New figure
 
         w = np.where((G.Type == 0) & (np.log10(G.CentralMvir * 1.0e10 / self.Hubble_h) > 11.0) & (G.StellarMass>0))[0]
@@ -1186,7 +1183,6 @@ class Results:
         running_std    = [Y[idx==k].std() for k in range(total_bins)]
         plt.errorbar(bins-delta/2,running_median,running_std,color='c', lw=2.0, alpha=0.6, marker='s', markersize=8, ls='none', label='Jet-model (Median$~\pm~\sigma$)', mew=1)
         
-        
         x=[9,11,12,13]
         y=[1,1,1,1]
         plt.plot(x, y, 'k--', lw=2)
@@ -1207,87 +1203,6 @@ class Results:
             t.set_fontsize('medium')
         
         outputFile = OutputDir + '24_Rshock_hist' + OutputFormat
-        plt.savefig(outputFile)  # Save the figure
-        print 'Saved file to', outputFile
-        plt.close()
-        
-        # Add this plot to our output list
-        OutputList.append(outputFile)
-# ---------------------------------------------------------
-
-    def Lradio_BHmass(self, G):
-    
-        print 'Plotting the delta-- mass relation'
-        
-        seed(2222)
-        
-        plt.figure()  # New figure
-        ax = plt.subplot(111)  # 1 plot on the figure
-        
-        w = np.where((G.Type == 0)&(np.log10(G.CentralMvir * 1e10 / self.Hubble_h)>11) &(G.BlackHoleMass>0)&(G.RadioLuminosity[:,5]>0)&(G.RadioLuminosity[:,5]<1e40))[0]
-        #        if(len(w) > dilute): w = sample(w, dilute)
-        
-        Lradio1400 = np.log10(G.RadioLuminosity[w,5])
-        BHmass = np.log10(G.BlackHoleMass[w]* 1e10/self.Hubble_h)
-        plt.scatter(Lradio1400, BHmass, marker='o', s=10, color = 'grey', alpha=0.05)
-        
-        total_bins = 70
-        X = Lradio1400
-        Y = BHmass
-        bins = np.linspace(X.min(),X.max(), total_bins)
-#        print bins
-        delta = bins[1]-bins[0]
-        idx  = np.digitize(X,bins)
-        running_median = [np.median(Y[idx==k]) for k in range(total_bins)]
-        plt.plot(bins-delta/2,running_median,'b--',lw=4,alpha=.8)
-        running_std    = [Y[idx==k].std() for k in range(total_bins)]
-        plt.errorbar(bins-delta/2,running_median,running_std,color='c', lw=2.0, alpha=0.6, marker='s', markersize=8, ls='none', label='Jet-model (Median$~\pm~\sigma$)', mew=1)
-        
-        
-#        High excitation
-        Best2012_HE = np.array([
-        [23.222246074630203,  7.7987147970657595],
-        [23.722141243939475,  8.175823264965134],
-        [24.219926695597884,  8.183359544900306],
-        [24.72082546460808,  8.175376105084753],
-        [25.220922972566733,  8.474845075460957],
-        [25.7155789197814,  8.504112234948709],
-                ], dtype=np.float32)
-        Best2012_LE = np.array([
-        [23.279100537257293,  8.385824813665208],
-        [23.779837435347986,  8.439952971868191],
-        [24.277452922540913,  8.512706429722828],
-        [24.77814935290173,  8.582362487430446],
-        [25.28191053933849,  8.6551323047929],
-        [25.78003591992785,  8.532234228889147],
-                ], dtype=np.float32)
-        
-        
-        Best2012_HE_xval = Best2012_HE[:,0]
-        Best2012_HE_yval = Best2012_HE[:,1]
-        
-        Best2012_LE_xval = Best2012_LE[:,0]
-        Best2012_LE_yval = Best2012_LE[:,1]
-        plt.scatter(Best2012_HE_xval, Best2012_HE_yval, marker = 'o',color='red', s=100, alpha=0.95, label='Best \& Heckman (2012)-HERGs')
-        plt.scatter(Best2012_LE_xval, Best2012_LE_yval, marker = 'd', color='green', s=100, alpha=0.95, label='Best \& Heckman (2012)-LERGs')
-        
-        
-        plt.ylabel(r' Log $M_{BH}$')  # Set the y...
-        plt.xlabel(r'Log $L_{1.4~GHz}$')  # and the x-axis labels
-        
-        # Set the x and y axis minor ticks
-        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.05))
-        ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
-        #plt.xscale('log', nonposy='clip')
-        plt.axis([23, 26, 7, 9.0])
-        
-        
-        leg = plt.legend(loc='lower right')
-        leg.draw_frame(False)  # Don't want a box frame
-        for t in leg.get_texts():  # Reduce the size of the text
-            t.set_fontsize('medium')
-        
-        outputFile = OutputDir + '25_Lradio_BHmass' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -1363,4 +1278,4 @@ if __name__ == '__main__':
     res.Density_profile(G)
     res.cooling_Temp(G)
     res.Rshock_hist(G)
-    res.Lradio_BHmass(G)
+
