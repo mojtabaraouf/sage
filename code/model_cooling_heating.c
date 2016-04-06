@@ -223,8 +223,8 @@ double do_Jet_uplift(double coolingGas, int p, double dt, double x, double rcool
     C_s = pow(5.0/3.0 * 0.5 * Gal[p].Vvir*Gal[p].Vvir,0.5);
     
     // Time for gas to returne from r = Rshocked to r = 0
-    Gal[p].t_AGN_returne =  5.0 *(Gal[p].Rshocked / C_s) * UnitTime_in_Megayears;
-//    Gal[p].t_AGN_returne =  5.0 *(Gal[p].Rshocked / Gal[p].Vvir) * UnitTime_in_Megayears;
+//    Gal[p].t_AGN_returne =  5.0 *(Gal[p].Rshocked / C_s) * UnitTime_in_Megayears;
+    Gal[p].t_AGN_returne =  5.0 *(Gal[p].Rshocked / Gal[p].Vvir) * UnitTime_in_Megayears;
     
     // Time of next AGN on
     Gal[p].time_to_next_on = Gal[p].t_AGN_off + AGN_Active_time;
@@ -402,7 +402,8 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
     double c2_p[7];
 
     // limit on Qjet and Rshock and just for avoiding the infinity value in radio luminosity
-    if (Gal[p].Rshocked > 0 & Gal[p].Qjet < 1e40)
+    // t_off sould be bigger than t_returne lead to fcool > 0
+    if (Gal[p].Rshocked > 0 && Gal[p].Qjet < 1e50)
     {
      for(p_v = 2.1; p_v < 2.8; p_v+=0.1)  //  ? The Fiducial Values
      {
