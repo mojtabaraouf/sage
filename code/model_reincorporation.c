@@ -30,6 +30,7 @@ void reincorporate_gas(int centralgal, double dt)
 
     if(reincorporated > 0.0)
     {
+        check_ejected(centralgal);
         metallicity = get_metallicity(Gal[centralgal].EjectedMass, Gal[centralgal].MetalsEjectedMass);
         assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
         Gal[centralgal].EjectedMass -= reincorporated;

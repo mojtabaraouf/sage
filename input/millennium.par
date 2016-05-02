@@ -4,19 +4,21 @@
 
 FileNameGalaxies       model
 OutputDir              ./output/results/millennium/
+%OutputDir               /Volumes/AdamDrive/Swinburne/SAGE_disc_runs/284/
 
-FirstFile					0
-LastFile					79
+FirstFile                   0
+LastFile					15
 
 
 %------------------------------------------
 %----- Snapshot output list ---------------
 %------------------------------------------
 
-NumOutputs        1   ; sets the desired number of galaxy outputs; use -1 for all outputs
+NumOutputs        6   ; sets the desired number of galaxy outputs; use -1 for all outputs
 
 % List your output snapshots after the arrow, highest to lowest (ignored when NumOutputs=-1).
--> 63 57 53 48 44 40 36 32 29 27 25 23 21 20 19 18 17 16
+-> 63 48 40 32 27 21
+%-> 63 57 53 48 44 40 36 32 29 27 25 23 21 20 19 18 17 16
 
 
 %------------------------------------------
@@ -24,8 +26,8 @@ NumOutputs        1   ; sets the desired number of galaxy outputs; use -1 for al
 %------------------------------------------
 
 TreeName					    trees_063		; assumes the trees are named TreeName.n where n is the snapshot number
-SimulationDir				/Volumes/AdamDrive/Swinburne/treefiles/millennium/full
-%SimulationDir               ../../../trees/Mini_Millennium/treedata
+%SimulationDir				/Volumes/AdamDrive/Swinburne/treefiles/millennium/full
+SimulationDir               ../../../trees/Millennium/treedata
 FileWithSnapList			../../../trees/Millennium/millennium.a_list
 LastSnapShotNr				63
 
@@ -43,12 +45,13 @@ PartMass			0.0860657
 
 SFprescription				0		;0: proportional to H2; 1: as 0 but all gas for low H2 fraction a la Fu et al 2010; 2: Threshold cold mass (closest to SAGE implementation)
 H2prescription              0       ;0: mid-plane pressure; 1: metallicity-dependent (McKee & Krumholz 2010)
-AGNrecipeOn					2		;0: switch off; 1: empirical model; 2: Bondi-Hoyle model; 3: cold cloud accretion model
+AGNrecipeOn					1		;0: switch off; 1: empirical model; 2: Bondi-Hoyle model; 3: cold cloud accretion model
 SupernovaRecipeOn			1		;0: switch off
 ReionizationOn				1		;0: switch off
 DiskInstabilityOn			1		;0: switch off; 1: unstable mass moves through disc; 2: inner unstable stars straight to bulge
 GasPrecessionOn             1       ;0: switch off; 1: gas discs will precess to naturally come in line with stellar discs
 RamPressureOn               1       ;0: switch off; 1: cold gas can be stripped from satellites
+HotStripOn                  1       ;0: switch off; 1: hot gas is gradually transferred from satellites to centrals
 
 %------------------------------------------
 %----- Set the binning for discs ----------

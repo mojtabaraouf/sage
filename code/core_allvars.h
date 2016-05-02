@@ -294,6 +294,7 @@ extern int    SFprescription;
 extern int    H2prescription;
 extern int    GasPrecessionOn;
 extern int    RamPressureOn;
+extern int    HotStripOn;
 
 // recipe parameters 
 extern double RecycleFraction;

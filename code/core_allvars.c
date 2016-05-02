@@ -60,6 +60,7 @@ int SFprescription;
 int H2prescription;
 int GasPrecessionOn;
 int RamPressureOn;
+int HotStripOn;
 
 // binning information
 double FirstBin;

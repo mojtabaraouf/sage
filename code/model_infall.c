@@ -112,7 +112,7 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
     (reionization_modifier * BaryonFrac * Gal[gal].Mvir - (Gal[gal].StellarMass + Gal[gal].ColdGas + Gal[gal].HotGas + Gal[gal].EjectedMass + Gal[gal].BlackHoleMass + Gal[gal].ICS) ) / STEPS;
     //( reionization_modifier * BaryonFrac * Gal[gal].deltaMvir ) / STEPS;
 
-  if(strippedGas > 0.0)
+  if(HotStripOn && strippedGas > 0.0)
   {
     metallicity = get_metallicity(Gal[gal].HotGas, Gal[gal].MetalsHotGas);
 	assert(Gal[gal].MetalsHotGas <= Gal[gal].HotGas);
@@ -242,7 +242,8 @@ void add_infall_to_hot(int centralgal, double infallingGas)
 
   // if the halo has lost mass, subtract baryons from the ejected mass first, then the hot gas
   if(infallingGas < 0.0 && Gal[centralgal].EjectedMass > 0.0)
-  {  
+  {
+    check_ejected(centralgal);
     metallicity = get_metallicity(Gal[centralgal].EjectedMass, Gal[centralgal].MetalsEjectedMass);
 	assert(Gal[centralgal].MetalsEjectedMass <= Gal[centralgal].EjectedMass);
     Gal[centralgal].MetalsEjectedMass += infallingGas*metallicity;

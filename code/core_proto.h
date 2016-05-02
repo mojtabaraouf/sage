@@ -60,6 +60,7 @@ void precess_gas(int p, double dt, int halonr);
 void update_HI_H2(int p);
 void update_disc_radii(int p);
 double get_channel_stars(int p);
+void check_ejected(int p);
 //
 
 void strip_from_satellite(int halonr, int centralgal, int gal);

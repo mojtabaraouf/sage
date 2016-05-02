@@ -214,7 +214,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 		Gal[p].SfrDisk[step] += stars_sum / dt; // Some of these stars may quickly be transferred to the bulge, so simply updating SfrDisk might be crude
         Gal[p].StarsInstability += NewStarsSum;
         
-        if(!(NewStarsSum<=stars_sum)) printf("NewStarsSum, stars_sum = %e, %e\n", NewStarsSum, stars_sum);
+        if(!(NewStarsSum<=1.001*stars_sum)) printf("NewStarsSum, stars_sum = %e, %e\n", NewStarsSum, stars_sum);
         assert(NewStarsSum<=1.001*stars_sum);
         StarChannelSum = get_channel_stars(p);
         
