@@ -1598,7 +1598,7 @@ class Results:
         plt.figure()  # New figure
         ax = plt.subplot(111)  # 1 plot on the figure
         
-        binwidth = 0.6  # Radio Luminosity function histogram bin width
+        binwidth = 0.5  # Radio Luminosity function histogram bin width
         w1 = np.where((G.RadioLuminosity[:,5] > 0)& (G.RadioLuminosity[:,5] < 1e30)&(np.log10(G.CentralMvir * 1e10/self.Hubble_h) > 11) & (G.fcool>0))[0]
 #        if(len(w1) > dilute): w1 = sample(w1, dilute)
 
