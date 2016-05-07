@@ -682,10 +682,10 @@ class Results:
         plt.figure()  # New figure
         ax = plt.subplot(111)  # 1 plot on the figure
         
-        binwidth = 0.6  # Radio Luminosity function histogram bin width
+        binwidth = 0.5  # Radio Luminosity function histogram bin width
         
         snap = 63
-        w1 = np.where((G_history[snap].RadioLuminosity[:,5] > 0)& (G_history[snap].RadioLuminosity[:,5] < 1e50)&(np.log10(G_history[snap].CentralMvir * 1e10/self.Hubble_h) > 0)& (G_history[snap].fcool>0))[0]
+        w1 = np.where((G_history[snap].RadioLuminosity[:,5] > 0)& (G_history[snap].RadioLuminosity[:,5] < 1e50)&(np.log10(G_history[snap].CentralMvir * 1e10/self.Hubble_h) > 11)& (G_history[snap].fcool>0))[0]
         Lradio1400_5 = np.log10(G_history[snap].RadioLuminosity[w1,5])
         mi_5 = np.floor(min(Lradio1400_5)) - 3.0
         ma_5 = np.floor(max(Lradio1400_5)) + 3.0
