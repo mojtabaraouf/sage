@@ -35,13 +35,13 @@ plt.rc('lines', linewidth='2.0')
 plt.rc('legend', numpoints=1, fontsize='x-large')
 plt.rc('text', usetex=True)
 
-#OutputDir = '/Users/mojtabaraouf/sage-master/output/new_SAM' # set in main below
+OutputDir = '' # set in main below
 
 #Mac book Air
 #OutputDir = '/Volumes/09158118409/sage-master/output/new_SAM/allresult/model/'
 
 #IMAC
-OutputDir = '/Users/mraoufhajarzarrin/Desktop/sage-master/output/new_SAM/allresult/model/'
+#OutputDir = '/Users/mraoufhajarzarrin/Desktop/sage-master/output/new_SAM/allresult/model/'
 
 
 OutputFormat = '.png'
@@ -1176,7 +1176,7 @@ if __name__ == '__main__':
     if opt.DirName[-1] != '/':
         opt.DirName += '/'
 
-#    OutputDir = opt.DirName + '/plots/'
+    OutputDir = opt.DirName + '/plots/'
 
     if not os.path.exists(OutputDir):
       os.makedirs(OutputDir)
