@@ -53,7 +53,6 @@ TRANSPARENT = False
 
 OutputList = []
 
-
 class Results:
 
     """ The following methods of this class generate the figures and plot them.
@@ -63,20 +62,27 @@ class Results:
         """Here we set up some of the variables which will be global to this
         class."""
 
+        self.Hubble_h = 0.73
+
         if whichsimulation == 0:    # Mini-Millennium
-          self.Hubble_h = 0.73
           self.BoxSize = 62.5       # Mpc/h
           self.MaxTreeFiles = 8     # FilesPerSnapshot
 
-        elif whichsimulation == 1:  # Full Millennium
-          self.Hubble_h = 0.73
+        elif whichsimulation == 1:  # Millennium
           self.BoxSize = 500        # Mpc/h
           self.MaxTreeFiles = 512   # FilesPerSnapshot
+
+        elif whichsimulation == 2:  # Bolshoi
+          self.BoxSize = 250.0      # Mpc/h
+          self.MaxTreeFiles = 12987 # FilesPerSnapshot
+
+        elif whichsimulation == 3:  # GiggleZ MR
+          self.BoxSize = 125.0      # Mpc/h
+          self.MaxTreeFiles = 8 # FilesPerSnapshot
 
         else:
           print "Please pick a valid simulation!"
           exit(1)
-
 
 
     def read_gals(self, model_name, first_file, last_file):
