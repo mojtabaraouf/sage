@@ -40,13 +40,6 @@ plt.rc('text', usetex=True)
 
 OutputDir = '' # set in main below
 
-#Mac book Air
-#OutputDir = '/Volumes/09158118409/sage-master/output/new_SAM/allresult/model/'
-
-#IMAC
-#OutputDir = '/Users/mraoufhajarzarrin/Desktop/sage-master/output/new_SAM/allresult/model/'
-
-
 
 OutputFormat = '.png'
 TRANSPARENT = False
@@ -343,277 +336,6 @@ class Results:
             [11.95, 7.4764e-06, 7.4764e-06],
             ], dtype=np.float32)
             
-        No_jet_mMS = np.array( [
-             [  8.05000000e+00,   1.09600000e+03],
-             [  8.15000000e+00,   1.25100000e+03],   
-             [  8.25000000e+00,   1.39700000e+03],   
-             [  8.35000000e+00,   1.66400000e+03],   
-             [  8.45000000e+00,   1.75400000e+03],   
-             [  8.55000000e+00,   1.70800000e+03],   
-             [  8.65000000e+00,   1.64200000e+03],   
-             [  8.75000000e+00,   1.49600000e+03],   
-             [  8.85000000e+00,   1.18800000e+03],   
-             [  8.95000000e+00,   1.06400000e+03],   
-             [  9.05000000e+00,   9.80000000e+02],   
-             [  9.15000000e+00,   8.50000000e+02],   
-             [  9.25000000e+00,   7.98000000e+02],   
-             [  9.35000000e+00,   7.07000000e+02],   
-             [  9.45000000e+00,   6.67000000e+02],   
-             [  9.55000000e+00,   6.26000000e+02],   
-             [  9.65000000e+00,   6.31000000e+02],   
-             [  9.75000000e+00,   5.92000000e+02],   
-             [  9.85000000e+00,   5.21000000e+02],   
-             [  9.95000000e+00,   5.72000000e+02],   
-             [  1.00500000e+01,   5.01000000e+02],   
-             [  1.01500000e+01,   4.63000000e+02],   
-             [  1.02500000e+01,   4.30000000e+02],   
-             [  1.03500000e+01,   4.27000000e+02],   
-             [  1.04500000e+01,   4.19000000e+02],   
-             [  1.05500000e+01,   3.11000000e+02],   
-             [  1.06500000e+01,   3.19000000e+02],   
-             [  1.07500000e+01,   2.69000000e+02],   
-             [  1.08500000e+01,   2.39000000e+02],   
-             [  1.09500000e+01,   2.00000000e+02],   
-             [  1.10500000e+01,   1.94000000e+02],   
-             [  1.11500000e+01,   1.69000000e+02],   
-             [  1.12500000e+01,   1.39000000e+02],   
-             [  1.13500000e+01,   1.36000000e+02],   
-             [  1.14500000e+01,   1.28000000e+02],   
-             [  1.15500000e+01,   6.20000000e+01],   
-             [  1.16500000e+01,   4.80000000e+01],   
-             [  1.17500000e+01,   2.60000000e+01],   
-             [  1.18500000e+01,   1.30000000e+01],   
-             [  1.19500000e+01,   5.00000000e+00],   
-             [  1.20500000e+01,   4.00000000e+00],   
-             [  1.21500000e+01,   0.00000000e+00],   
-             [  1.22500000e+01,   0.00000000e+00],   
-             [  1.23500000e+01,   0.00000000e+00],   
-             ], dtype=np.float32)
-             
-        No_jet_Iso_mMS = np.array( [
-             [  8.02848837e+00,   1.65100000e+03],
-             [  8.17965116e+00,   1.90000000e+03],
-             [  8.33081395e+00,   2.39800000e+03],
-             [  8.48197674e+00,   2.63400000e+03],
-             [  8.63313953e+00,   2.54800000e+03],
-             [  8.78430233e+00,   2.19300000e+03],
-             [  8.93546512e+00,   1.73000000e+03],
-             [  9.08662791e+00,   1.44300000e+03],
-             [  9.23779070e+00,   1.24700000e+03],
-             [  9.38895349e+00,   1.05400000e+03],
-             [  9.54011628e+00,   9.72000000e+02],
-             [  9.69127907e+00,   8.97000000e+02],
-             [  9.84244186e+00,   8.15000000e+02],
-             [  9.99360465e+00,   8.35000000e+02],
-             [  1.01447674e+01,   6.89000000e+02],
-             [  1.02959302e+01,   6.58000000e+02],
-             [  1.04470930e+01,   6.13000000e+02],
-             [  1.05982558e+01,   4.68000000e+02],
-             [  1.07494186e+01,   4.06000000e+02],
-             [  1.09005814e+01,   3.37000000e+02],
-             [  1.10517442e+01,   2.94000000e+02],
-             [  1.12029070e+01,   2.33000000e+02],
-             [  1.13540698e+01,   2.22000000e+02],
-             [  1.15052326e+01,   1.16000000e+02],
-             [  1.16563953e+01,   6.20000000e+01],
-             [  1.18075581e+01,   2.70000000e+01],
-             [  1.19587209e+01,   1.50000000e+01],
-             [  1.21098837e+01,   5.00000000e+00],
-             [  1.22610465e+01,   2.00000000e+00],
-             [  1.24122093e+01,   0.00000000e+00],
-             [  1.25633721e+01,   0.00000000e+00],
-             [  1.27145349e+01,   0.00000000e+00],
-             [  1.28656977e+01,   0.00000000e+00],
-             ], dtype=np.float32)
-
-        heat_mMS = np.array( [
-             [  8.05000000e+00,   1.09600000e+03],
-             [  8.15000000e+00,   1.25100000e+03],
-             [  8.25000000e+00,   1.40000000e+03],
-             [  8.35000000e+00,   1.66300000e+03],
-             [  8.45000000e+00,   1.75800000e+03],
-             [  8.55000000e+00,   1.70500000e+03],
-             [  8.65000000e+00,   1.64200000e+03],
-             [  8.75000000e+00,   1.49600000e+03],
-             [  8.85000000e+00,   1.19000000e+03],
-             [  8.95000000e+00,   1.06000000e+03],
-             [  9.05000000e+00,   9.82000000e+02],
-             [  9.15000000e+00,   8.50000000e+02],
-             [  9.25000000e+00,   7.99000000e+02],
-             [  9.35000000e+00,   7.05000000e+02],
-             [  9.45000000e+00,   6.68000000e+02],
-             [  9.55000000e+00,   6.26000000e+02],
-             [  9.65000000e+00,   6.33000000e+02],
-             [  9.75000000e+00,   5.96000000e+02],
-             [  9.85000000e+00,   5.24000000e+02],
-             [  9.95000000e+00,   5.74000000e+02],
-             [  1.00500000e+01,   5.08000000e+02],
-             [  1.01500000e+01,   4.61000000e+02],
-             [  1.02500000e+01,   4.57000000e+02],
-             [  1.03500000e+01,   4.54000000e+02],
-             [  1.04500000e+01,   4.48000000e+02],
-             [  1.05500000e+01,   3.64000000e+02],
-             [  1.06500000e+01,   3.32000000e+02],
-             [  1.07500000e+01,   3.44000000e+02],
-             [  1.08500000e+01,   2.81000000e+02],
-             [  1.09500000e+01,   2.49000000e+02],
-             [  1.10500000e+01,   1.85000000e+02],
-             [  1.11500000e+01,   1.50000000e+02],
-             [  1.12500000e+01,   1.14000000e+02],
-             [  1.13500000e+01,   7.10000000e+01],
-             [  1.14500000e+01,   4.40000000e+01],
-             [  1.15500000e+01,   3.00000000e+01],
-             [  1.16500000e+01,   9.00000000e+00],
-             [  1.17500000e+01,   5.00000000e+00],
-             [  1.18500000e+01,   1.00000000e+00],
-             [  1.19500000e+01,   0.00000000e+00],
-               ], dtype=np.float32)
-        Heat_MS = np.array( [
-             [  8.05000000e+00,   1.73850000e+04],
-             [  8.15000000e+00,   2.01670000e+04],
-             [  8.25000000e+00,   2.35420000e+04],
-             [  8.35000000e+00,   2.61030000e+04],
-             [  8.45000000e+00,   2.79610000e+04],
-             [  8.55000000e+00,   2.78380000e+04],
-             [  8.65000000e+00,   2.63030000e+04],
-             [  8.75000000e+00,   2.33800000e+04],
-             [  8.85000000e+00,   2.03780000e+04],
-             [  8.95000000e+00,   1.72640000e+04],
-             [  9.05000000e+00,   1.53250000e+04],
-             [  9.15000000e+00,   1.39060000e+04],
-             [  9.25000000e+00,   1.25580000e+04],
-             [  9.35000000e+00,   1.18230000e+04],
-             [  9.45000000e+00,   1.12180000e+04],
-             [  9.55000000e+00,   1.06720000e+04],
-             [  9.65000000e+00,   1.01820000e+04],
-             [  9.75000000e+00,   9.52300000e+03],
-             [  9.85000000e+00,   9.33000000e+03],
-             [  9.95000000e+00,   8.72800000e+03],
-             [  1.00500000e+01,   8.36300000e+03],
-             [  1.01500000e+01,   7.90000000e+03],
-             [  1.02500000e+01,   7.49200000e+03],
-             [  1.03500000e+01,   7.13200000e+03],
-             [  1.04500000e+01,   6.69200000e+03],
-             [  1.05500000e+01,   6.37200000e+03],
-             [  1.06500000e+01,   5.98000000e+03],
-             [  1.07500000e+01,   5.67800000e+03],
-             [  1.08500000e+01,   4.96300000e+03],
-             [  1.09500000e+01,   3.66100000e+03],
-             [  1.10500000e+01,   2.94100000e+03],
-             [  1.11500000e+01,   2.41700000e+03],
-             [  1.12500000e+01,   1.68000000e+03],
-             [  1.13500000e+01,   9.64000000e+02],
-             [  1.14500000e+01,   6.61000000e+02],
-             [  1.15500000e+01,   3.87000000e+02],
-             [  1.16500000e+01,   1.58000000e+02],
-             [  1.17500000e+01,   6.00000000e+01],
-             [  1.18500000e+01,   2.20000000e+01],
-             [  1.19500000e+01,   7.00000000e+00],
-             [  1.20500000e+01,   4.00000000e+00],
-             [  1.21500000e+01,   3.00000000e+00],
-             [  1.22500000e+01,   0.00000000e+00],
-                ], dtype=np.float32)
-        No_jet_MS = np.array( [
-             [  8.05000000e+00,   1.73850000e+04],
-             [  8.15000000e+00,   2.01590000e+04],
-             [  8.25000000e+00,   2.35370000e+04],
-             [  8.35000000e+00,   2.60930000e+04],
-             [  8.45000000e+00,   2.79360000e+04],
-             [  8.55000000e+00,   2.78350000e+04],
-             [  8.65000000e+00,   2.62780000e+04],
-             [  8.75000000e+00,   2.33530000e+04],
-             [  8.85000000e+00,   2.03960000e+04],
-             [  8.95000000e+00,   1.72780000e+04],
-             [  9.05000000e+00,   1.53440000e+04],
-             [  9.15000000e+00,   1.39090000e+04],
-             [  9.25000000e+00,   1.25570000e+04],
-             [  9.35000000e+00,   1.18130000e+04],
-             [  9.45000000e+00,   1.11980000e+04],
-             [  9.55000000e+00,   1.06730000e+04],
-             [  9.65000000e+00,   1.01610000e+04],
-             [  9.75000000e+00,   9.50900000e+03],
-             [  9.85000000e+00,   9.27800000e+03],
-             [  9.95000000e+00,   8.64600000e+03],
-             [  1.00500000e+01,   8.29700000e+03],
-             [  1.01500000e+01,   7.72100000e+03],
-             [  1.02500000e+01,   7.29700000e+03],
-             [  1.03500000e+01,   6.77400000e+03],
-             [  1.04500000e+01,   6.14900000e+03],
-             [  1.05500000e+01,   5.57900000e+03],
-             [  1.06500000e+01,   5.24800000e+03],
-             [  1.07500000e+01,   4.56000000e+03],
-             [  1.08500000e+01,   4.09700000e+03],
-             [  1.09500000e+01,   3.61900000e+03],
-             [  1.10500000e+01,   3.08300000e+03],
-             [  1.11500000e+01,   2.51300000e+03],
-             [  1.12500000e+01,   2.25000000e+03],
-             [  1.13500000e+01,   2.17900000e+03],
-             [  1.14500000e+01,   1.84400000e+03],
-             [  1.15500000e+01,   9.75000000e+02],
-             [  1.16500000e+01,   5.78000000e+02],
-             [  1.17500000e+01,   3.50000000e+02],
-             [  1.18500000e+01,   2.14000000e+02],
-             [  1.19500000e+01,   1.26000000e+02],
-             [  1.20500000e+01,   6.10000000e+01],
-             [  1.21500000e+01,   1.20000000e+01],
-             [  1.22500000e+01,   6.00000000e+00],
-             [  1.23500000e+01,   2.00000000e+00],
-             [  1.24500000e+01,   2.00000000e+00],
-             [  1.25500000e+01,   0.00000000e+00],
-                ], dtype=np.float32)
-        No_jet_MS_Iso = np.array( [
-             [  8.05000000e+00,   1.73320000e+04],
-             [  8.15000000e+00,   1.98940000e+04],
-             [  8.25000000e+00,   2.33320000e+04],
-             [  8.35000000e+00,   2.57660000e+04],
-             [  8.45000000e+00,   2.78220000e+04],
-             [  8.55000000e+00,   2.79800000e+04],
-             [  8.65000000e+00,   2.69330000e+04],
-             [  8.75000000e+00,   2.42900000e+04],
-             [  8.85000000e+00,   2.15860000e+04],
-             [  8.95000000e+00,   1.81000000e+04],
-             [  9.05000000e+00,   1.59400000e+04],
-             [  9.15000000e+00,   1.42940000e+04],
-             [  9.25000000e+00,   1.28100000e+04],
-             [  9.35000000e+00,   1.19140000e+04],
-             [  9.45000000e+00,   1.12530000e+04],
-             [  9.55000000e+00,   1.07270000e+04],
-             [  9.65000000e+00,   1.01720000e+04],
-             [  9.75000000e+00,   9.49200000e+03],
-             [  9.85000000e+00,   9.29200000e+03],
-             [  9.95000000e+00,   8.63500000e+03],
-             [  1.00500000e+01,   8.29900000e+03],
-             [  1.01500000e+01,   7.70100000e+03],
-             [  1.02500000e+01,   7.27000000e+03],
-             [  1.03500000e+01,   6.77400000e+03],
-             [  1.04500000e+01,   6.09300000e+03],
-             [  1.05500000e+01,   5.57200000e+03],
-             [  1.06500000e+01,   5.21100000e+03],
-             [  1.07500000e+01,   4.53700000e+03],
-             [  1.08500000e+01,   4.09400000e+03],
-             [  1.09500000e+01,   3.64500000e+03],
-             [  1.10500000e+01,   3.13300000e+03],
-             [  1.11500000e+01,   2.58900000e+03],
-             [  1.12500000e+01,   2.37100000e+03],
-             [  1.13500000e+01,   2.25100000e+03],
-             [  1.14500000e+01,   1.78500000e+03],
-             [  1.15500000e+01,   8.31000000e+02],
-             [  1.16500000e+01,   5.15000000e+02],
-             [  1.17500000e+01,   3.28000000e+02],
-             [  1.18500000e+01,   2.14000000e+02],
-             [  1.19500000e+01,   1.19000000e+02],
-             [  1.20500000e+01,   8.70000000e+01],
-             [  1.21500000e+01,   7.00000000e+01],
-             [  1.22500000e+01,   3.90000000e+01],
-             [  1.23500000e+01,   1.60000000e+01],
-             [  1.24500000e+01,   1.40000000e+01],
-             [  1.25500000e+01,   5.00000000e+00],
-             [  1.26500000e+01,   4.00000000e+00],
-             [  1.27500000e+01,   2.00000000e+00],
-             [  1.28500000e+01,   2.00000000e+00],
-             [  1.29500000e+01,   0.00000000e+00],
-             [  1.30500000e+01,   0.00000000e+00],
-             ], dtype=np.float32)
 
               
         # Finally plot the data
@@ -634,24 +356,6 @@ class Results:
 
         plt.fill_between(Baldry_xval, Baldry_yvalU, Baldry_yvalL, 
             facecolor='red', alpha=0.35, label='Baldry et al. 2008 (z=0.1)')
-            
-            
-            
-        No_jet_Iso_mMS_xval=No_jet_Iso_mMS[:,0]
-        No_jet_Iso_mMS_yval=No_jet_Iso_mMS[:,1]
-        No_jet_xval = No_jet_mMS[:,0]
-        No_jet_yval = No_jet_mMS[:,1]
-
-        heat_mMS_xval = heat_mMS[:,0]
-        heat_mMS_yval = heat_mMS[:,1]
-        
-        No_jet_MS_xval = No_jet_MS[:,0]
-        No_jet_MS_yval = No_jet_MS[:,1]
-        No_jet_MS_Iso_xval = No_jet_MS_Iso[:,0]
-        No_jet_MS_Iso_yval = No_jet_MS_Iso[:,1]
-        heat_MS_xval = Heat_MS[:,0]
-        heat_MS_yval = Heat_MS[:,1]
-
 
         # This next line is just to get the shaded region to appear correctly in the legend
 
@@ -671,28 +375,8 @@ class Results:
         
         # Overplot the model histograms
         
-############################################################
-#################mili-Millennium plots######################
-############################################################
-#        plt.plot( No_jet_Iso_mMS_xval, No_jet_Iso_mMS_yval   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h / 0.15, color ='grey', lw = 5, alpha=0.45, label='No-AGN (Isothermal)')
-#        plt.plot(No_jet_xval, No_jet_yval   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h / 0.1, 'b--', lw = 3, alpha=0.85, label='No-AGN (Makino+98)')
-#        plt.plot( heat_mMS_xval, heat_mMS_yval   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h / 0.1, 'm--', lw = 4, alpha=0.85, label='Jet-model (+Heat)')
-#
-#        plt.plot(xaxeshisto, counts    / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h / binwidth, 'b-', lw = 3, alpha=0.45, label='Jet-model (+Heat, +Uplift)')
-
-############################################################
-#################full-millennium plots######################
-############################################################
-
-        plt.plot(No_jet_MS_Iso_xval, No_jet_MS_Iso_yval   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h / 0.1, 'k:', label='W/O-AGN (Iso)')
-
-        plt.plot(No_jet_MS_xval, No_jet_MS_yval   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h / 0.1, 'b--', label='W/O-AGN (Makino+98)')
-        plt.plot( heat_MS_xval, heat_MS_yval   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h / 0.1, 'm--', label='Jet-model (+Heat)')#
 
         plt.plot(xaxeshisto, counts    / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h / binwidth, 'b-', label='Jet-model (+Heat, +Uplift)')
-
-#
-#        print  np.column_stack((xaxeshisto, counts))
 
 #        plt.plot(xaxeshisto, countsRED / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h / binwidth, 'r:', lw=2, label='Model - Red')
 #        plt.plot(xaxeshisto, countsBLU / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h / binwidth, 'b:', lw=2, label='Model - Blue')
@@ -1595,100 +1279,6 @@ class Results:
         
         # Add this plot to our output list
         OutputList.append(outputFile)
-# ---------------------------------------------------------
-
-    def RadioLF(self, G):
-    
-        print 'Plotting the Radio Luminosity function'
-        
-        plt.figure()  # New figure
-        ax = plt.subplot(111)  # 1 plot on the figure
-        
-        binwidth = 0.5  # Radio Luminosity function histogram bin width
-        w1 = np.where((G.RadioLuminosity[:,5] > 0)& (G.RadioLuminosity[:,5] < 1e30)&(np.log10(G.CentralMvir * 1e10/self.Hubble_h) > 11) & (G.fcool>0))[0]
-#        if(len(w1) > dilute): w1 = sample(w1, dilute)
-
-        Lradio1400_5 = np.log10(G.RadioLuminosity[w1,5])
-        delta_duty  =  0.03 * (G.StellarMass[w1]* 1e10 / 1e11)**1.5
-        mi_5 = np.floor(min(Lradio1400_5)) - 3.0
-        ma_5 = np.floor(max(Lradio1400_5)) + 3.0
-        NB_5 = (ma_5 - mi_5) / binwidth
-        
-        
-        (counts_5, binedges_5) = np.histogram(Lradio1400_5, range=(mi_5, ma_5), bins=NB_5 )
-        
-        # Set the x-axis values to be the centre of the bins
-        xaxeshisto_5 = binedges_5[:-1] + 0.5 * binwidth
-        
-        
-        w = np.where(np.log10(G.StellarMass[w1] * 1e10/self.Hubble_h)< 12)
-        
-        Lradio1400_5_12 = Lradio1400_5[w]
-        (counts_5_12, binedges_5) = np.histogram(Lradio1400_5_12, range=(mi_5, ma_5), bins=NB_5 )
-        
-        
-#             Lradio, logp_all, Uy_all, Ly_all, logp_AGN, Uy_AGN, Ly_AGN,
-        Best2012 = np.array([
-                            [  22.0, -3.09, 0.03, 0.03, -4.44, 0.15, 0.23],
-                            [  22.3, -3.49, 0.02, 0.03, -4.45, 0.05, 0.05],
-                            [  22.6, -3.87, 0.02, 0.02, -4.45, 0.04, 0.04],
-                            [  22.9, -4.22, 0.02, 0.02, -4.48, 0.02, 0.03],
-                            [  23.2, -4.56, 0.02, 0.02, -4.69, 0.02, 0.02],
-                            [  23.5, -4.75, 0.01, 0.01, -4.80, 0.01, 0.01],
-                            [  23.8, -4.90, 0.02, 0.02, -4.91, 0.02, 0.02],
-                            [  24.1, -5.08, 0.01, 0.01, -5.09, 0.01, 0.02],
-                            [  24.4, -5.25, 0.02, 0.02, -5.26, 0.02, 0.02],
-                            [  24.7, -5.54, 0.02, 0.02, -5.54, 0.02, 0.02],
-                            [  25.0, -5.82, 0.03, 0.03, -5.82, 0.03, 0.03],
-                            [  25.3, -6.32, 0.05, 0.06, -6.32, 0.05, 0.06],
-                            [  25.6, -6.58, 0.07, 0.08, -6.58, 0.07, 0.08],
-                            [  25.9, -7.18, 0.12, 0.17, -7.18, 0.12, 0.17],
-                            [  26.2, -7.78, 0.21, 0.43, -7.78, 0.21, 0.43],
-                             ], dtype=np.float32)
-                             
-                             
-#        xplot= np.log10(10**(Best2012[:,0]+0.15))
-#        yplot = (10**Best2012[:,1] )
-#        yerr2 = 10**(Best2012[:,1]+Best2012[:,2]) -  yplot
-#        yerr1 = yplot - 10**(Best2012[:,1]-Best2012[:,3])
-##        plt.errorbar(xplot, yplot, yerr=[yerr1,yerr2], color='c', lw=2.0, alpha=0.6, marker='s', markersize=3, ls='none', label='Best 2012 (All-Radio)', mew=1)
-#        plt.fill_between(xplot, yplot+yerr2, yplot-yerr1,facecolor='red', alpha=0.35)
-#        0.15 is base on the bin center in Best 2012
-        xplot= np.log10(10**(Best2012[:,0]+0.15))
-        yplot = (10**Best2012[:,4])
-        yerr2 = 10**(Best2012[:,4]+Best2012[:,5]) - yplot
-        yerr1 = yplot - 10**(Best2012[:,4]-Best2012[:,6])
-#        plt.errorbar(xplot, yplot, yerr=[yerr1,yerr2], color='r', lw=2.0, alpha=0.6, marker='o', markersize=3, ls='none', label='Best 2012 (All-Radio)', mew=1)
-        plt.fill_between(xplot, yplot+yerr2, yplot-yerr1,facecolor='red', alpha=0.35,label= 'Best \& Heckman (2012)')
-        plt.plot(xaxeshisto_5, counts_5_12   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5, color='red',lw = 4, alpha=0.35, label='Best \& Heckman (2012)')
-
-        plt.plot(xaxeshisto_5, counts_5_12   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5,'c', lw=5.0, alpha=0.8, marker='s', markersize=13, label='Jet model (0 $< f_{cool} <$ 1)')
-        plt.plot(xaxeshisto_5, counts_5_12  / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5, 'b--',lw=5,alpha=.8)
-
-
-        plt.yscale('log', nonposy='clip')
-        plt.axis([22, 26.5, 1.0e-8, 1.0e-4])
-                              
-        # Set the x-axis minor ticks
-        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.1))
-                              
-        plt.ylabel(r'$\phi\ (\mathrm{Mpc}^{-3}\ \mathrm{dex}^{-1})$')  # Set the y...
-        plt.xlabel(r'$\log_{10} (L_{\mathrm{1.4 ~GHz}}\ [W~ Hz^{-1}])$')  # Set the y...
-   
-        leg = plt.legend(loc='upper right', numpoints=1,labelspacing=0.1)
-        leg.draw_frame(False)  # Don't want a box frame
-        for t in leg.get_texts():  # Reduce the size of the text
-                t.set_fontsize('medium')
-                              
-        outputFile = OutputDir + '9_RadioLF' + OutputFormat
-        plt.savefig(outputFile)  # Save the figure
-        print 'Saved file to', outputFile
-        plt.close()
-    
-        # Add this plot to our output list
-        OutputList.append(outputFile)
-    
-    
     # ---------------------------------------------------------
     
     def Density_profile(self, G):
@@ -1766,7 +1356,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('large')
         
-        outputFile = OutputDir + '10_Density_profile' + OutputFormat
+        outputFile = OutputDir + '9_Density_profile' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -1952,7 +1542,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('small')
         
-        outputFile = OutputDir + '11_Cooling_Temp' + OutputFormat
+        outputFile = OutputDir + '10_Cooling_Temp' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -2081,7 +1671,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('medium')
         
-        outputFile = OutputDir + '12_RadioFraction' + OutputFormat
+        outputFile = OutputDir + '11_RadioFraction' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -2140,91 +1730,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('medium')
         
-        outputFile = OutputDir + '13_Rshock_hist' + OutputFormat
-        plt.savefig(outputFile)  # Save the figure
-        print 'Saved file to', outputFile
-        plt.close()
-        
-        # Add this plot to our output list
-        OutputList.append(outputFile)
-# ---------------------------------------------------------
-
-    def Lradio_BHmass(self, G):
-    
-        print 'Plotting the delta-- mass relation'
-        
-        seed(2222)
-        
-        plt.figure()  # New figure
-        ax = plt.subplot(111)  # 1 plot on the figure
-        
-        w = np.where((G.Type == 0)&(np.log10(G.CentralMvir * 1e10 / self.Hubble_h)>11) &(G.BlackHoleMass>0)&(G.RadioLuminosity[:,5]>0)&(G.RadioLuminosity[:,5]< 1e40))[0]
-        #        if(len(w) > dilute): w = sample(w, dilute)
-        
-        Lradio1400 = np.log10(G.RadioLuminosity[w,5])
-        BHmass = np.log10(G.BlackHoleMass[w]* 1e10/self.Hubble_h)
-        plt.scatter(Lradio1400, BHmass, marker='o', s=10, color = 'grey', alpha=0.15)
-        
-        total_bins = 70
-        X = Lradio1400
-        Y = BHmass
-        bins = np.linspace(X.min(),X.max(), total_bins)
-#        print bins
-        delta = bins[1]-bins[0]
-        idx  = np.digitize(X,bins)
-        running_median = [np.median(Y[idx==k]) for k in range(total_bins)]
-        plt.plot(bins-delta/2,running_median,'b--',lw=4,alpha=.8)
-        running_std    = [Y[idx==k].std() for k in range(total_bins)]
-        plt.errorbar(bins-delta/2,running_median,running_std,color='c', lw=2.0, alpha=0.6, marker='s', markersize=8, ls='none', label='Jet-model (Median$~\pm~\sigma$)', mew=1)
-        
-        
-#        High excitation
-        Best2012_HE = np.array([
-        [23.222246074630203,  7.7987147970657595],
-        [23.722141243939475,  8.175823264965134],
-        [24.219926695597884,  8.183359544900306],
-        [24.72082546460808,  8.175376105084753],
-        [25.220922972566733,  8.474845075460957],
-        [25.7155789197814,  8.504112234948709],
-                ], dtype=np.float32)
-        Best2012_LE = np.array([
-        [23.279100537257293,  8.385824813665208],
-        [23.779837435347986,  8.439952971868191],
-        [24.277452922540913,  8.512706429722828],
-        [24.77814935290173,  8.582362487430446],
-        [25.28191053933849,  8.6551323047929],
-        [25.78003591992785,  8.532234228889147],
-                ], dtype=np.float32)
-        
-        
-        Best2012_HE_xval = Best2012_HE[:,0]
-        Best2012_HE_yval = Best2012_HE[:,1]
-        if(whichimf == 1):  Best2012_HE_yval = Best2012_HE_yval - 0.26
-        
-        Best2012_LE_xval = Best2012_LE[:,0]
-        Best2012_LE_yval = Best2012_LE[:,1]
-        if(whichimf == 1):  Best2012_LE_yval = Best2012_LE_yval - 0.26
-        
-        plt.errorbar(Best2012_HE_xval, Best2012_HE_yval, yerr=0.0, color='red', alpha=0.6, marker='o', markersize=17, ls='none', label=r'Best \& Heckman (2012)-HERGs', mew=1, lw=2.0)
-        
-        plt.errorbar(Best2012_LE_xval, Best2012_LE_yval, yerr=0.0, color='orange', alpha=0.6, marker='d', markersize=17, ls='none', label=r'Best \& Heckman (2012)-LERGs', mew=1, lw=2.0)
-        
-        plt.ylabel(r'$\log_{10} (M_{\mathrm{BH}}\ [M_{\odot}])$')  # Set the y...
-        plt.xlabel(r'$\log_{10} (L_{\mathrm{1.4 ~GHz}}\ [W~ Hz^{-1}])$')  # and the x-axis labels
- 
-        # Set the x and y axis minor ticks
-        ax.xaxis.set_minor_locator(plt.MultipleLocator(0.05))
-        ax.yaxis.set_minor_locator(plt.MultipleLocator(0.25))
-        #plt.xscale('log', nonposy='clip')
-        plt.axis([23, 26, 7, 9.0])
-        
-        
-        leg = plt.legend(loc='lower right')
-        leg.draw_frame(False)  # Don't want a box frame
-        for t in leg.get_texts():  # Reduce the size of the text
-            t.set_fontsize('medium')
-        
-        outputFile = OutputDir + '14_Lradio_BHmass' + OutputFormat
+        outputFile = OutputDir + '12_Rshock_hist' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -2299,9 +1805,8 @@ if __name__ == '__main__':
     res.Lradio_Rshock(G)
     res.Lradio_Mass(G)
     res.Temp_hist(G)
-    res.RadioLF(G)
     res.Density_profile(G)
     res.cooling_Temp(G)
     res.RadioFraction(G)
     res.Rshock_hist(G)
-    res.Lradio_BHmass(G)
+
