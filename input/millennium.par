@@ -3,7 +3,6 @@
 %------------------------------------------
 
 FileNameGalaxies				model
-%FileWithOutputSnaps			./input/desired_outputsnaps.txt
 
 OutputDir					./output/results/millennium/
 
@@ -26,19 +25,10 @@ NumOutputs        -1   ; sets the desired number of galaxy outputs; use -1 for a
 %------------------------------------------
 
 TreeName					trees_063		; assumes the trees are named TreeName.n where n is the snapshot number
-% Milli-Millennium
-SimulationDir		  /lustre/projects/p014_swin/raw_data/millennium/mini
-FileWithSnapList	  /lustre/projects/p014_swin/raw_data/millennium/mini/millennium.a_list
 
-% Full-Millennium
-%SimulationDir         /lustre/projects/p014_swin/raw_data/millennium/full
-%FileWithSnapList	  /lustre/projects/p014_swin/raw_data/millennium/full/millennium.a_list
+SimulationDir		    ./raw_data/millennium/mini
+FileWithSnapList	  ./raw_data/millennium/mini/millennium.a_list
 
-%my mac
-%SimulationDir         ./input/treefiles/millennium/millennium_mini/
-%FileWithSnapList	  ./input/treefiles/millennium/millennium_mini/millennium.a_list
-%SimulationDir         ./input/treefiles/millennium/millennium_full/
-%FileWithSnapList	  ./input/treefiles/millennium/millennium_full/millennium.a_list
 
 
 LastSnapShotNr				63
