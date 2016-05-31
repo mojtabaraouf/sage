@@ -32,9 +32,9 @@ OPT += -DMILLENNIUM         # Millennium simulation trees
 # OPT += -DMINIMIZE_IO        # tree files will be preloaded, galaxy data will be written in one go
 
 
-#SYSTYPE = "mac"
+SYSTYPE = "mac"
 #SYSTYPE = "green"
-SYSTYPE = "gstar"
+#SYSTYPE = "gstar"
 #SYSTYPE = "IMAC"
 #SYSTYPE = "Mojtaba_Mac"
 
