@@ -319,8 +319,8 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
 
     Gal[p].RadioAGNaccretionRate = AGNrate * (1e10/Hubble_h/UnitTime_in_Megayears); // msun/Myr
 
-    if(Gal[p].HotGas > 0.0 && AGNrate > 0)
-    {
+//    if(Gal[p].HotGas > 0.0 && AGNrate > 0)
+//    {
         
         if(AGNrate < 0.03 * EDDrate)
         {
@@ -334,7 +334,7 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
            Gal[p].Qjet = 3.42e36 * pow((Gal[p].BlackHoleMass * 1e10/Hubble_h)/ 1e9,-0.3) * pow(AGNrate * (1e10/Hubble_h/1e6),1.2);
            Gal[p].Q_index =1.0;
         }
-    }
+  //  }
     
     //    Isothermal density profile
     if(Density_model == 0)
@@ -403,8 +403,8 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
 
     // limit on Qjet and Rshock and just for avoiding the infinity value in radio luminosity
     // t_off sould be bigger than t_returne lead to fcool > 0
-    if (Gal[p].Rshocked > 0 && Gal[p].Qjet < 1e50)
-    {
+//    if (Gal[p].Rshocked > 0 && Gal[p].Qjet < 1e50)
+//    {
      for(p_v = 2.1; p_v < 2.8; p_v+=0.1)  //  ? The Fiducial Values
      {
         //    calculate c2_p with http://www.wolframalpha.com --->(3^(x/2)/((2^((x+13)/2))* 3.14^((x+2)/2)))*gama function ((x+1)/4) * gama function (x/4 + 19/12) * gama function (x/4 - 1/12) / gama function ((x+7)/4) for x=p_v
@@ -428,7 +428,7 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
         Gal[p].RadioLuminosity[ii] =  A1 * pow(uB, (5.0 + p_v)/4) * V * pow(1.4e9, (1.0 - p_v)/2.0) * pow(1 + ZZ[Gal[p].SnapNum], (3.0 - p_v)/2.0);
         ii +=1;
      }
-    }
+//    }
     // New hot temperature
     temp_new = ((Gal[p].Mshocked * Gal[p].Tshocked) + (Gal[p].HotGas * temp))/(Gal[p].Mshocked + Gal[p].HotGas);         // in Kelvin
 
