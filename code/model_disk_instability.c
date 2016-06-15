@@ -76,7 +76,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 
         Q_gas = c_s * Kappa * (r_outer*r_outer - r_inner*r_inner) / G / Gal[p].DiscGas[i];
         
-        if(Gal[p].DiscStars[i]>0.0 && angle<=10.0)
+        if(Gal[p].DiscStars[i]>0.0 && angle<=ThetaThresh)
         {
             Q_star = Kappa * sigma_R * 0.935 * (r_outer*r_outer - r_inner*r_inner) / G / Gal[p].DiscStars[i];
             
@@ -181,7 +181,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	
 	gas_sink += Gal[p].BlackHoleMass; // Because this was set as -BHMass at the start, this is actually the increase in BH mass from the instab.
 	if(gas_sink>0.0 && AGNrecipeOn > 0)
-		quasar_mode_wind(p, gas_sink);
+		quasar_mode_wind(p, gas_sink, centralgal);
 	
     for(i=0; i<N_BINS; i++) SNgas_copy[i] = SNgas[i];
     
@@ -253,7 +253,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
         
         sigma_R = 0.5*Gal[p].Vvir*exp(-r_av/2.0/Gal[p].DiskScaleRadius);
         
-        if(Gal[p].DiscGas[i]-SNgas[i]>0.0 && angle<=10.0)
+        if(Gal[p].DiscGas[i]-SNgas[i]>0.0 && angle<=ThetaThresh)
         {
             Q_star = Kappa * sigma_R * 0.935 * (r_outer*r_outer - r_inner*r_inner) / G / (Gal[p].DiscStars[i]+SNgas_proj[i]);
             Q_gas = c_s * Kappa * (r_outer*r_outer - r_inner*r_inner) / G / (Gal[p].DiscGas[i]-SNgas[i]);

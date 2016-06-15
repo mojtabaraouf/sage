@@ -327,8 +327,12 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
         if(ReIncorporationFactor > 0.0)
           reincorporate_gas(centralgal, deltaT / STEPS);
       }
-      else if(Gal[p].Type == 1 && Gal[p].HotGas > 0.0)
+      else if(HotStripOn>0 && Gal[p].Type == 1 && Gal[p].HotGas > 0.0)
         strip_from_satellite(halonr, centralgal, p);
+        
+      // Ram pressure stripping of cold gas from satellites
+      if(RamPressureOn && Gal[p].Type == 1 && Gal[p].ColdGas>0.0)
+          ram_pressure_stripping(centralgal, p);
 	
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
         

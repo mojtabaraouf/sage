@@ -7,17 +7,17 @@ OutputDir              ./output/results/millennium/
 %OutputDir               /Volumes/AdamDrive/Swinburne/SAGE_disc_runs/284/
 
 FirstFile                   0
-LastFile					15
+LastFile					7
 
 
 %------------------------------------------
 %----- Snapshot output list ---------------
 %------------------------------------------
 
-NumOutputs        6   ; sets the desired number of galaxy outputs; use -1 for all outputs
+NumOutputs        9   ; sets the desired number of galaxy outputs; use -1 for all outputs
 
 % List your output snapshots after the arrow, highest to lowest (ignored when NumOutputs=-1).
--> 63 48 40 32 27 21
+-> 63 62 61 60 48 40 32 27 21
 %-> 63 57 53 48 44 40 36 32 29 27 25 23 21 20 19 18 17 16
 
 
@@ -27,8 +27,8 @@ NumOutputs        6   ; sets the desired number of galaxy outputs; use -1 for al
 
 TreeName					    trees_063		; assumes the trees are named TreeName.n where n is the snapshot number
 %SimulationDir				/Volumes/AdamDrive/Swinburne/treefiles/millennium/full
-SimulationDir               ../../../trees/Millennium/treedata
-FileWithSnapList			../../../trees/Millennium/millennium.a_list
+SimulationDir               ../../../trees/Mini_Millennium/treedata
+FileWithSnapList			../../../trees/Mini_Millennium/millennium.a_list
 LastSnapShotNr				63
 
 Omega				0.25
@@ -45,13 +45,14 @@ PartMass			0.0860657
 
 SFprescription				0		;0: proportional to H2; 1: as 0 but all gas for low H2 fraction a la Fu et al 2010; 2: Threshold cold mass (closest to SAGE implementation)
 H2prescription              0       ;0: mid-plane pressure; 1: metallicity-dependent (McKee & Krumholz 2010)
-AGNrecipeOn					1		;0: switch off; 1: empirical model; 2: Bondi-Hoyle model; 3: cold cloud accretion model
+AGNrecipeOn					2		;0: switch off; 1: empirical model; 2: Bondi-Hoyle model; 3: cold cloud accretion model
 SupernovaRecipeOn			1		;0: switch off
 ReionizationOn				1		;0: switch off
 DiskInstabilityOn			1		;0: switch off; 1: unstable mass moves through disc; 2: inner unstable stars straight to bulge
 GasPrecessionOn             1       ;0: switch off; 1: gas discs will precess to naturally come in line with stellar discs
 RamPressureOn               1       ;0: switch off; 1: cold gas can be stripped from satellites
-HotStripOn                  1       ;0: switch off; 1: hot gas is gradually transferred from satellites to centrals
+HotStripOn                  1       ;0: switch off; 1: hot gas is gradually transferred from satellites to centrals; 2: strip all hot gas of satellites instantly
+HeatedToCentral             1       ;0: gas heated from feedback goes to hot reservoir of same galaxy; 1: goes to central's reservoir
 
 %------------------------------------------
 %----- Set the binning for discs ----------
@@ -77,18 +78,22 @@ RadioModeEfficiency			0.035
 QuasarModeEfficiency		0.005
 BlackHoleGrowthRate			0.03
 
-H2FractionFactor            1.0    ;Controls the normalisation of the H2/HI ratio calculation if H2prescription=0. 1.0 would be the same as Fu et al. (2010).
-H2FractionExponent          0.92   ;Also controls the H2/HI ratio calculation. 0.92 would be the same as Fu et al. (2010).
+H2FractionFactor            1.0    ;Controls the normalisation of the H2/HI calculation if H2prescription=0. (1.0 for Fu+10)
+H2FractionExponent          0.92   ;Also controls the H2/HI ratio calculation. (0.92 for Fu+10).
+
+ClumpFactor                 2.5     ; Controls the clump factor which affects H2/HI for H2prescription=1. (1.0 for Fu+13)
+ClumpExponent               0.7     ; Controls the clump factor which affects H2/HI for H2prescription=1. (0.7 for Fu+13)
 
 QTotMin                     1.0    ;threshold Toomre Q value for instabilities
 GasSinkRate                 0.3
+ThetaThresh                 10.0   ;threshold angle for gas and stellar discs to be coplanar
 
 DegPerTdyn                  5.0    ;degrees the gas disc precesses to come in line with stars per dynamical time
 
 ThreshMajorMerger			0.3		;major merger when mass ratio greater than this
 ThresholdSatDisruption		1.0		;Mvir-to-baryonic mass ratio threshold for satellite merger or disruption
 
-Yield						0.025
+Yield						0.035
 RecycleFraction				0.43	;fraction of SF mass instantaneously recycled back to cold
 FracZleaveDisk				0.0		;fraction of metals produced directly to hot component
 

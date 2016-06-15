@@ -266,20 +266,30 @@ void update_from_feedback(int p, int centralgal, double reheated_mass, double me
   {
     Gal[p].ColdGas -= reheated_mass;
     Gal[p].DiscGas[i] -= reheated_mass;
-    Gal[centralgal].HotGas += reheated_mass;
+    
+    if(HeatedToCentral)
+      Gal[centralgal].HotGas += reheated_mass;
+    else
+      Gal[p].HotGas += reheated_mass;
 
 	if(Gal[p].DiscGas[i]>0.0)
 	{
 	  Gal[p].MetalsColdGas -= metallicity * reheated_mass;
-      Gal[centralgal].MetalsHotGas += metallicity * reheated_mass;
       Gal[p].DiscGasMetals[i] -= metallicity * reheated_mass;
+      if(HeatedToCentral)
+        Gal[centralgal].MetalsHotGas += metallicity * reheated_mass;
+      else
+        Gal[p].MetalsHotGas += metallicity * reheated_mass;
 	  assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
 	}
 	else
 	{
 	  Gal[p].MetalsColdGas -= Gal[p].DiscGasMetals[i];
-      Gal[centralgal].MetalsHotGas += Gal[p].DiscGasMetals[i];
 	  Gal[p].DiscGasMetals[i] = 0.0;
+      if(HeatedToCentral)
+        Gal[centralgal].MetalsHotGas += Gal[p].DiscGasMetals[i];
+      else
+        Gal[p].MetalsHotGas += Gal[p].DiscGasMetals[i];
     }
   }
 
@@ -567,11 +577,11 @@ void update_HI_H2(int p)
                 Zp = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]) / 0.02; // Might also want solar metal fraction to be variable too
                 
                 if(Zp>0.01 && Zp<1) // Fu et al. 2013
-                    c_f = pow(Zp, -0.7);
+                    c_f = ClumpFactor*pow(Zp, -ClumpExponent);
                 else if(Zp>=1)
-                    c_f = 1.0;
+                    c_f = ClumpFactor;
                 else // prescription from Fu not defined here, so assume clumping factor can't exceed this value ~25
-                    c_f = pow(0.01, -0.7);
+                    c_f = pow(0.01, -ClumpExponent);
                 
                 Sigma_comp0 = c_f * Gal[p].DiscGas[i]/area; // see Krumholz & Dekel 2012, originally comes from McKee & Krumholz 2010
                 Tau_c = 320 * Zp * Sigma_comp0 * UnitMass_in_g / UnitLength_in_cm / UnitLength_in_cm * Hubble_h;
@@ -588,7 +598,7 @@ void update_HI_H2(int p)
             }
             else
             {
-                if(angle <=10.0)
+                if(angle <= ThetaThresh)
                 {
                     f_sigma =  1.1e6/UnitVelocity_in_cm_per_s / (0.5*Gal[p].Vvir*exp(-(Gal[p].DiscRadii[i]+Gal[p].DiscRadii[i+1])/4.0/Gal[p].DiskScaleRadius)); // Ratio of gas vel dispersion to stars', assuming gas is always 11 km/s
                     Pressure = 0.5*M_PI*G * Gal[p].DiscGas[i] * (Gal[p].DiscGas[i] + f_sigma*Gal[p].DiscStars[i]) / pow(area,2.0);

@@ -153,7 +153,7 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
   for(i=N_BINS-1; i>=0; i--) assert(Gal[merger_centralgal].DiscGasMetals[i] <= Gal[merger_centralgal].DiscGas[i]);
 
   if(AGNrecipeOn>0)
-	quasar_mode_wind(p, BHaccrete);
+	quasar_mode_wind(p, BHaccrete, centralgal);
 
   DiscGasSum = get_disc_gas(merger_centralgal);
   assert(DiscGasSum <= 1.01*Gal[merger_centralgal].ColdGas && DiscGasSum >= Gal[merger_centralgal].ColdGas/1.01);
@@ -322,7 +322,7 @@ double grow_black_hole(int merger_centralgal, double* disc_mass_ratio)
 
 
 
-void quasar_mode_wind(int p, float BHaccrete)
+void quasar_mode_wind(int p, float BHaccrete, int centralgal)
 { // I should probably out through the centralgal ID here
   double quasar_energy, cold_gas_energy, hot_gas_energy, DiscGasSum, cold_gas_energy_tot;
   int k;
@@ -359,8 +359,16 @@ void quasar_mode_wind(int p, float BHaccrete)
 		cold_gas_energy = 0.5 * Gal[p].DiscGas[k] * Gal[p].Vvir * Gal[p].Vvir;
 		if(quasar_energy >= cold_gas_energy && cold_gas_energy > 0.0)
 		{
-			Gal[p].EjectedMass += Gal[p].DiscGas[k];
-			Gal[p].MetalsEjectedMass += Gal[p].DiscGasMetals[k];
+            if(HeatedToCentral)
+            {
+                Gal[centralgal].EjectedMass += Gal[p].DiscGas[k];
+                Gal[centralgal].MetalsEjectedMass += Gal[p].DiscGasMetals[k];
+            }
+            else
+            {
+                Gal[p].EjectedMass += Gal[p].DiscGas[k];
+                Gal[p].MetalsEjectedMass += Gal[p].DiscGasMetals[k];
+            }
 			Gal[p].ColdGas -= Gal[p].DiscGas[k];
 			Gal[p].MetalsColdGas -= Gal[p].DiscGasMetals[k];
 			Gal[p].DiscGas[k] = 0.0;
@@ -369,8 +377,16 @@ void quasar_mode_wind(int p, float BHaccrete)
 		}
 		else if(quasar_energy > 0.0 && cold_gas_energy > 0.0)
 		{
-			Gal[p].EjectedMass += Gal[p].DiscGas[k] * quasar_energy/cold_gas_energy;
-			Gal[p].MetalsEjectedMass += Gal[p].DiscGasMetals[k] * quasar_energy/cold_gas_energy;
+            if(HeatedToCentral)
+            {
+                Gal[centralgal].EjectedMass += Gal[p].DiscGas[k] * quasar_energy/cold_gas_energy;
+                Gal[centralgal].MetalsEjectedMass += Gal[p].DiscGasMetals[k] * quasar_energy/cold_gas_energy;
+            }
+            else
+            {
+                Gal[p].EjectedMass += Gal[p].DiscGas[k] * quasar_energy/cold_gas_energy;
+                Gal[p].MetalsEjectedMass += Gal[p].DiscGasMetals[k] * quasar_energy/cold_gas_energy;
+            }
 			Gal[p].ColdGas -= Gal[p].DiscGas[k] * quasar_energy/cold_gas_energy;
 			Gal[p].MetalsColdGas -= Gal[p].DiscGasMetals[k] * quasar_energy/cold_gas_energy;
 			Gal[p].DiscGas[k] *= (1 - quasar_energy/cold_gas_energy);

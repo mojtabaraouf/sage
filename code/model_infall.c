@@ -98,9 +98,6 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
 void strip_from_satellite(int halonr, int centralgal, int gal)
 {
   double reionization_modifier, strippedGas, strippedGasMetals, metallicity;
-  double r_gal2, v_gal2, rho_IGM, Sigma_gas, area;//, Sigma_star
-  int i, j;
-  
   assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 
   if(ReionizationOn)
@@ -112,7 +109,7 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
     (reionization_modifier * BaryonFrac * Gal[gal].Mvir - (Gal[gal].StellarMass + Gal[gal].ColdGas + Gal[gal].HotGas + Gal[gal].EjectedMass + Gal[gal].BlackHoleMass + Gal[gal].ICS) ) / STEPS;
     //( reionization_modifier * BaryonFrac * Gal[gal].deltaMvir ) / STEPS;
 
-  if(HotStripOn && strippedGas > 0.0)
+  if(HotStripOn==1 && strippedGas > 0.0)
   {
     metallicity = get_metallicity(Gal[gal].HotGas, Gal[gal].MetalsHotGas);
 	assert(Gal[gal].MetalsHotGas <= Gal[gal].HotGas);
@@ -127,53 +124,63 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
     Gal[centralgal].HotGas += strippedGas;
     Gal[centralgal].MetalsHotGas += strippedGas * metallicity;
   }
-  
-	// Ram pressure stripping of cold gas
-    if(RamPressureOn && Gal[gal].ColdGas>0.0)
-    {
-        double ExpFac = AA[Gal[centralgal].SnapNum];
-        double angle = acos(Gal[gal].SpinStars[0]*Gal[gal].SpinGas[0] + Gal[gal].SpinStars[1]*Gal[gal].SpinGas[1] + Gal[gal].SpinStars[2]*Gal[gal].SpinGas[2])*180.0/M_PI;
-        double Sigma_disc;
+  else if(HotStripOn==2)
+  {
+      Gal[centralgal].HotGas += Gal[gal].HotGas;
+      Gal[centralgal].MetalsHotGas += Gal[gal].MetalsHotGas;
+      Gal[gal].HotGas = 0.0;
+      Gal[gal].MetalsHotGas = 0.0;
+  }
 
-        r_gal2 = (pow(Gal[gal].Pos[0]-Gal[centralgal].Pos[0], 2.0) + pow(Gal[gal].Pos[1]-Gal[centralgal].Pos[1], 2.0) + pow(Gal[gal].Pos[2]-Gal[centralgal].Pos[2], 2.0)) * pow(ExpFac, 2.0);
-        v_gal2 = (pow(Gal[gal].Vel[0]-Gal[centralgal].Vel[0], 2.0) + pow(Gal[gal].Vel[1]-Gal[centralgal].Vel[1], 2.0) + pow(Gal[gal].Vel[2]-Gal[centralgal].Vel[2], 2.0));
-        rho_IGM = Gal[centralgal].HotGas/ (4 * M_PI * Gal[centralgal].Rvir * r_gal2);
+    assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
+}
+
+
+void ram_pressure_stripping(int centralgal, int gal)
+{
+    double r_gal2, v_gal2, rho_IGM, Sigma_gas, area;
+    double ExpFac = AA[Gal[centralgal].SnapNum];
+    double angle = acos(Gal[gal].SpinStars[0]*Gal[gal].SpinGas[0] + Gal[gal].SpinStars[1]*Gal[gal].SpinGas[1] + Gal[gal].SpinStars[2]*Gal[gal].SpinGas[2])*180.0/M_PI;
+    double Sigma_disc;
+    int i, j;
+    
+    r_gal2 = (pow(Gal[gal].Pos[0]-Gal[centralgal].Pos[0], 2.0) + pow(Gal[gal].Pos[1]-Gal[centralgal].Pos[1], 2.0) + pow(Gal[gal].Pos[2]-Gal[centralgal].Pos[2], 2.0)) * pow(ExpFac, 2.0);
+    v_gal2 = (pow(Gal[gal].Vel[0]-Gal[centralgal].Vel[0], 2.0) + pow(Gal[gal].Vel[1]-Gal[centralgal].Vel[1], 2.0) + pow(Gal[gal].Vel[2]-Gal[centralgal].Vel[2], 2.0));
+    rho_IGM = Gal[centralgal].HotGas/ (4 * M_PI * Gal[centralgal].Rvir * r_gal2);
+    
+    for(i=0; i<N_BINS; i++)
+    {
+        area = M_PI * (pow(Gal[gal].DiscRadii[i+1], 2.0) - pow(Gal[gal].DiscRadii[i], 2.0));
+        Sigma_gas = Gal[gal].DiscGas[i] / area;
         
-        for(i=0; i<N_BINS; i++)
+        if(angle<=ThetaThresh)
+            Sigma_disc = Sigma_gas + Gal[gal].DiscStars[i] / area;
+        else
+            Sigma_disc = Sigma_gas;
+        
+        if(rho_IGM*v_gal2 >= 2*M_PI*G*Sigma_disc*Sigma_gas && i==0 && Sigma_gas>0.0) // If the central gas is stripped, assume all gas will be stripped.
         {
-            area = M_PI * (pow(Gal[gal].DiscRadii[i+1], 2.0) - pow(Gal[gal].DiscRadii[i], 2.0));
-            Sigma_gas = Gal[gal].DiscGas[i] / area;
-            
-            if(angle<=10.0)
-                Sigma_disc = Sigma_gas + Gal[gal].DiscStars[i] / area;
-            else
-                Sigma_disc = Sigma_gas;
-            
-            if(rho_IGM*v_gal2 >= 2*M_PI*G*Sigma_disc*Sigma_gas && i==0 && Sigma_gas>0.0) // If the central gas is stripped, assume all gas will be stripped.
+            Gal[centralgal].HotGas += Gal[gal].ColdGas;
+            Gal[centralgal].MetalsHotGas += Gal[gal].MetalsColdGas;
+            Gal[gal].ColdGas = 0.0;
+            Gal[gal].MetalsColdGas = 0.0;
+            for(j=0; j<N_BINS; j++)
             {
-                Gal[centralgal].HotGas += Gal[gal].ColdGas;
-                Gal[centralgal].MetalsHotGas += Gal[gal].MetalsColdGas;
-                Gal[gal].ColdGas = 0.0;
-                Gal[gal].MetalsColdGas = 0.0;
-                for(j=0; j<N_BINS; j++)
-                {
-                    Gal[gal].DiscGas[j] = 0.0;
-                    Gal[gal].DiscGasMetals[j] = 0.0;
-                }
-                break;
+                Gal[gal].DiscGas[j] = 0.0;
+                Gal[gal].DiscGasMetals[j] = 0.0;
             }
-            else if(rho_IGM*v_gal2 >= 2*M_PI*G*Sigma_disc*Sigma_gas)
-            {
-                Gal[centralgal].HotGas += Gal[gal].DiscGas[i];
-                Gal[centralgal].MetalsHotGas += Gal[gal].DiscGasMetals[i];
-                Gal[gal].ColdGas -= Gal[gal].DiscGas[i];
-                Gal[gal].MetalsColdGas -= Gal[gal].DiscGasMetals[i];
-                Gal[gal].DiscGas[i] = 0.0;
-                Gal[gal].DiscGasMetals[i] = 0.0;
-            }
+            break;
+        }
+        else if(rho_IGM*v_gal2 >= 2*M_PI*G*Sigma_disc*Sigma_gas)
+        {
+            Gal[centralgal].HotGas += Gal[gal].DiscGas[i];
+            Gal[centralgal].MetalsHotGas += Gal[gal].DiscGasMetals[i];
+            Gal[gal].ColdGas -= Gal[gal].DiscGas[i];
+            Gal[gal].MetalsColdGas -= Gal[gal].DiscGasMetals[i];
+            Gal[gal].DiscGas[i] = 0.0;
+            Gal[gal].DiscGasMetals[i] = 0.0;
         }
     }
-	assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 }
 
 

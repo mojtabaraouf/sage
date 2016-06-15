@@ -295,6 +295,7 @@ extern int    H2prescription;
 extern int    GasPrecessionOn;
 extern int    RamPressureOn;
 extern int    HotStripOn;
+extern int    HeatedToCentral;
 
 // recipe parameters 
 extern double RecycleFraction;
@@ -312,8 +313,11 @@ extern double QuasarModeEfficiency;
 extern double BlackHoleGrowthRate;
 extern double H2FractionFactor;
 extern double H2FractionExponent;
+extern double ClumpFactor;
+extern double ClumpExponent;
 extern double QTotMin;
 extern double GasSinkRate;
+extern double ThetaThresh;
 extern double DegPerTdyn;
 extern double Reionization_z0;
 extern double Reionization_zr;

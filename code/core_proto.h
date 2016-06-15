@@ -61,11 +61,12 @@ void update_HI_H2(int p);
 void update_disc_radii(int p);
 double get_channel_stars(int p);
 void check_ejected(int p);
+void ram_pressure_stripping(int centralgal, int gal);
 //
 
 void strip_from_satellite(int halonr, int centralgal, int gal);
 void disrupt_satellite_to_ICS(int centralgal, int gal);
-void quasar_mode_wind(int gal, float BHaccrete);
+void quasar_mode_wind(int p, float BHaccrete, int centralgal);
 
 double get_metallicity(double gas, double metals);
 double get_virial_velocity(int halonr, int p);

@@ -61,6 +61,7 @@ int H2prescription;
 int GasPrecessionOn;
 int RamPressureOn;
 int HotStripOn;
+int HeatedToCentral;
 
 // binning information
 double FirstBin;
@@ -82,8 +83,11 @@ double QuasarModeEfficiency;
 double BlackHoleGrowthRate;
 double H2FractionFactor;
 double H2FractionExponent;
+double ClumpFactor;
+double ClumpExponent;
 double QTotMin;
 double GasSinkRate;
+double ThetaThresh;
 double DegPerTdyn;
 double Reionization_z0;
 double Reionization_zr;

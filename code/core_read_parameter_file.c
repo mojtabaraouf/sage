@@ -132,6 +132,10 @@ void read_parameter_file(char *fname)
   strcpy(tag[nt], "HotStripOn");
   addr[nt] = &HotStripOn;
   id[nt++] = INT;
+
+  strcpy(tag[nt], "HeatedToCentral");
+  addr[nt] = &HeatedToCentral;
+  id[nt++] = INT;
     
   strcpy(tag[nt], "BaryonFrac");
   addr[nt] = &BaryonFrac;
@@ -201,6 +205,14 @@ void read_parameter_file(char *fname)
     addr[nt] = &H2FractionExponent;
     id[nt++] = DOUBLE;
     
+    strcpy(tag[nt], "ClumpFactor");
+    addr[nt] = &ClumpFactor;
+    id[nt++] = DOUBLE;
+    
+    strcpy(tag[nt], "ClumpExponent");
+    addr[nt] = &ClumpExponent;
+    id[nt++] = DOUBLE;
+    
     strcpy(tag[nt], "QTotMin");
     addr[nt] = &QTotMin;
     id[nt++] = DOUBLE;
@@ -209,6 +221,10 @@ void read_parameter_file(char *fname)
     addr[nt] = &GasSinkRate;
     id[nt++] = DOUBLE;
 
+    strcpy(tag[nt], "ThetaThresh");
+    addr[nt] = &ThetaThresh;
+    id[nt++] = DOUBLE;
+    
   strcpy(tag[nt], "DegPerTdyn");
   addr[nt] = &DegPerTdyn;
   id[nt++] = DOUBLE;
