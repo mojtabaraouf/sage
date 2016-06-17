@@ -160,7 +160,6 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
           //}
 
           Gal[ngal].Mvir = get_virial_mass(halonr, ngal);
-            Gal[ngal].DiskScaleRadius = get_disk_radius(halonr, ngal); // Previously was only done for FirstHaloInFOFgroup
 
           Gal[ngal].Cooling = 0.0;
           Gal[ngal].Heating = 0.0;
@@ -180,6 +179,10 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
             Gal[ngal].mergeIntoID = -1;
             Gal[ngal].MergTime = 999.9;            
 
+            Gal[ngal].DiskScaleRadius = get_disk_radius(halonr, ngal); // Only update the scale radius for centrals.  Satellites' spin will be too variable and untrustworthy for new cooling.
+              
+            for(j = 0; j < 3; j++) // Also only update the spin direction of the hot gas for centrals
+                Gal[ngal].SpinHot[j] = Halo[halonr].Spin[j] / pow(pow(Halo[halonr].Spin[0], 2.0) + pow(Halo[halonr].Spin[1], 2.0) + pow(Halo[halonr].Spin[2], 2.0), 0.5);
 
             Gal[ngal].Type = 0;
           }
@@ -331,7 +334,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
         strip_from_satellite(halonr, centralgal, p);
         
       // Ram pressure stripping of cold gas from satellites
-      if(RamPressureOn && Gal[p].Type == 1 && Gal[p].ColdGas>0.0)
+      if(RamPressureOn>0 && Gal[p].Type == 1 && Gal[p].ColdGas>0.0)
           ram_pressure_stripping(centralgal, p);
 	
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);

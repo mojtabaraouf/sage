@@ -90,7 +90,12 @@ struct GALAXY_OUTPUT
   float DiscH2[N_BINS];
   float DiscSFR[N_BINS];
     
-  // Instability tracking
+    // inflow/outflow tracking
+    float AccretedGasMass;
+    float EjectedSNGasMass;
+    float EjectedQuasarGasMass;
+    
+    // Instability tracking
   int TotInstabEvents;
   int TotInstabEventsGas;
   int TotInstabEventsStar;
@@ -176,12 +181,18 @@ struct GALAXY
   double SpinGas[3];
   double SpinSecularBulge[3];
   double SpinClassicalBulge[3];
+  double SpinHot[3];
   double StarsInSitu;
   double StarsInstability;
   double StarsMergeBurst;
   double DiscHI[N_BINS];
   double DiscH2[N_BINS];
   double DiscSFR[N_BINS];
+    
+    // inflow/outflow tracking
+    double AccretedGasMass;
+    double EjectedSNGasMass;
+    double EjectedQuasarGasMass;
     
   // Instability tracking
   int TotInstabEvents;

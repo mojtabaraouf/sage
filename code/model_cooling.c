@@ -39,7 +39,7 @@ double cooling_recipe(int gal, double dt)
     else
       // hot phase regime 
       coolingGas = (Gal[gal].HotGas / Gal[gal].Rvir) * (rcool / (2.0 * tcool)) * dt;
-
+      
     if(coolingGas > Gal[gal].HotGas)
       coolingGas = Gal[gal].HotGas;
     else if(coolingGas < 0.0)
@@ -209,15 +209,15 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 		// Determine orientation of disc after cooling
 		for(i=0; i<3; i++)
 		{
-			HaloSpin[i] = Halo[Gal[p].HaloNr].Spin[i] / pow(pow(Halo[Gal[p].HaloNr].Spin[0], 2.0) + pow(Halo[Gal[p].HaloNr].Spin[1], 2.0) + pow(Halo[Gal[p].HaloNr].Spin[2], 2.0), 0.5);
-			DiscNewSpin[i] = HaloSpin[i]*J_cool + Gal[p].SpinGas[i]*J_disc; // Not normalised yet
+			//HaloSpin[i] = Halo[Gal[p].HaloNr].Spin[i] / pow(pow(Halo[Gal[p].HaloNr].Spin[0], 2.0) + pow(Halo[Gal[p].HaloNr].Spin[1], 2.0) + pow(Halo[Gal[p].HaloNr].Spin[2], 2.0), 0.5);
+			DiscNewSpin[i] = Gal[p].SpinHot[i]*J_cool + Gal[p].SpinGas[i]*J_disc; // Not normalised yet
 		}
 
 		disc_spin_mag = pow(pow(DiscNewSpin[0], 2.0) + pow(DiscNewSpin[1], 2.0) + pow(DiscNewSpin[2], 2.0), 0.5);
 		for(i=0; i<3; i++)
 			DiscNewSpin[i] /= disc_spin_mag; // Normalise it now
 		cos_angle_disc_new = Gal[p].SpinGas[0]*DiscNewSpin[0] + Gal[p].SpinGas[1]*DiscNewSpin[1] + Gal[p].SpinGas[2]*DiscNewSpin[2];
-		cos_angle_halo_new = HaloSpin[0]*DiscNewSpin[0] + HaloSpin[1]*DiscNewSpin[1] + HaloSpin[2]*DiscNewSpin[2];
+		cos_angle_halo_new = Gal[p].SpinHot[0]*DiscNewSpin[0] + Gal[p].SpinHot[1]*DiscNewSpin[1] + Gal[p].SpinHot[2]*DiscNewSpin[2];
 	}
 	else
 	{

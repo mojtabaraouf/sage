@@ -339,8 +339,19 @@ void quasar_mode_wind(int p, float BHaccrete, int centralgal)
 
   if(quasar_energy > cold_gas_energy_tot)
   {
-	Gal[p].EjectedMass += Gal[p].ColdGas;
-    Gal[p].MetalsEjectedMass += Gal[p].MetalsColdGas;
+    Gal[p].EjectedQuasarGasMass += Gal[p].ColdGas;
+      
+    if(HeatedToCentral)
+    {
+        Gal[centralgal].EjectedMass += Gal[p].ColdGas;
+        Gal[centralgal].MetalsEjectedMass += Gal[p].MetalsColdGas;
+    }
+    else
+    {
+        Gal[p].EjectedMass += Gal[p].ColdGas;
+        Gal[p].MetalsEjectedMass += Gal[p].MetalsColdGas;
+    }
+      
 	Gal[p].ColdGas = 0.0;
 	Gal[p].MetalsColdGas = 0.0;
 	
@@ -359,6 +370,7 @@ void quasar_mode_wind(int p, float BHaccrete, int centralgal)
 		cold_gas_energy = 0.5 * Gal[p].DiscGas[k] * Gal[p].Vvir * Gal[p].Vvir;
 		if(quasar_energy >= cold_gas_energy && cold_gas_energy > 0.0)
 		{
+            Gal[p].EjectedQuasarGasMass += Gal[p].DiscGas[k];
             if(HeatedToCentral)
             {
                 Gal[centralgal].EjectedMass += Gal[p].DiscGas[k];
@@ -377,6 +389,7 @@ void quasar_mode_wind(int p, float BHaccrete, int centralgal)
 		}
 		else if(quasar_energy > 0.0 && cold_gas_energy > 0.0)
 		{
+            Gal[p].EjectedQuasarGasMass += Gal[p].DiscGas[k] * quasar_energy/cold_gas_energy;
             if(HeatedToCentral)
             {
                 Gal[centralgal].EjectedMass += Gal[p].DiscGas[k] * quasar_energy/cold_gas_energy;
@@ -413,8 +426,16 @@ void quasar_mode_wind(int p, float BHaccrete, int centralgal)
   // compare quasar wind and cold+hot gas energies and eject hot
   if(quasar_energy > hot_gas_energy)
   {
-    Gal[p].EjectedMass += Gal[p].HotGas;
-    Gal[p].MetalsEjectedMass += Gal[p].MetalsHotGas;
+      if(HeatedToCentral)
+      {
+          Gal[centralgal].EjectedMass += Gal[p].HotGas;
+          Gal[centralgal].MetalsEjectedMass += Gal[p].MetalsHotGas;
+      }
+      else
+      {
+          Gal[p].EjectedMass += Gal[p].HotGas;
+          Gal[p].MetalsEjectedMass += Gal[p].MetalsHotGas;
+      }
    
     Gal[p].HotGas = 0.0;
     Gal[p].MetalsHotGas = 0.0;
@@ -694,6 +715,10 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
   Gal[t].StarsInSitu += Gal[p].StarsInSitu;
   Gal[t].StarsInstability += Gal[p].StarsInstability;
   Gal[t].StarsMergeBurst += Gal[p].StarsMergeBurst;
+    
+    Gal[t].AccretedGasMass += Gal[p].AccretedGasMass;
+    Gal[t].EjectedSNGasMass += Gal[p].EjectedSNGasMass;
+    Gal[t].EjectedQuasarGasMass += Gal[p].EjectedQuasarGasMass;
 
   Gal[t].StellarMass += Gal[p].StellarMass;
   Gal[t].MetalsStellarMass += Gal[p].MetalsStellarMass;
@@ -839,7 +864,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
       stars = Gal[merger_centralgal].DiscGas[k];
 	
 	// this bursting results in SN feedback on the cold/hot gas 
-    if(SupernovaRecipeOn == 1 && Gal[merger_centralgal].DiscGas[k] > 0.0 && stars>=MIN_STARS_FOR_SN)//1e-9)
+    if(SupernovaRecipeOn>0 && Gal[merger_centralgal].DiscGas[k] > 0.0 && stars>=MIN_STARS_FOR_SN)//1e-9)
 	{
 //	  if(stars>MIN_STARS_FOR_SN)
 //	  {
@@ -847,10 +872,16 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
         r_outer = Gal[merger_centralgal].DiscRadii[k+1];
           
         area = M_PI * (r_outer*r_outer - r_inner*r_inner);
-		Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
-        reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[merger_centralgal].DiscGas[k]/area/1.3);
+        
+        if(SupernovaRecipeOn == 1)
+        {
+            Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
+            reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[merger_centralgal].DiscGas[k]/area/1.3);
+        }
+        else if(SupernovaRecipeOn == 2)
+            reheated_mass = FeedbackReheatingEpsilon * stars;
 		
-		// can't use more cold gas than is available! so balance SF and feedback 
+		// can't use more cold gas than is available! so balance SF and feedback
 	    if((stars + reheated_mass) > Gal[merger_centralgal].DiscGas[k] && (stars + reheated_mass) > 0.0)
 	    {
 	      fac = Gal[merger_centralgal].DiscGas[k] / (stars + reheated_mass);
@@ -911,7 +942,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
 	update_from_feedback(merger_centralgal, centralgal, reheated_mass, metallicity, k);
  
     // Inject new metals from SN II
-	if(SupernovaRecipeOn == 1 && stars>=MIN_STARS_FOR_SN)
+	if(SupernovaRecipeOn>0 && stars>=MIN_STARS_FOR_SN)
 	{
 	    Gal[merger_centralgal].DiscGasMetals[k] += Yield * stars*(1-get_metallicity(stars,metals_stars));
 	    Gal[merger_centralgal].MetalsColdGas += Yield * stars*(1-get_metallicity(stars,metals_stars));

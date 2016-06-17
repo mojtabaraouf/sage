@@ -472,9 +472,18 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 	stars = unstable_gas - gas_sink;
 	if(Gal[p].DiscGas[i] > 0.0 && stars > 0.0) // Quasar feedback could blow out the unstable gas
 	{
-		if(SupernovaRecipeOn == 1)
+		if(SupernovaRecipeOn>0)
 		{
 			area = M_PI * (r_outer*r_outer - r_inner*r_inner);
+            
+            if(SupernovaRecipeOn == 1)
+            {
+                Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
+                reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3);
+            }
+            else if(SupernovaRecipeOn == 2)
+                reheated_mass = FeedbackReheatingEpsilon * stars;
+            
 			Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
             reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3);
             
@@ -544,7 +553,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
         assert(reheated_mass==reheated_mass && reheated_mass!=INFINITY);
 	    update_from_feedback(p, centralgal, reheated_mass, metallicity_new, i);
 
-        if(SupernovaRecipeOn == 1 && stars>=MIN_STARS_FOR_SN)
+        if(SupernovaRecipeOn>0 && stars>=MIN_STARS_FOR_SN)
         {
 			Gal[p].DiscGasMetals[i] += Yield * stars*(1-metallicity);
 	    	Gal[p].MetalsColdGas += Yield * stars*(1-metallicity);

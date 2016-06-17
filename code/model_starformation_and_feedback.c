@@ -94,10 +94,15 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
     if(stars > Gal[p].DiscGas[i])
       stars = Gal[p].DiscGas[i];
 
-    if(SupernovaRecipeOn == 1 && Gal[p].DiscGas[i] > 0.0 && stars>MIN_STARS_FOR_SN)
+    if(SupernovaRecipeOn > 0 && Gal[p].DiscGas[i] > 0.0 && stars>MIN_STARS_FOR_SN)
 	{
-		Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
-        reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3);
+        if(SupernovaRecipeOn == 1)
+        {
+            Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
+            reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3);
+        }
+        else if(SupernovaRecipeOn == 2)
+            reheated_mass = FeedbackReheatingEpsilon * stars;
 
 		// Can't use more cold gas than is available, so balance SF and feedback 
 	    if((stars + reheated_mass) > Gal[p].DiscGas[i] && (stars + reheated_mass) > 0.0)
@@ -169,7 +174,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	assert(abs(Gal[p].ColdGas-ColdPre) <= 1.01*abs(Gal[p].DiscGas[i]-DiscPre) && abs(Gal[p].ColdGas-ColdPre) >= 0.999*abs(Gal[p].DiscGas[i]-DiscPre) && (Gal[p].ColdGas-ColdPre)*(Gal[p].DiscGas[i]-DiscPre)>=0.0);
 
 	// Inject new metals from SN II
-	if(SupernovaRecipeOn == 1 && stars>=MIN_STARS_FOR_SN)
+	if(SupernovaRecipeOn > 0 && stars>=MIN_STARS_FOR_SN)
 	{
 	    Gal[p].DiscGasMetals[i] += Yield * stars*(1.0 - get_metallicity(NewStars[i],NewStarsMetals[i])); // Could just use metallicity variable here, surely
 	    Gal[p].MetalsColdGas += Yield * stars*(1.0 - get_metallicity(NewStars[i],NewStarsMetals[i]));
@@ -262,7 +267,7 @@ void update_from_feedback(int p, int centralgal, double reheated_mass, double me
   assert(reheated_mass <= Gal[p].DiscGas[i]);
   assert(Gal[centralgal].MetalsHotGas <= Gal[centralgal].HotGas);
 
-  if(SupernovaRecipeOn == 1)
+  if(SupernovaRecipeOn>0)
   {
     Gal[p].ColdGas -= reheated_mass;
     Gal[p].DiscGas[i] -= reheated_mass;
@@ -271,6 +276,8 @@ void update_from_feedback(int p, int centralgal, double reheated_mass, double me
       Gal[centralgal].HotGas += reheated_mass;
     else
       Gal[p].HotGas += reheated_mass;
+
+      Gal[p].EjectedSNGasMass += reheated_mass;
 
 	if(Gal[p].DiscGas[i]>0.0)
 	{

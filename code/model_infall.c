@@ -100,17 +100,17 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
   double reionization_modifier, strippedGas, strippedGasMetals, metallicity;
   assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 
-  if(ReionizationOn)
-    reionization_modifier = do_reionization(gal, ZZ[Halo[halonr].SnapNum]);
-  else
-    reionization_modifier = 1.0;
-  
-  strippedGas = -1.0 *
-    (reionization_modifier * BaryonFrac * Gal[gal].Mvir - (Gal[gal].StellarMass + Gal[gal].ColdGas + Gal[gal].HotGas + Gal[gal].EjectedMass + Gal[gal].BlackHoleMass + Gal[gal].ICS) ) / STEPS;
     //( reionization_modifier * BaryonFrac * Gal[gal].deltaMvir ) / STEPS;
 
-  if(HotStripOn==1 && strippedGas > 0.0)
+  if(HotStripOn==1)
   {
+    if(ReionizationOn)
+      reionization_modifier = do_reionization(gal, ZZ[Halo[halonr].SnapNum]);
+    else
+      reionization_modifier = 1.0;
+  
+    strippedGas = -1.0 * (reionization_modifier * BaryonFrac * Gal[gal].Mvir - (Gal[gal].StellarMass + Gal[gal].ColdGas + Gal[gal].HotGas + Gal[gal].EjectedMass + Gal[gal].BlackHoleMass + Gal[gal].ICS) ) / STEPS;
+      
     metallicity = get_metallicity(Gal[gal].HotGas, Gal[gal].MetalsHotGas);
 	assert(Gal[gal].MetalsHotGas <= Gal[gal].HotGas);
     strippedGasMetals = strippedGas * metallicity;
@@ -118,11 +118,14 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
     if(strippedGas > Gal[gal].HotGas) strippedGas = Gal[gal].HotGas;
     if(strippedGasMetals > Gal[gal].MetalsHotGas) strippedGasMetals = Gal[gal].MetalsHotGas;
 
-    Gal[gal].HotGas -= strippedGas;
-    Gal[gal].MetalsHotGas -= strippedGasMetals;
+    if(strippedGas>0)
+    {
+        Gal[gal].HotGas -= strippedGas;
+        Gal[gal].MetalsHotGas -= strippedGasMetals;
 
-    Gal[centralgal].HotGas += strippedGas;
-    Gal[centralgal].MetalsHotGas += strippedGas * metallicity;
+        Gal[centralgal].HotGas += strippedGas;
+        Gal[centralgal].MetalsHotGas += strippedGas * metallicity;
+    }
   }
   else if(HotStripOn==2)
   {
@@ -130,6 +133,99 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
       Gal[centralgal].MetalsHotGas += Gal[gal].MetalsHotGas;
       Gal[gal].HotGas = 0.0;
       Gal[gal].MetalsHotGas = 0.0;
+  }
+  else if(HotStripOn==3)
+  {
+      double r_gal2, v_gal2, rho_IGM, Pram, Pgrav, left, right, r_try, dif;
+      int i, ii;
+      
+      r_gal2 = (pow(Gal[gal].Pos[0]-Gal[centralgal].Pos[0], 2.0) + pow(Gal[gal].Pos[1]-Gal[centralgal].Pos[1], 2.0) + pow(Gal[gal].Pos[2]-Gal[centralgal].Pos[2], 2.0)) * pow(AA[Gal[centralgal].SnapNum], 2.0);
+      v_gal2 = (pow(Gal[gal].Vel[0]-Gal[centralgal].Vel[0], 2.0) + pow(Gal[gal].Vel[1]-Gal[centralgal].Vel[1], 2.0) + pow(Gal[gal].Vel[2]-Gal[centralgal].Vel[2], 2.0));
+      rho_IGM = Gal[centralgal].HotGas/ (4 * M_PI * Gal[centralgal].Rvir * r_gal2);
+      Pram = rho_IGM*v_gal2;
+      
+      Gal[gal].Mvir = get_virial_mass(halonr, gal); // Do I need to be updating this here?  When else is it updated?
+      Gal[gal].Rvir = get_virial_radius(halonr, gal);
+      Pgrav = G * Gal[gal].Mvir * Gal[gal].HotGas / 8.0 / pow(Gal[gal].Rvir,4.0); // First calculate restoring force at the virial radius of the subhalo
+      if(Pram >= Pgrav)
+      {
+          double M_D, M_int, M_DM, M_CB, M_SB, M_hot;
+          double z, a, b, c_DM, c, r_2, X, M_DM_tot, rho_const;
+          double a_CB, M_CB_inf, a_SB, M_SB_inf;
+          
+          M_DM_tot = Gal[gal].Mvir - Gal[gal].HotGas - Gal[gal].ColdGas - Gal[gal].StellarMass - Gal[gal].BlackHoleMass;
+          if(M_DM_tot < 0.0) M_DM_tot = 0.0;
+          
+          X = log10(Gal[gal].StellarMass/Gal[gal].Mvir);
+          z = ZZ[Gal[gal].SnapNum];
+          if(z>5.0) z=5.0;
+          a = 0.520 + (0.905-0.520)*exp(-0.617*pow(z,1.21)); // Dutton & Maccio 2014
+          b = -1.01 + 0.026*z; // Dutton & Maccio 2014
+          c_DM = pow(10.0, a+b*log10(Gal[gal].Mvir*UnitMass_in_g/(SOLAR_MASS*1e12))); // Dutton & Maccio 2014
+          c = c_DM * (1.0 + 3e-5*exp(3.4*(X+4.5))); // Di Cintio et al 2014b
+          r_2 = Gal[gal].Rvir / c; // Di Cintio et al 2014b
+          rho_const = M_DM_tot / (log((Gal[gal].Rvir+r_2)/r_2) - Gal[gal].Rvir/(Gal[gal].Rvir+r_2));
+          
+          a_SB = 0.2 * Gal[gal].DiskScaleRadius / (1.0 + sqrt(0.5)); // Fisher & Drory (2008)
+          M_SB_inf = Gal[gal].SecularBulgeMass * pow((Gal[gal].Rvir+a_SB)/Gal[gal].Rvir, 2.0);
+          
+          a_CB = pow(10.0, (log10(Gal[gal].ClassicalBulgeMass*UnitMass_in_g/SOLAR_MASS/Hubble_h)-10.21)/1.13) * (CM_PER_MPC/1e3) / UnitLength_in_cm * Hubble_h; // Sofue 2015
+          M_CB_inf = Gal[gal].ClassicalBulgeMass * pow((Gal[gal].Rvir+a_CB)/Gal[gal].Rvir, 2.0);
+          
+          left = 0.0;
+          right = Gal[gal].Rvir;
+          for(ii=0; ii<100; ii++)
+          {
+              r_try = (left+right)/2.0;
+              M_DM = rho_const * (log((r_try+r_2)/r_2) - r_try/(r_try+r_2));
+              M_SB = M_SB_inf * pow(r_try/(r_try + a_SB), 2.0);
+              M_CB = M_CB_inf * pow(r_try/(r_try + a_CB), 2.0);
+              M_hot = Gal[gal].HotGas * r_try / Gal[gal].Rvir;
+              M_int = M_DM + M_D + M_CB + M_SB + M_hot + Gal[gal].BlackHoleMass;
+              
+              // Add mass from the disc
+              for(i=0; i<N_BINS; i++)
+              {
+                  if(Gal[gal].DiscRadii[i+1] <= r_try)
+                      M_int += (Gal[gal].DiscGas[i] + Gal[gal].DiscStars[i]);
+                  else
+                  {
+                      M_int += ((Gal[gal].DiscGas[i] + Gal[gal].DiscStars[i]) * pow((r_try - Gal[gal].DiscRadii[i])/(Gal[gal].DiscRadii[i+1]-Gal[gal].DiscRadii[i]), 2.0));
+                      break;
+                  }
+              }
+              Pgrav = G * M_int * Gal[gal].HotGas / (8.0 * pow(r_try,3.0) * Gal[gal].Rvir);
+              dif = abs(Pram-Pgrav)/Pram;
+              if(dif <= 1e-3)
+                  break;
+              else if(Pgrav>Pram)
+                  left = 1.0*r_try;
+              else
+                  right = 1.0*r_try;
+              
+              if(ii==99) printf("ii is 99 in hot RPS\n");
+          }
+          
+          // Actually strip the gas
+//          if(Gal[gal].Len>200) printf("Rstrip/Rvir = %e\n", r_try/Gal[gal].Rvir);
+          strippedGas = (1.0 - r_try/Gal[gal].Rvir) * Gal[gal].HotGas;// / STEPS;
+          metallicity = get_metallicity(Gal[gal].HotGas, Gal[gal].MetalsHotGas);
+          strippedGasMetals = metallicity * strippedGas;
+          
+          if(strippedGas > Gal[gal].HotGas) strippedGas = Gal[gal].HotGas;
+          if(strippedGasMetals > Gal[gal].MetalsHotGas) strippedGasMetals = Gal[gal].MetalsHotGas;
+          
+          if(strippedGas>0.0)
+          {
+              Gal[gal].HotGas -= strippedGas;
+              Gal[gal].MetalsHotGas -= strippedGasMetals;
+              
+              Gal[centralgal].HotGas += strippedGas;
+              Gal[centralgal].MetalsHotGas += strippedGas * metallicity;
+          }
+          else
+              printf("Stripped gas is = %e\n", strippedGas);
+      }
   }
 
     assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
@@ -142,6 +238,7 @@ void ram_pressure_stripping(int centralgal, int gal)
     double ExpFac = AA[Gal[centralgal].SnapNum];
     double angle = acos(Gal[gal].SpinStars[0]*Gal[gal].SpinGas[0] + Gal[gal].SpinStars[1]*Gal[gal].SpinGas[1] + Gal[gal].SpinStars[2]*Gal[gal].SpinGas[2])*180.0/M_PI;
     double Sigma_disc;
+    double Pram, Pgrav, Mstrip, MstripZ;
     int i, j;
     
     r_gal2 = (pow(Gal[gal].Pos[0]-Gal[centralgal].Pos[0], 2.0) + pow(Gal[gal].Pos[1]-Gal[centralgal].Pos[1], 2.0) + pow(Gal[gal].Pos[2]-Gal[centralgal].Pos[2], 2.0)) * pow(ExpFac, 2.0);
@@ -158,7 +255,12 @@ void ram_pressure_stripping(int centralgal, int gal)
         else
             Sigma_disc = Sigma_gas;
         
-        if(rho_IGM*v_gal2 >= 2*M_PI*G*Sigma_disc*Sigma_gas && i==0 && Sigma_gas>0.0) // If the central gas is stripped, assume all gas will be stripped.
+        Pram = rho_IGM*v_gal2;
+        Pgrav = 2*M_PI*G*Sigma_disc*Sigma_gas;
+        Mstrip = Gal[gal].DiscGas[i]*Pram/Pgrav / STEPS;
+        MstripZ = Gal[gal].DiscGasMetals[i]*Pram/Pgrav / STEPS;
+        
+        if(Pram >= Pgrav && i==0 && Sigma_gas>0.0 && RamPressureOn==1) // If the central gas is stripped, assume all gas will be stripped.
         {
             Gal[centralgal].HotGas += Gal[gal].ColdGas;
             Gal[centralgal].MetalsHotGas += Gal[gal].MetalsColdGas;
@@ -171,7 +273,7 @@ void ram_pressure_stripping(int centralgal, int gal)
             }
             break;
         }
-        else if(rho_IGM*v_gal2 >= 2*M_PI*G*Sigma_disc*Sigma_gas)
+        else if(((Pram >= Pgrav && RamPressureOn==1) || ((Mstrip>=Gal[gal].DiscGas[i] || MstripZ>=Gal[gal].DiscGasMetals[i]) && RamPressureOn==2)) && Sigma_gas>0.0)
         {
             Gal[centralgal].HotGas += Gal[gal].DiscGas[i];
             Gal[centralgal].MetalsHotGas += Gal[gal].DiscGasMetals[i];
@@ -179,6 +281,18 @@ void ram_pressure_stripping(int centralgal, int gal)
             Gal[gal].MetalsColdGas -= Gal[gal].DiscGasMetals[i];
             Gal[gal].DiscGas[i] = 0.0;
             Gal[gal].DiscGasMetals[i] = 0.0;
+        }
+        else if(Pram >= Pgrav && RamPressureOn==2 && Sigma_gas>0.0)
+        {
+            Gal[centralgal].HotGas += Mstrip;
+            Gal[centralgal].MetalsHotGas += MstripZ;
+            Gal[gal].ColdGas -= Mstrip;
+            Gal[gal].MetalsColdGas -= MstripZ;
+            Gal[gal].DiscGas[i] -= Mstrip;
+            Gal[gal].DiscGasMetals[i] -= MstripZ;
+//            printf("Pram, Pgrav = %e, %e\n", Pram, Pgrav);
+//            printf("Hot, metals = %e, %e\n", Gal[centralgal].HotGas, Gal[centralgal].MetalsHotGas);
+            assert(Gal[centralgal].MetalsHotGas<=Gal[centralgal].HotGas);
         }
     }
 }

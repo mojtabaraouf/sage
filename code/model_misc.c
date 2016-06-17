@@ -41,6 +41,7 @@ void init_galaxy(int p, int halonr)
         Gal[p].Vel[j] = Halo[halonr].Vel[j];
         Gal[p].SpinStars[j] = Halo[halonr].Spin[j] / pow(pow(Halo[halonr].Spin[0], 2.0) + pow(Halo[halonr].Spin[1], 2.0) + pow(Halo[halonr].Spin[2], 2.0), 0.5);
         Gal[p].SpinGas[j] = Halo[halonr].Spin[j] / pow(pow(Halo[halonr].Spin[0], 2.0) + pow(Halo[halonr].Spin[1], 2.0) + pow(Halo[halonr].Spin[2], 2.0), 0.5);
+        Gal[p].SpinHot[j] = Halo[halonr].Spin[j] / pow(pow(Halo[halonr].Spin[0], 2.0) + pow(Halo[halonr].Spin[1], 2.0) + pow(Halo[halonr].Spin[2], 2.0), 0.5);
         Gal[p].SpinClassicalBulge[j] = 0.0;
         Gal[p].SpinSecularBulge[j] = 0.0;
     }
@@ -73,6 +74,10 @@ void init_galaxy(int p, int halonr)
     Gal[p].MetalsHotGas = 0.0;
     Gal[p].MetalsEjectedMass = 0.0;
     Gal[p].MetalsICS = 0.0;
+    
+    Gal[p].AccretedGasMass = 0.0;
+    Gal[p].EjectedSNGasMass = 0.0;
+    Gal[p].EjectedQuasarGasMass = 0.0;
     
     Gal[p].TotInstabEvents = 0;
     Gal[p].TotInstabEventsGas = 0;
@@ -141,12 +146,18 @@ double get_disk_radius(int halonr, int p)
     
     radius = (SpinParameter / 1.414) * Gal[p].Rvir;
     
-    if(radius < 0.0 || radius!=radius || radius==INFINITY)
+    if(radius <= 0.0 || radius!=radius || radius==INFINITY)
     {
         //printf("Reset DSR from %e to 0\n", radius);
         if(!(SpinMagnitude>0)) printf("SpinMagntiude 0\n");
         radius = 0.0;
+        printf("Len = %i\n", Gal[p].Len);
+        printf("Rvir, Vvir = %e, %e, %e\n", Gal[p].Rvir, Gal[p].Vvir);
+        printf("Mvir = %e, %e\n", Gal[p].Mvir, get_virial_mass(halonr,p));
+        printf("SpinMagnitude, SpinParameter = %e, %e\n", SpinMagnitude, SpinParameter);
     }
+    
+    assert(radius>0);
     
     return radius;
     
@@ -189,12 +200,12 @@ double dmax(double x, double y)
 
 double get_virial_mass(int halonr, int p)
 {
-    if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir >= 0.0)
-    return Halo[halonr].Mvir;   /* take spherical overdensity mass estimate */
+    if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir > 0.0)
+        return Halo[halonr].Mvir;   /* take spherical overdensity mass estimate */
     else if(Halo[halonr].Len>0)
-    return Halo[halonr].Len * PartMass;
+        return Halo[halonr].Len * PartMass;
     else if(p!=-1)
-    return Gal[p].StellarMass + Gal[p].ColdGas + Gal[p].HotGas + Gal[p].BlackHoleMass + Gal[p].ICS;
+        return Gal[p].StellarMass + Gal[p].ColdGas + Gal[p].HotGas + Gal[p].BlackHoleMass + Gal[p].ICS;
 }
 
 
