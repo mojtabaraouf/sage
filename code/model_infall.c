@@ -101,7 +101,7 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
   assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 
     //( reionization_modifier * BaryonFrac * Gal[gal].deltaMvir ) / STEPS;
-
+    
   if(HotStripOn==1)
   {
     if(ReionizationOn)
@@ -110,6 +110,26 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
       reionization_modifier = 1.0;
   
     strippedGas = -1.0 * (reionization_modifier * BaryonFrac * Gal[gal].Mvir - (Gal[gal].StellarMass + Gal[gal].ColdGas + Gal[gal].HotGas + Gal[gal].EjectedMass + Gal[gal].BlackHoleMass + Gal[gal].ICS) ) / STEPS;
+      
+    if(Gal[gal].EjectedMass > strippedGas)
+    {
+          metallicity = get_metallicity(Gal[gal].EjectedMass, Gal[gal].MetalsEjectedMass);
+          Gal[gal].EjectedMass -= strippedGas;
+          Gal[gal].MetalsEjectedMass -= strippedGas * metallicity;
+          Gal[centralgal].EjectedMass += strippedGas;
+          Gal[centralgal].MetalsEjectedMass += strippedGas * metallicity;
+          strippedGas = 0.0;
+    }
+    else
+    {
+          Gal[centralgal].EjectedMass += Gal[gal].EjectedMass;
+          Gal[centralgal].MetalsEjectedMass += Gal[gal].MetalsEjectedMass;
+          strippedGas -= Gal[gal].EjectedMass;
+          Gal[gal].EjectedMass = 0.0;
+          Gal[gal].MetalsEjectedMass = 0.0;
+    }
+      
+      
       
     metallicity = get_metallicity(Gal[gal].HotGas, Gal[gal].MetalsHotGas);
 	assert(Gal[gal].MetalsHotGas <= Gal[gal].HotGas);
@@ -133,6 +153,10 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
       Gal[centralgal].MetalsHotGas += Gal[gal].MetalsHotGas;
       Gal[gal].HotGas = 0.0;
       Gal[gal].MetalsHotGas = 0.0;
+      Gal[centralgal].EjectedMass += Gal[gal].EjectedMass;
+      Gal[centralgal].MetalsEjectedMass += Gal[gal].MetalsEjectedMass;
+      Gal[gal].EjectedMass = 0.0;
+      Gal[gal].MetalsEjectedMass = 0.0;
   }
   else if(HotStripOn==3)
   {
@@ -152,6 +176,12 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
           double M_D, M_int, M_DM, M_CB, M_SB, M_hot;
           double z, a, b, c_DM, c, r_2, X, M_DM_tot, rho_const;
           double a_CB, M_CB_inf, a_SB, M_SB_inf;
+          
+          // Gets rid of any ejected gas immediately if ram pressure is strong enough
+          Gal[centralgal].EjectedMass += Gal[gal].EjectedMass;
+          Gal[centralgal].MetalsEjectedMass += Gal[gal].MetalsEjectedMass;
+          Gal[gal].EjectedMass = 0.0;
+          Gal[gal].MetalsEjectedMass = 0.0;
           
           M_DM_tot = Gal[gal].Mvir - Gal[gal].HotGas - Gal[gal].ColdGas - Gal[gal].StellarMass - Gal[gal].BlackHoleMass;
           if(M_DM_tot < 0.0) M_DM_tot = 0.0;
@@ -208,7 +238,7 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
           
           // Actually strip the gas
 //          if(Gal[gal].Len>200) printf("Rstrip/Rvir = %e\n", r_try/Gal[gal].Rvir);
-          strippedGas = (1.0 - r_try/Gal[gal].Rvir) * Gal[gal].HotGas;// / STEPS;
+          strippedGas = (1.0 - r_try/Gal[gal].Rvir) * Gal[gal].HotGas / STEPS;
           metallicity = get_metallicity(Gal[gal].HotGas, Gal[gal].MetalsHotGas);
           strippedGasMetals = metallicity * strippedGas;
           
@@ -262,8 +292,16 @@ void ram_pressure_stripping(int centralgal, int gal)
         
         if(Pram >= Pgrav && i==0 && Sigma_gas>0.0 && RamPressureOn==1) // If the central gas is stripped, assume all gas will be stripped.
         {
-            Gal[centralgal].HotGas += Gal[gal].ColdGas;
-            Gal[centralgal].MetalsHotGas += Gal[gal].MetalsColdGas;
+            if(HeatedToCentral)
+            {
+                Gal[centralgal].HotGas += Gal[gal].ColdGas;
+                Gal[centralgal].MetalsHotGas += Gal[gal].MetalsColdGas;
+            }
+            else
+            {
+                Gal[gal].HotGas += Gal[gal].ColdGas;
+                Gal[gal].MetalsHotGas += Gal[gal].MetalsColdGas;
+            }
             Gal[gal].ColdGas = 0.0;
             Gal[gal].MetalsColdGas = 0.0;
             for(j=0; j<N_BINS; j++)
@@ -275,8 +313,16 @@ void ram_pressure_stripping(int centralgal, int gal)
         }
         else if(((Pram >= Pgrav && RamPressureOn==1) || ((Mstrip>=Gal[gal].DiscGas[i] || MstripZ>=Gal[gal].DiscGasMetals[i]) && RamPressureOn==2)) && Sigma_gas>0.0)
         {
-            Gal[centralgal].HotGas += Gal[gal].DiscGas[i];
-            Gal[centralgal].MetalsHotGas += Gal[gal].DiscGasMetals[i];
+            if(HeatedToCentral)
+            {
+                Gal[centralgal].HotGas += Gal[gal].DiscGas[i];
+                Gal[centralgal].MetalsHotGas += Gal[gal].DiscGasMetals[i];
+            }
+            else
+            {
+                Gal[gal].HotGas += Gal[gal].DiscGas[i];
+                Gal[gal].MetalsHotGas += Gal[gal].DiscGasMetals[i];
+            }
             Gal[gal].ColdGas -= Gal[gal].DiscGas[i];
             Gal[gal].MetalsColdGas -= Gal[gal].DiscGasMetals[i];
             Gal[gal].DiscGas[i] = 0.0;
@@ -284,8 +330,16 @@ void ram_pressure_stripping(int centralgal, int gal)
         }
         else if(Pram >= Pgrav && RamPressureOn==2 && Sigma_gas>0.0)
         {
-            Gal[centralgal].HotGas += Mstrip;
-            Gal[centralgal].MetalsHotGas += MstripZ;
+            if(HeatedToCentral)
+            {
+                Gal[centralgal].HotGas += Mstrip;
+                Gal[centralgal].MetalsHotGas += MstripZ;
+            }
+            else
+            {
+                Gal[gal].HotGas += Mstrip;
+                Gal[gal].MetalsHotGas += MstripZ;
+            }
             Gal[gal].ColdGas -= Mstrip;
             Gal[gal].MetalsColdGas -= MstripZ;
             Gal[gal].DiscGas[i] -= Mstrip;

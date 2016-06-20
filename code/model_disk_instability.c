@@ -569,7 +569,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
 	}
     
-    update_from_ejection(centralgal, ejected_sum);
+    update_from_ejection(p, centralgal, ejected_sum);
 	
 	return stars;
 		

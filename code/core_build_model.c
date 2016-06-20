@@ -156,7 +156,7 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
           //if(get_virial_mass(halonr, ngal) > Gal[ngal].Mvir)
           //{
             Gal[ngal].Rvir = get_virial_radius(halonr, ngal);  //use the maximum Rvir in model
-            Gal[ngal].Vvir = get_virial_velocity(halonr, ngal);  //use the maximum Vvir in model
+              //use the maximum Vvir in model
           //}
 
           Gal[ngal].Mvir = get_virial_mass(halonr, ngal);
@@ -179,6 +179,8 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
             Gal[ngal].mergeIntoID = -1;
             Gal[ngal].MergTime = 999.9;            
 
+              Gal[ngal].Vvir = get_virial_velocity(halonr, ngal); // Keeping Vvir fixed for subhaloes as a new thing
+              
             Gal[ngal].DiskScaleRadius = get_disk_radius(halonr, ngal); // Only update the scale radius for centrals.  Satellites' spin will be too variable and untrustworthy for new cooling.
               
             for(j = 0; j < 3; j++) // Also only update the spin direction of the hot gas for centrals
@@ -327,20 +329,23 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
       if(p == centralgal)
       {
         add_infall_to_hot(centralgal, infallingGas / STEPS);
-        if(ReIncorporationFactor > 0.0)
-          reincorporate_gas(centralgal, deltaT / STEPS);
+
       }
       else if(HotStripOn>0 && Gal[p].Type == 1 && Gal[p].HotGas > 0.0)
         strip_from_satellite(halonr, centralgal, p);
+
+      if(ReIncorporationFactor > 0.0)
+        reincorporate_gas(centralgal, deltaT / STEPS);
         
       // Ram pressure stripping of cold gas from satellites
-      if(RamPressureOn>0 && Gal[p].Type == 1 && Gal[p].ColdGas>0.0)
+      if(RamPressureOn>0 && Gal[p].Type == 1 && Gal[p].ColdGas>0.0 && (Gal[p].ColdGas+Gal[p].StellarMass)>Gal[p].HotGas)
           ram_pressure_stripping(centralgal, p);
 	
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
         
       // determine cooling gas given halo properties
       coolingGas = cooling_recipe(p, deltaT / STEPS);
+        Gal[p].AccretedGasMass += coolingGas;
       cool_gas_onto_galaxy(p, centralgal, coolingGas, deltaT / STEPS, step);
 
       DiscGasSum = get_disc_gas(p);
@@ -352,8 +357,9 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
         // Update radii of the annuli
         if(Gal[p].Mvir > 0 && Gal[p].Rvir > 0) update_disc_radii(p);
 	
-	  // stars form and then explode! 
-      starformation_and_feedback(p, centralgal, time, deltaT / STEPS, halonr, step);
+	  // stars form and then explode!
+      //if(p==centralgal)
+        starformation_and_feedback(p, centralgal, time, deltaT / STEPS, halonr, step);
 
       DiscGasSum = get_disc_gas(p);
 	  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);

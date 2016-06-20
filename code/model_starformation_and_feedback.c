@@ -185,7 +185,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
   }
 
-  update_from_ejection(centralgal, ejected_sum);
+  update_from_ejection(p, centralgal, ejected_sum);
     
   double NewStarSum = 0.0;
   for(i=0; i<N_BINS; i++) NewStarSum += NewStars[i];
@@ -328,12 +328,16 @@ void update_from_feedback(int p, int centralgal, double reheated_mass, double me
 }
 
 
-void update_from_ejection(int centralgal, double ejected_mass)
+void update_from_ejection(int p, int centralgal, double ejected_mass)
 {
+    double metallicityHot;
+    
+    if(HeatedToCentral)
+    {
         if(ejected_mass > Gal[centralgal].HotGas)
           ejected_mass = Gal[centralgal].HotGas;
     
-    	double metallicityHot = get_metallicity(Gal[centralgal].HotGas, Gal[centralgal].MetalsHotGas);
+    	metallicityHot = get_metallicity(Gal[centralgal].HotGas, Gal[centralgal].MetalsHotGas);
     	assert(Gal[centralgal].MetalsHotGas <= Gal[centralgal].HotGas);
         Gal[centralgal].HotGas -= ejected_mass;
         Gal[centralgal].EjectedMass += ejected_mass;
@@ -349,6 +353,26 @@ void update_from_ejection(int centralgal, double ejected_mass)
           Gal[centralgal].MetalsHotGas = 0.0;
     	}
     	assert(Gal[centralgal].MetalsHotGas <= Gal[centralgal].HotGas);
+    }
+    else
+    {
+        if(ejected_mass >= Gal[p].HotGas)
+        {
+            Gal[p].EjectedMass += Gal[p].HotGas;
+            Gal[p].MetalsEjectedMass += Gal[p].MetalsHotGas;
+            Gal[p].HotGas = 0.0;
+            Gal[p].MetalsHotGas = 0.0;
+        }
+        else if(ejected_mass>0 && Gal[p].HotGas>0)
+        {
+            metallicityHot = get_metallicity(Gal[p].HotGas, Gal[p].MetalsHotGas);
+            Gal[p].EjectedMass += ejected_mass;
+            Gal[p].MetalsEjectedMass += ejected_mass * metallicityHot;
+            Gal[p].HotGas -= ejected_mass;
+            Gal[p].MetalsHotGas -= ejected_mass * metallicityHot;
+        }
+        
+    }
 }
 
 

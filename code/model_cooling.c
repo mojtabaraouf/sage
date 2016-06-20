@@ -39,7 +39,7 @@ double cooling_recipe(int gal, double dt)
     else
       // hot phase regime 
       coolingGas = (Gal[gal].HotGas / Gal[gal].Rvir) * (rcool / (2.0 * tcool)) * dt;
-      
+            
     if(coolingGas > Gal[gal].HotGas)
       coolingGas = Gal[gal].HotGas;
     else if(coolingGas < 0.0)

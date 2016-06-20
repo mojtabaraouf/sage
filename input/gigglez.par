@@ -14,10 +14,10 @@ LastFile					7
 %----- Snapshot output list ---------------
 %------------------------------------------
 
-NumOutputs        7   ; sets the desired number of galaxy outputs; use -1 for all outputs
+NumOutputs        12  ; sets the desired number of galaxy outputs; use -1 for all outputs
 
 % List your output snapshots after the arrow, highest to lowest (ignored when NumOutputs=-1).
--> 58 53 40 27 19 16 8
+-> 58 57 56 55 42 35 26 21 18 16 13 12
 
 
 %------------------------------------------
@@ -25,8 +25,8 @@ NumOutputs        7   ; sets the desired number of galaxy outputs; use -1 for al
 %------------------------------------------
 
 TreeName					    trees_058		; assumes the trees are named TreeName.n where n is the snapshot number
-SimulationDir				../../../trees/GiggleZ-HR/mill
-FileWithSnapList			../../../trees/GiggleZ-HR/mill/gigglez.a_list
+SimulationDir				../../../trees/GiggleZ-MR
+FileWithSnapList			../../../trees/GiggleZ-MR/gigglez.a_list
 LastSnapShotNr				58
 
 Omega				0.273
@@ -41,41 +41,59 @@ PartMass			0.09395545
 %----- Code options -----------------------
 %------------------------------------------
 
-SFprescription				0		;0: H2 mid-plane pressure; 1: as 0 but all gas for low H2 fraction; 2: metallicity dependence from Krumholz
+SFprescription				0		;0: proportional to H2; 1: as 0 but all gas for low H2 fraction a la Fu et al 2010; 2: Threshold cold mass (closest to SAGE implementation)
+H2prescription              0       ;0: mid-plane pressure; 1: metallicity-dependent (McKee & Krumholz 2010)
 AGNrecipeOn					2		;0: switch off; 1: empirical model; 2: Bondi-Hoyle model; 3: cold cloud accretion model
-SupernovaRecipeOn			1		;0: switch off
+SupernovaRecipeOn			2		;0: switch off; 1: scale with local density; 2: uniform reheated fraction
 ReionizationOn				1		;0: switch off
-DiskInstabilityOn			1		;0: switch off; 1: bulge and BH growth through instabilities w. instability starbursts
+DiskInstabilityOn			1		;0: switch off; 1: unstable mass moves through disc; 2: inner unstable stars straight to bulge
 GasPrecessionOn             1       ;0: switch off; 1: gas discs will precess to naturally come in line with stellar discs
+RamPressureOn               1       ;0: switch off; 1: cold gas is stripped in satellites' annuli immediately; 2: stripped gradually
+HotStripOn                  3       ;0: switch off; 1: hot gas is gradually transferred from satellites to centrals; 2: strip all hot gas of satellites instantly; 3: ram pressure on the hot gas
+HeatedToCentral             1       ;0: gas heated from feedback goes to hot reservoir of same galaxy; 1: goes to central's reservoir
+
+
+
+%------------------------------------------
+%----- Set the binning for discs ----------
+%------------------------------------------
+
+FirstBin                    1.0     ; Measured in kpc/h km/s
+ExponentBin                 1.4     ; The factor in spec ang mom between bins
 
 
 %------------------------------------------
 %----- Parameters of physical model -------
 %------------------------------------------
 
-SfrEfficiency				2.0		;efficiency of SF (SFprescription=0).  Changed definition to original SAGE, just modulates the efficiency.
-ClumpingFactor				5.0		;gas clumping factor in Krumholz & Dekel 2011 (SFprescription=1)
+SfrEfficiency				0.7
 
-FeedbackReheatingEpsilon	6.0		;mass of cold gas reheated due to SF (see Martin 1999) (SupernovaRecipeOn=1)
-FeedbackEjectionEfficiency	0.6 	;mixing efficiency of SN energy with hot gas to unbind and eject some (SupernovaRecipeOn=1)
+FeedbackReheatingEpsilon	6.0
+FeedbackGasSigma            8.4     ; For SupernovaRecipeOn=1, scales SN feedback based on this density scale [Msun/pc^2]
+FeedbackEjectionEfficiency	0.4
 
-ReIncorporationFactor		0.15     ;fraction of ejected mass reincorporated per dynamical time to hot
+ReIncorporationFactor		0.15
 
-RadioModeEfficiency			0.1    ;AGN radio mode efficiency (AGNrecipeOn>0) -- 2.0e-3 / 1.0
-QuasarModeEfficiency		0.001	;AGN quasar mode wind heating efficiency (AGNrecipeOn>0)
-BlackHoleGrowthRate			0.1     ;fraction of cold gas added to the BH during mergers (AGNrecipeOn>0)
+RadioModeEfficiency			0.035
+QuasarModeEfficiency		0.005
+BlackHoleGrowthRate			0.03
 
-H2FractionFactor            1.0   ;Controls the normalisation of the H2/HI ratio calculation. 1.0 would be the same as Fu et al. (2010).
-H2FractionExponent          0.92   ;Also controls the H2/HI ratio calculation. 0.92 would be the same as Fu et al. (2010).
-QStarMin                    0.2    ;threshold Toomre Q value for stellar instabilities
-QGasMin                     3.0    ;threshold Toomre Q value for gas instabilities
-GasSinkRate                 0.1    ;fraction of gas that sinks in instabilities (the rest leads to a starburst)
+H2FractionFactor            1.0    ;Controls the normalisation of the H2/HI calculation if H2prescription=0. (1.0 for Fu+10)
+H2FractionExponent          0.92   ;Also controls the H2/HI ratio calculation. (0.92 for Fu+10).
+
+ClumpFactor                 2.5     ; Controls the clump factor which affects H2/HI for H2prescription=1. (1.0 for Fu+13)
+ClumpExponent               0.7     ; Controls the clump factor which affects H2/HI for H2prescription=1. (0.7 for Fu+13)
+
+QTotMin                     1.0    ;threshold Toomre Q value for instabilities
+GasSinkRate                 0.5
+ThetaThresh                 10.0   ;threshold angle for gas and stellar discs to be coplanar
+
 DegPerTdyn                  5.0    ;degrees the gas disc precesses to come in line with stars per dynamical time
 
 ThreshMajorMerger			0.3		;major merger when mass ratio greater than this
 ThresholdSatDisruption		1.0		;Mvir-to-baryonic mass ratio threshold for satellite merger or disruption
 
-Yield						0.02	;fraction of SF mass produced as metals
+Yield						0.025
 RecycleFraction				0.43	;fraction of SF mass instantaneously recycled back to cold
 FracZleaveDisk				0.0		;fraction of metals produced directly to hot component
 
@@ -91,6 +109,5 @@ EtaSN						5.0e-3	;supernova efficiency
 %------------------------------------------
 
 UnitLength_in_cm			3.08568e+24		;WATCH OUT: Mpc/h
-UnitMass_in_g				1.989e+43		;WATCH OUT: 10^10Msun
+UnitMass_in_g				1.989e+43		;WATCH OUT: 10^10Msun/h
 UnitVelocity_in_cm_per_s	100000			;WATCH OUT: km/s
-

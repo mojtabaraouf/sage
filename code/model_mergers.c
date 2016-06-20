@@ -971,7 +971,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
   }
      
   if(ejected_sum>0.0)
-      update_from_ejection(centralgal, ejected_sum);
+      update_from_ejection(merger_centralgal, centralgal, ejected_sum);
 
   // Sum stellar discs together
   //combine_stellar_discs(merger_centralgal, NewStars, NewStarsMetals);
