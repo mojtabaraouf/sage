@@ -111,6 +111,12 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
   
     strippedGas = -1.0 * (reionization_modifier * BaryonFrac * Gal[gal].Mvir - (Gal[gal].StellarMass + Gal[gal].ColdGas + Gal[gal].HotGas + Gal[gal].EjectedMass + Gal[gal].BlackHoleMass + Gal[gal].ICS) ) / STEPS;
       
+      if(strippedGas<0)
+      strippedGas = 0.0;
+      
+      assert(Gal[gal].EjectedMass>=Gal[gal].MetalsEjectedMass);
+      assert(Gal[centralgal].EjectedMass>=Gal[centralgal].MetalsEjectedMass);
+      
     if(Gal[gal].EjectedMass > strippedGas)
     {
           metallicity = get_metallicity(Gal[gal].EjectedMass, Gal[gal].MetalsEjectedMass);
@@ -129,7 +135,8 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
           Gal[gal].MetalsEjectedMass = 0.0;
     }
       
-      
+      assert(Gal[gal].EjectedMass>=Gal[gal].MetalsEjectedMass);
+      assert(Gal[centralgal].EjectedMass>=Gal[centralgal].MetalsEjectedMass);
       
     metallicity = get_metallicity(Gal[gal].HotGas, Gal[gal].MetalsHotGas);
 	assert(Gal[gal].MetalsHotGas <= Gal[gal].HotGas);

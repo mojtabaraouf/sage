@@ -79,7 +79,12 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
             strdot = SfrEfficiency * SFE_gas * pow(Gal[p].DiscGas[i], 2.0) / area;
         }
         else if(SFprescription==2)
-            strdot = strdotfull * Gal[p].DiscH2[i] / H2sum;
+        {
+            if(Gal[p].ColdGas>0.0)
+                strdot = strdotfull * Gal[p].DiscGas[i] / Gal[p].ColdGas;// * Gal[p].DiscH2[i] / H2sum;
+            else
+                strdot = 0.0;
+        }
         else
             strdot = SfrEfficiency * SFE_H2 * Gal[p].DiscH2[i];
     }
@@ -99,7 +104,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
         if(SupernovaRecipeOn == 1)
         {
             Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
-            reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3);
+            reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area);
         }
         else if(SupernovaRecipeOn == 2)
             reheated_mass = FeedbackReheatingEpsilon * stars;
@@ -150,6 +155,11 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
         NewStars[i] = stars;
         NewStarsMetals[i] = metallicity * stars;
     }
+      if(!(NewStarsMetals[i] <= NewStars[i]))
+      {
+          printf("NewStars, metals = %e, %e\n", NewStars[i], NewStarsMetals[i]);
+          printf("Gas, metals = %e, %e\n", Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
+      }
 	assert(NewStarsMetals[i] <= NewStars[i]);
     update_from_star_formation(p, stars, metallicity, i);
 
@@ -332,26 +342,29 @@ void update_from_ejection(int p, int centralgal, double ejected_mass)
 {
     double metallicityHot;
     
+    assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
+    assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
+    
     if(HeatedToCentral)
     {
-        if(ejected_mass > Gal[centralgal].HotGas)
-          ejected_mass = Gal[centralgal].HotGas;
-    
     	metallicityHot = get_metallicity(Gal[centralgal].HotGas, Gal[centralgal].MetalsHotGas);
     	assert(Gal[centralgal].MetalsHotGas <= Gal[centralgal].HotGas);
-        Gal[centralgal].HotGas -= ejected_mass;
-        Gal[centralgal].EjectedMass += ejected_mass;
     
-    	if(Gal[centralgal].HotGas>0.0)
+        if(ejected_mass >= Gal[centralgal].HotGas)
+        {
+            Gal[centralgal].EjectedMass += Gal[centralgal].HotGas;
+            Gal[centralgal].HotGas = 0.0;
+            Gal[centralgal].MetalsEjectedMass += Gal[centralgal].MetalsHotGas;
+            Gal[centralgal].MetalsHotGas = 0.0;
+        }
+        else if(ejected_mass>0 && Gal[centralgal].HotGas>0.0)
     	{
-          Gal[centralgal].MetalsHotGas -= metallicityHot * ejected_mass;
-          Gal[centralgal].MetalsEjectedMass += metallicityHot * ejected_mass;
+            Gal[centralgal].HotGas -= ejected_mass;
+            Gal[centralgal].EjectedMass += ejected_mass;
+            Gal[centralgal].MetalsHotGas -= metallicityHot * ejected_mass;
+            Gal[centralgal].MetalsEjectedMass += metallicityHot * ejected_mass;
     	}
-    	else
-    	{
-          Gal[centralgal].MetalsEjectedMass += Gal[centralgal].MetalsHotGas;
-          Gal[centralgal].MetalsHotGas = 0.0;
-    	}
+
     	assert(Gal[centralgal].MetalsHotGas <= Gal[centralgal].HotGas);
     }
     else
@@ -373,6 +386,10 @@ void update_from_ejection(int p, int centralgal, double ejected_mass)
         }
         
     }
+    
+    //printf("Eject, Metals = %e, %e\n", Gal[p].EjectedMass, Gal[p].MetalsEjectedMass);
+    assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
+    assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
 }
 
 
@@ -645,6 +662,7 @@ void update_HI_H2(int p)
             {
                 assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
                 f_H2 = 0.75 * 1.0/(1.0/f_H2_HI + 1) * (1 - Gal[p].DiscGasMetals[i]/Gal[p].DiscGas[i]) / 1.3; //Changes f_H2 from being H2/HI to H2/Cold Gas
+                //if(Gal[p].Type==1) f_H2 *= 1.3;
                 Gal[p].DiscH2[i] = f_H2 * Gal[p].DiscGas[i];
                 Gal[p].DiscHI[i] = Gal[p].DiscH2[i] / f_H2_HI;
             }
@@ -652,6 +670,7 @@ void update_HI_H2(int p)
             {
                 Gal[p].DiscH2[i] = 0.0;
                 Gal[p].DiscHI[i] = 0.75*(Gal[p].DiscGas[i]-Gal[p].DiscGasMetals[i])/1.3; // All properly cold hydrogen must be in the form of HI if there's no H2.
+                //if(Gal[p].Type==1) Gal[p].DiscHI[i] *= 1.3;
             }
         }
     }

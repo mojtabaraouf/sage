@@ -325,23 +325,35 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
         Gal[p].dT = deltaT;
         
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
-      // for central galaxy only 
+        assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
+        assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
+
+      // for central galaxy only
       if(p == centralgal)
       {
         add_infall_to_hot(centralgal, infallingGas / STEPS);
-
+        assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
+          assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
       }
       else if(HotStripOn>0 && Gal[p].Type == 1 && Gal[p].HotGas > 0.0)
-        strip_from_satellite(halonr, centralgal, p);
+      {
+            strip_from_satellite(halonr, centralgal, p);
+            assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
+          assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
+      }
 
+      assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
+        assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
       if(ReIncorporationFactor > 0.0)
-        reincorporate_gas(centralgal, deltaT / STEPS);
+        reincorporate_gas(p, deltaT / STEPS);
         
       // Ram pressure stripping of cold gas from satellites
       if(RamPressureOn>0 && Gal[p].Type == 1 && Gal[p].ColdGas>0.0 && (Gal[p].ColdGas+Gal[p].StellarMass)>Gal[p].HotGas)
           ram_pressure_stripping(centralgal, p);
 	
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
+        assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
+        assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
         
       // determine cooling gas given halo properties
       coolingGas = cooling_recipe(p, deltaT / STEPS);
@@ -353,6 +365,8 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
+        assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
+        assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
 
         // Update radii of the annuli
         if(Gal[p].Mvir > 0 && Gal[p].Rvir > 0) update_disc_radii(p);
@@ -366,6 +380,8 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
+        assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
+        assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
         
       // precess gas disc
       if(GasPrecessionOn)

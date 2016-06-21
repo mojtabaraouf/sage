@@ -479,13 +479,10 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
             if(SupernovaRecipeOn == 1)
             {
                 Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
-                reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3);
+                reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area);
             }
             else if(SupernovaRecipeOn == 2)
                 reheated_mass = FeedbackReheatingEpsilon * stars;
-            
-			Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
-            reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area/1.3);
             
             if(!(reheated_mass==reheated_mass && reheated_mass!=INFINITY))
             {
