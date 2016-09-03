@@ -148,8 +148,10 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
             Gal[ngal].Vel[j] = Halo[halonr].Vel[j];
           }
   
+          if(Halo[halonr].Len > Gal[ngal].LenMax) Gal[ngal].LenMax = Halo[halonr].Len;
           Gal[ngal].Len = Halo[halonr].Len;
           Gal[ngal].Vmax = Halo[halonr].Vmax;
+            assert(Gal[ngal].LenMax>=Gal[ngal].Len);
 
           Gal[ngal].deltaMvir = get_virial_mass(halonr, ngal) - Gal[ngal].Mvir;
 
@@ -451,7 +453,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
       
     if(Gal[p].Mvir > 0 && Gal[p].Rvir > 0)
     {
-        update_disc_radii(p);
+        if(Gal[p].Type==0) update_disc_radii(p);
         update_HI_H2(p);
     }
 

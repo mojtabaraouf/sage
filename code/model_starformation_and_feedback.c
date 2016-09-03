@@ -33,7 +33,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
   assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 
   f_H2_const = 1.38e-3 * pow((CM_PER_MPC*CM_PER_MPC/1e12 / SOLAR_MASS) * (UnitMass_in_g / UnitLength_in_cm / UnitLength_in_cm), 2.0*H2FractionExponent);
-  SFE_H2 = 7.75e-4 * UnitTime_in_s / SEC_PER_MEGAYEAR;
+  SFE_H2 = 7.75e-4 * UnitTime_in_s / SEC_PER_MEGAYEAR; // This says if SfrEfficiency==1.0, then the true efficiency of SF from H2 is 7.75e-4 h Myr^-1
 
   // Initialise variables
   strdot = 0.0;
@@ -104,7 +104,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
         if(SupernovaRecipeOn == 1)
         {
             Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
-            reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area);
+            reheated_mass = FeedbackReheatingEpsilon * stars * pow(Sigma_0gas / (Gal[p].DiscGas[i]/area), FeedbackExponent);
         }
         else if(SupernovaRecipeOn == 2)
             reheated_mass = FeedbackReheatingEpsilon * stars;
@@ -629,7 +629,7 @@ void update_HI_H2(int p)
                 else if(Zp>=1)
                     c_f = ClumpFactor;
                 else // prescription from Fu not defined here, so assume clumping factor can't exceed this value ~25
-                    c_f = pow(0.01, -ClumpExponent);
+                    c_f = ClumpFactor*pow(0.01, -ClumpExponent);
                 
                 Sigma_comp0 = c_f * Gal[p].DiscGas[i]/area; // see Krumholz & Dekel 2012, originally comes from McKee & Krumholz 2010
                 Tau_c = 320 * Zp * Sigma_comp0 * UnitMass_in_g / UnitLength_in_cm / UnitLength_in_cm * Hubble_h;

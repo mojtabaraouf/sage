@@ -93,13 +93,23 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
             if(Q_gas<Q_stable && Q_star<Q_stable)
                 Q_gas_min = Q_stable;
             else if(Q_gas>=Q_stable && Q_star<Q_stable)
+            {
+                Q_gas_min = QTotMin; // Somehow needed this to prevent triggering assert below, despite 'continue' on the next line
                 continue; // The stars' responsibility to sort out the instability
+            }
             else if(Q_gas<Q_stable && Q_star>=Q_stable)
                 Q_gas_min = 1.0 / (1.0/QTotMin - W/Q_star);
         }
         else
             Q_gas_min = QTotMin;
-        
+
+        if(!(Q_gas_min >= QTotMin))
+        {
+            printf("Q_gas_min, QTotMin = %e, %e\n", Q_gas_min, QTotMin);
+            printf("DiscGas, DiscStars = %e, %e\n", Gal[p].DiscGas[i], Gal[p].DiscStars[i]);
+            printf("r_inner, r_outer, angle = %e, %e, %e\n", r_inner, r_outer, angle);
+            Q_gas_min = QTotMin;
+        }
         assert(Q_gas_min >= QTotMin);
         
 		if(Q_gas<Q_gas_min)
@@ -385,7 +395,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 		if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 		assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);}
     
-    update_disc_radii(p);
+    if(Gal[p].Type==0) update_disc_radii(p);
 }
 
 double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, double metallicity, int centralgal, int direct_to_BH, double r_inner, double r_outer)
@@ -479,7 +489,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
             if(SupernovaRecipeOn == 1)
             {
                 Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
-                reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area);
+                reheated_mass = FeedbackReheatingEpsilon * stars * pow(Sigma_0gas / (Gal[p].DiscGas[i]/area), FeedbackExponent);
             }
             else if(SupernovaRecipeOn == 2)
                 reheated_mass = FeedbackReheatingEpsilon * stars;

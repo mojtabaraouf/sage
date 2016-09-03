@@ -131,6 +131,7 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
   }
 
   o->Len = g->Len;
+    o->LenMax = g->LenMax;
   o->Mvir = g->Mvir;
   o->CentralMvir = get_virial_mass(Halo[g->HaloNr].FirstHaloInFOFgroup, -1);
   o->Rvir = get_virial_radius(g->HaloNr, -1);  //output the actual Rvir, not the maximum Rvir

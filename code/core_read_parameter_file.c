@@ -137,6 +137,10 @@ void read_parameter_file(char *fname)
   addr[nt] = &HeatedToCentral;
   id[nt++] = INT;
     
+    strcpy(tag[nt], "ReincorpotationModel");
+    addr[nt] = &ReincorpotationModel;
+    id[nt++] = INT;
+    
   strcpy(tag[nt], "BaryonFrac");
   addr[nt] = &BaryonFrac;
   id[nt++] = DOUBLE;
@@ -179,6 +183,10 @@ void read_parameter_file(char *fname)
 
     strcpy(tag[nt], "FeedbackGasSigma");
     addr[nt] = &FeedbackGasSigma;
+    id[nt++] = DOUBLE;
+    
+    strcpy(tag[nt], "FeedbackExponent");
+    addr[nt] = &FeedbackExponent;
     id[nt++] = DOUBLE;
     
   strcpy(tag[nt], "FeedbackEjectionEfficiency");

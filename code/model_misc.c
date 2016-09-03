@@ -47,6 +47,7 @@ void init_galaxy(int p, int halonr)
     }
     
     Gal[p].Len = Halo[halonr].Len;
+    Gal[p].LenMax = Halo[halonr].Len;
     Gal[p].Vmax = Halo[halonr].Vmax;
     Gal[p].Vvir = get_virial_velocity(halonr, p);
     Gal[p].Mvir = get_virial_mass(halonr, p);
@@ -114,6 +115,7 @@ void init_galaxy(int p, int halonr)
     }
     
     Gal[p].DiskScaleRadius = get_disk_radius(halonr, p);
+    Gal[p].CoolScaleRadius = 1.0*Gal[p].DiskScaleRadius;
     Gal[p].ClassicalBulgeRadius = 0.0;
     Gal[p].MergTime = 999.9;
     Gal[p].Cooling = 0.0;
@@ -145,6 +147,7 @@ double get_disk_radius(int halonr, int p)
     SpinParameter = SpinMagnitude / (1.414 * Gal[p].Vvir * Gal[p].Rvir);
     
     radius = (SpinParameter / 1.414) * Gal[p].Rvir;
+    //radius = pow(10, 0.23*log10(SpinParameter) - 0.67) * Gal[p].Rvir;
     
     if(radius <= 0.0 || radius!=radius || radius==INFINITY)
     {

@@ -58,7 +58,8 @@ struct GALAXY_OUTPUT
   float Pos[3];
   float Vel[3];
   float Spin[3];
-  int   Len;   
+  int   Len;
+    int LenMax;
   float Mvir;
   float Rvir;
   float Vvir;
@@ -156,7 +157,8 @@ struct GALAXY
   // properties of subhalo at the last time this galaxy was a central galaxy 
   double Pos[3];
   double Vel[3];
-  int   Len;   
+  int   Len;
+    int LenMax;
   double Mvir;
   double deltaMvir;
   double Rvir;
@@ -226,6 +228,7 @@ struct GALAXY
 
   // misc 
   double DiskScaleRadius;
+    double CoolScaleRadius;
   double ClassicalBulgeRadius;
   double MergTime;
   double Cooling;
@@ -307,6 +310,7 @@ extern int    GasPrecessionOn;
 extern int    RamPressureOn;
 extern int    HotStripOn;
 extern int    HeatedToCentral;
+extern int    ReincorpotationModel;
 
 // recipe parameters 
 extern double RecycleFraction;
@@ -318,6 +322,7 @@ extern double BaryonFrac;
 extern double SfrEfficiency;
 extern double FeedbackReheatingEpsilon;
 extern double FeedbackGasSigma;
+extern double FeedbackExponent;
 extern double FeedbackEjectionEfficiency;
 extern double RadioModeEfficiency;
 extern double QuasarModeEfficiency;

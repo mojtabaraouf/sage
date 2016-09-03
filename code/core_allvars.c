@@ -62,6 +62,7 @@ int GasPrecessionOn;
 int RamPressureOn;
 int HotStripOn;
 int HeatedToCentral;
+int ReincorpotationModel;
 
 // binning information
 double FirstBin;
@@ -77,6 +78,7 @@ double BaryonFrac;
 double SfrEfficiency;
 double FeedbackReheatingEpsilon;
 double FeedbackGasSigma;
+double FeedbackExponent;
 double FeedbackEjectionEfficiency;
 double RadioModeEfficiency;
 double QuasarModeEfficiency;

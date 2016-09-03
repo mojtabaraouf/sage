@@ -34,12 +34,19 @@ double cooling_recipe(int gal, double dt)
     rcool = sqrt(rho0 / rho_rcool);
 
     if(rcool > Gal[gal].Rvir)
+    {
       // infall dominated regime 
-      coolingGas = Gal[gal].HotGas / (Gal[gal].Rvir / Gal[gal].Vvir) * dt; 
+      coolingGas = Gal[gal].HotGas / (Gal[gal].Rvir / Gal[gal].Vvir) * dt;
+//      Gal[gal].CoolScaleRadius = pow(10, 0.23*log10(sqrt(2)*Gal[gal].DiskScaleRadius/Gal[gal].Rvir) - 0.67-0.18) * Gal[gal].Rvir;
+    }
     else
+    {
       // hot phase regime 
       coolingGas = (Gal[gal].HotGas / Gal[gal].Rvir) * (rcool / (2.0 * tcool)) * dt;
-            
+      Gal[gal].CoolScaleRadius = 1.0*Gal[gal].DiskScaleRadius;
+    }
+      Gal[gal].CoolScaleRadius = 1.0*Gal[gal].DiskScaleRadius;
+      
     if(coolingGas > Gal[gal].HotGas)
       coolingGas = Gal[gal].HotGas;
     else if(coolingGas < 0.0)
@@ -164,11 +171,12 @@ double do_AGN_heating(double coolingGas, int p, double dt, double x, double rcoo
 void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, int step)
 {
   double metallicity, coolingGasBin, coolingGasBinSum, DiscGasSum, DiscGasSum_new, cos_angle_disc_new, cos_angle_halo_new, ratio_last_bin, high_bound, disc_spin_mag, J_disc, J_cool;
-  double r_inner, r_outer;
+//  double r_inner, r_outer;
   double HaloSpin[3], DiscNewSpin[3];
   double OldDisc[N_BINS], OldDiscMetals[N_BINS], RetroGas[N_BINS];
   int i, j, k, j_old;
   double jfrac1, jfrac2;
+  double rfrac1, rfrac2;
 
   // Check that Cold Gas has been treated properly prior to this function
   DiscGasSum = get_disc_gas(p);
@@ -199,7 +207,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 	assert(Gal[p].MetalsHotGas <= Gal[p].HotGas);
 	
 	// Get ang mom of cooling gas in its native orientations
-	J_cool = 2.0 * coolingGas * Gal[p].Vvir * Gal[p].DiskScaleRadius;
+	J_cool = 2.0 * coolingGas * Gal[p].Vvir * Gal[p].CoolScaleRadius;
 	
 	if(Gal[p].ColdGas > 0.0)
 	{
@@ -305,10 +313,18 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
     {
 	  for(i=0; i<N_BINS; i++)
       {
-          jfrac1 = DiscBinEdge[i] / (Gal[p].Vvir * Gal[p].DiskScaleRadius);
-          jfrac2 = DiscBinEdge[i+1] / (Gal[p].Vvir * Gal[p].DiskScaleRadius);
-          
-          coolingGasBin = coolingGas * ((jfrac1+1.0)*exp(-jfrac1) - (jfrac2+1.0)*exp(-jfrac2));
+          if(Gal[p].DiskScaleRadius==Gal[p].CoolScaleRadius)
+          {
+              jfrac1 = DiscBinEdge[i] / (Gal[p].Vvir * Gal[p].DiskScaleRadius);
+              jfrac2 = DiscBinEdge[i+1] / (Gal[p].Vvir * Gal[p].DiskScaleRadius);
+              coolingGasBin = coolingGas * ((jfrac1+1.0)*exp(-jfrac1) - (jfrac2+1.0)*exp(-jfrac2));
+          }
+          else
+          {
+              rfrac1 = Gal[p].DiscRadii[i] / Gal[p].CoolScaleRadius;
+              rfrac2 = Gal[p].DiscRadii[i+1] / Gal[p].CoolScaleRadius;
+              coolingGasBin = coolingGas * ((rfrac1+1.0)*exp(-rfrac1) - (rfrac2+1.0)*exp(-rfrac2));
+          }
           
 		if(coolingGasBin + coolingGasBinSum > coolingGas || i==N_BINS-1)
 		  coolingGasBin = coolingGas - coolingGasBinSum;
@@ -347,11 +363,19 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
     {
 	  for(i=0; i<N_BINS; i++)
       {
-        jfrac1 = DiscBinEdge[i] / (Gal[p].Vvir * Gal[p].DiskScaleRadius);
-        jfrac2 = DiscBinEdge[i+1] / (Gal[p].Vvir * Gal[p].DiskScaleRadius);
-          
-        coolingGasBin = Gal[p].HotGas * ((jfrac1+1.0)*exp(-jfrac1) - (jfrac2+1.0)*exp(-jfrac2));
-          
+        if(Gal[p].DiskScaleRadius==Gal[p].CoolScaleRadius)
+        {
+            jfrac1 = DiscBinEdge[i] / (Gal[p].Vvir * Gal[p].DiskScaleRadius);
+            jfrac2 = DiscBinEdge[i+1] / (Gal[p].Vvir * Gal[p].DiskScaleRadius);
+            coolingGasBin = coolingGas * ((jfrac1+1.0)*exp(-jfrac1) - (jfrac2+1.0)*exp(-jfrac2));
+        }
+        else
+        {
+            rfrac1 = Gal[p].DiscRadii[i] / Gal[p].CoolScaleRadius;
+            rfrac2 = Gal[p].DiscRadii[i+1] / Gal[p].CoolScaleRadius;
+            coolingGasBin = Gal[p].HotGas * ((rfrac1+1.0)*exp(-rfrac1) - (rfrac2+1.0)*exp(-rfrac2));
+        }
+            
         assert(coolingGasBin>=0.0);
 		if(coolingGasBin + coolingGasBinSum > coolingGas || i==N_BINS-1)
 		  coolingGasBin = coolingGas - coolingGasBinSum;
