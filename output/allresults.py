@@ -914,7 +914,7 @@ class Results:
                                      ], dtype=np.float32)
 
 
-        # For fw = 10,20 
+        # For Eq.1 Heckman 2014 (fw = 20 (also has 10)) and Eq.2 Willot 19999 equations
         Heckman2014_xval_1 = Heckman2014_1[:, 0]
         Heckman2014_yval_1 = Heckman2014_1[:, 1]
         Heckman2014_xval_2 = Heckman2014_2[:, 0]
