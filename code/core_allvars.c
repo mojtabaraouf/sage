@@ -57,9 +57,18 @@ int SupernovaRecipeOn;
 int DiskInstabilityOn;
 int AGNrecipeOn;
 int SFprescription;
+// Jet SAGE
 int AGN_model;
 int Density_model;
 int Uplifting;
+int Concentration_Model;
+double Co_delta;
+double Co_return;
+double eta;
+double AxialRatiojet;
+double a_D;
+double Co_ton;
+double Co_conc;
 
 // recipe parameters 
 double RecycleFraction;
@@ -77,6 +86,8 @@ double BlackHoleGrowthRate;
 double Reionization_z0;
 double Reionization_zr;
 double ThresholdSatDisruption;
+
+
 
 
 // more misc 
