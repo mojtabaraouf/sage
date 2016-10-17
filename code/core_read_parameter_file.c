@@ -121,7 +121,39 @@ void read_parameter_file(char *fname)
   strcpy(tag[nt], "Uplifting");
   addr[nt] = &Uplifting;
   id[nt++] = INT;
-    
+  
+  strcpy(tag[nt], "Concentration_Model");
+  addr[nt] = &Concentration_Model;
+  id[nt++] = INT;
+
+  strcpy(tag[nt], "Co_delta");
+  addr[nt] = &Co_delta;
+  id[nt++] = DOUBLE;
+  
+  strcpy(tag[nt], "Co_return");
+  addr[nt] = &Co_return;
+  id[nt++] = DOUBLE;
+  
+  strcpy(tag[nt], "eta");
+  addr[nt] = &eta;
+  id[nt++] = DOUBLE;
+  
+  strcpy(tag[nt], "AxialRatiojet");
+  addr[nt] = &AxialRatiojet;
+  id[nt++] = DOUBLE;
+  
+  strcpy(tag[nt], "a_D");
+  addr[nt] = &a_D;
+  id[nt++] = DOUBLE;
+  
+  strcpy(tag[nt], "Co_ton");
+  addr[nt] = &Co_ton;
+  id[nt++] = DOUBLE;
+  
+  strcpy(tag[nt], "Co_conc");
+  addr[nt] = &Co_conc;
+  id[nt++] = DOUBLE;
+
   strcpy(tag[nt], "BaryonFrac");
   addr[nt] = &BaryonFrac;
   id[nt++] = DOUBLE;
