@@ -47,13 +47,25 @@ PartMass				0.0860657
 
 SFprescription				0		;0: original Croton et al. 2006
 AGNrecipeOn						2		;0: switch off; 1: empirical model; 2: Bondi-Hoyle model; 3: cold cloud accretion model
-AGN_model                       1       ;0: Radio mode feedback Croton (2006); 1: jet-model re-new temperature (prep: Raouf et al.)
-Density_model                   1       ;0: Isothermal density profile; 1: Makino et al. (1998) (prep: Raouf et al.)
-Uplifting                       1       ;0: Just New-Hot , 1 : New-Hot+Uplifting  for AGN_model=1  (prep: Raouf et al.)
 SupernovaRecipeOn			1		;0: switch off
 ReionizationOn				1		;0: switch off
 DiskInstabilityOn			1		;0: switch off; 1: bulge and BH growth through instabilities w. instability starbursts
 
+%---------------------------------------------------------
+%----- JET-SAGE model parameters (Raouf et al.) ----------
+%---------------------------------------------------------
+
+AGN_model                       1       ;0: Radio mode feedback Croton (2006); 1: jet-model re-new temperature (prep: Raouf et al.)
+Density_model                   1       ;0: Isothermal density profile; 1: Makino et al. (1998) (prep: Raouf et al.)
+Uplifting                       1       ;0: Just New-Hot , 1 : New-Hot+Uplifting  for AGN_model=1  (prep: Raouf et al.)
+Concentration_Model             0       ;0: Bullock et al. 2001, 1: Prada et al. 2012
+Co_delta                       0.03     ; Coefficient of duty cycle 
+Co_return                       2.0     ; Coefficient of returne time episode of AGN
+eta                             0.22    ; Coefficient of ADAF Jet power
+AxialRatiojet                   6.0     ; Axial Ratio jet
+a_D                             1.0     ; Coefficient of  ... Cocoon radius
+Co_ton                          150.0   ; Coefficient of AGN active time 
+Co_conc                          4.0    ; Coefficient of Bullock concentration
 
 %------------------------------------------
 %----- SAGE model parameters --------------
