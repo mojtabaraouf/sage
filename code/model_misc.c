@@ -105,6 +105,7 @@ void init_galaxy(int p, int halonr)
   Gal[p].b_gas = 0.0;
   Gal[p].Rs = 0.0;
   Gal[p].concentration = 0.0;
+//   Gal[p].conc_bullock = 0.0;
   Gal[p].Temp_Gas = 0.0;
   Gal[p].Lx_bol = 0.0;
   Gal[p].R_index = 0.0;
