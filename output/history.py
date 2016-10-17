@@ -35,13 +35,7 @@ plt.rc('lines', linewidth='2.0')
 plt.rc('legend', numpoints=1, fontsize='x-large')
 plt.rc('text', usetex=True)
 
-OutputDir = '' # set in main below
-
-#Mac book Air
-#OutputDir = '/Volumes/09158118409/sage-master/output/new_SAM/allresult/model/'
-
-#IMAC
-#OutputDir = '/Users/mraoufhajarzarrin/Desktop/sage-master/output/new_SAM/allresult/model/'
+OutputDir = ''
 
 
 OutputFormat = '.png'
@@ -77,7 +71,8 @@ class Results:
         if whichsimulation == 0 or whichsimulation == 1 :
           
 #          self.SMFsnaps = [63, 37, 32, 27, 23, 20, 18, 16]
-          self.SMFsnaps = [63, 62, 61, 60, 59,58,57,56,55,54,53,52,51,50,49,48,47,46,45,44,43,42,41,40, 37, 32, 27, 23, 20, 18, 16]
+          self.SMFsnaps = [63, 48, 41]
+          #self.SMFsnaps = [63, 62, 61, 60, 59,58,57,56,55,54,53,52,51,50,49,48,47,46,45,44,43,42,41,40, 37, 32, 27, 23, 20, 18, 16]
           self.SMFz =[0.000, 0.020, 0.041, 0.064, 0.089, 0.116, 0.144, 0.175, 0.208, 0.242, 0.280, 0.320, 0.362, 0.408, 0.457, 0.509, 0.564, 0.624, 0.687,0.755,0.828,0.905,0.989]
 
           self.redshift_file = ['_z127.000', '_z79.998', '_z50.000', '_z30.000', '_z19.916', '_z18.244', '_z16.725', '_z15.343', '_z14.086', '_z12.941', '_z11.897', '_z10.944', '_z10.073', '_z9.278', '_z8.550', '_z7.883', '_z7.272', '_z6.712', '_z6.197', '_z5.724', '_z5.289', '_z4.888', '_z4.520', '_z4.179', '_z3.866', '_z3.576', '_z3.308', '_z3.060', '_z2.831', '_z2.619', '_z2.422', '_z2.239', '_z2.070', '_z1.913', '_z1.766', '_z1.630', '_z1.504', '_z1.386', '_z1.276', '_z1.173', '_z1.078', '_z0.989', '_z0.905', '_z0.828', '_z0.755', '_z0.687', '_z0.624', '_z0.564', '_z0.509', '_z0.457', '_z0.408', '_z0.362', '_z0.320', '_z0.280', '_z0.242', '_z0.208', '_z0.175', '_z0.144', '_z0.116', '_z0.089', '_z0.064', '_z0.041', '_z0.020', '_z0.000']
@@ -330,8 +325,8 @@ class Results:
 
         ###### z=1.3  SMFsnap[1] to [24]
         
-        w = np.where(G_history[self.SMFsnaps[24]].StellarMass > 0.0)[0]
-        mass = np.log10(G_history[self.SMFsnaps[24]].StellarMass[w] * 1.0e10 /self.Hubble_h)
+        w = np.where(G_history[self.SMFsnaps[1]].StellarMass > 0.0)[0]
+        mass = np.log10(G_history[self.SMFsnaps[1]].StellarMass[w] * 1.0e10 /self.Hubble_h)
 
         mi = np.floor(min(mass)) - 2
         ma = np.floor(max(mass)) + 2
@@ -347,8 +342,8 @@ class Results:
 
         ###### z=2     SMFsnap[2] to [25]
         
-        w = np.where(G_history[self.SMFsnaps[25]].StellarMass > 0.0)[0]
-        mass = np.log10(G_history[self.SMFsnaps[25]].StellarMass[w] * 1.0e10 /self.Hubble_h)
+        w = np.where(G_history[self.SMFsnaps[2]].StellarMass > 0.0)[0]
+        mass = np.log10(G_history[self.SMFsnaps[2]].StellarMass[w] * 1.0e10 /self.Hubble_h)
 
         mi = np.floor(min(mass)) - 2
         ma = np.floor(max(mass)) + 2
@@ -498,7 +493,7 @@ class Results:
         C06SFRdensity_xval = C06SFRdensity[:, 0]
         C06SFRdensity_yval = C06SFRdensity[:, 1]
              
-        plt.plot(C06SFRdensity_xval, C06SFRdensity_yval, 'm-', lw=3.0, label='C16 (Radio mode)')
+        plt.plot(C06SFRdensity_xval, C06SFRdensity_yval, 'm-', lw=2.0, label='C16 (Radio mode)')
         
         WOAGNSFRdensity = np.array([
              [ 7.272   ,   -1.48943879],
@@ -536,7 +531,7 @@ class Results:
         WOAGNSFRdensity_xval = WOAGNSFRdensity[:, 0]
         WOAGNSFRdensity_yval = WOAGNSFRdensity[:, 1]
  
-        plt.plot(WOAGNSFRdensity_xval, WOAGNSFRdensity_yval, 'k-', lw=3.0, label='W/O AGN Jet')
+        plt.plot(WOAGNSFRdensity_xval, WOAGNSFRdensity_yval, 'k--', lw=2.0, alpha=0.35, label='W/O-AGN')
         
         SFR_density = np.zeros((LastSnap+1-FirstSnap))       
         for snap in xrange(FirstSnap,LastSnap+1):
@@ -544,10 +539,10 @@ class Results:
 
         z = np.array(self.redshift)
         nonzero = np.where(SFR_density > 0.0)[0]
-        plt.plot(z[nonzero], np.log10(SFR_density[nonzero]), 'b--', lw=3.0)
-        plt.plot(z[nonzero], np.log10(SFR_density[nonzero]),color='c', lw=2.0, alpha=0.6, marker='s', markersize=8, label='Jet-model ')
+#        plt.plot(z[nonzero], np.log10(SFR_density[nonzero]), 'b--', lw=3.0)
+        plt.plot(z[nonzero], np.log10(SFR_density[nonzero]),color='b', lw=2.0, alpha=0.9, marker='o', markersize=3, label='Jet-model')
 #        print np.column_stack((z[nonzero], np.log10(SFR_density[nonzero])))
-        plt.ylabel(r'$\log_{10} \mathrm{SFR\ density}\ (M_{\odot}\ \mathrm{yr}^{-1}\ \mathrm{Mpc}^{-3})$')  # Set the y...
+        plt.ylabel(r'$\log_{10} \mathrm{SFR\ density}\ [M_{\odot}\ \mathrm{yr}^{-1}\ \mathrm{Mpc}^{-3}]$')  # Set the y...
         plt.xlabel(r'$\mathrm{redshift}$')  # and the x-axis labels
     
         # Set the x and y axis minor ticks
@@ -681,10 +676,11 @@ class Results:
         plt.figure()  # New figure
         ax = plt.subplot(111)  # 1 plot on the figure
         
-        binwidth = 0.5  # Radio Luminosity function histogram bin width
+        binwidth = 0.6  # Radio Luminosity function histogram bin width
         
         snap = 63
-        w1 = np.where((G_history[snap].RadioLuminosity[:,5] > 0)& (G_history[snap].RadioLuminosity[:,5] < 1e50)&(np.log10(G_history[snap].CentralMvir * 1e10/self.Hubble_h) > 11)& (G_history[snap].fcool>0))[0]
+        #w1 = np.where((G_history[snap].RadioLuminosity[:,5] > 0)&(np.log10(G_history[snap].CentralMvir * 1e10/self.Hubble_h) > 0)& (G_history[snap].fcool > 0))[0]
+        w1 = np.where((G_history[snap].RadioLuminosity[:,5] > 0)& (G_history[snap].StellarMass > 0))[0]
         Lradio1400_5 = np.log10(G_history[snap].RadioLuminosity[w1,5])
         mi_5 = np.floor(min(Lradio1400_5)) - 3.0
         ma_5 = np.floor(max(Lradio1400_5)) + 3.0
@@ -693,25 +689,27 @@ class Results:
         xaxeshisto_5 = binedges_5[:-1] + 0.5 * binwidth
 #        plt.plot(xaxeshisto_5, counts_5   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5, 'p-',lw = 2, alpha=0.55, label='Jet model, 63')
 
-        plt.plot(xaxeshisto_5, counts_5   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5,'c', lw=3.0, alpha=0.8, marker='s', markersize=10, label='Jet model (z = 0)')
-        plt.plot(xaxeshisto_5, counts_5  / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5, 'b--',lw=3,alpha=.8)
+        plt.plot(xaxeshisto_5, counts_5   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5,'b-', lw=2.0, alpha=0.9, marker='o', markersize=3, label='Jet-model (z = 0)')
+#        plt.plot(xaxeshisto_5, counts_5  / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5, 'b-',lw=3,alpha=.8)
 
 
         snap = 48
         w1 = np.where((G_history[snap].RadioLuminosity[:,5] > 0)& (G_history[snap].RadioLuminosity[:,5] < 1e50)&(np.log10(G_history[snap].CentralMvir * 1e10/self.Hubble_h) > 0)& (G_history[snap].fcool>0))[0]
         #        if(len(w1) > dilute): w1 = sample(w1, dilute)
         
-        Lradio1400_5 = np.log10(G_history[snap].RadioLuminosity[w1,5])
+        Lradio1400_5 = np.log10(G_history[snap].RadioLuminosity[w1,6])
         mi_5 = np.floor(min(Lradio1400_5)) - 3.0
         ma_5 = np.floor(max(Lradio1400_5)) + 3.0
         NB_5 = (ma_5 - mi_5) / binwidth
         (counts_5, binedges_5) = np.histogram(Lradio1400_5, range=(mi_5, ma_5), bins=NB_5 )
         # Set the x-axis values to be the centre of the bins
         xaxeshisto_5 = binedges_5[:-1] + 0.5 * binwidth
-        plt.plot(xaxeshisto_5, counts_5   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5, 'm--',lw = 4, alpha=0.95, label='Jet model (z = 0.5)')
-        
+        #plt.plot(xaxeshisto_5, counts_5   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5, 'm--',lw = 4, alpha=0.95, label='Jet model (z = 0.5)')
+#&(np.log10(G_history[snap].CentralMvir * 1e10/self.Hubble_h) > 0)
         snap = 41
-        w1 = np.where((G_history[snap].RadioLuminosity[:,5] > 0)& (G_history[snap].RadioLuminosity[:,5] < 1e50)&(np.log10(G_history[snap].CentralMvir * 1e10/self.Hubble_h) > 0)& (G_history[snap].fcool>0))[0]
+        #w1 = np.where((G_history[snap].RadioLuminosity[:,5] > 0)& (G_history[snap].RadioLuminosity[:,5] < 1e50)&(np.log10(G_history[snap].CentralMvir * 1e10/self.Hubble_h) > 0)& (G_history[snap].fcool>0))[0]
+        w1 = np.where((G_history[snap].RadioLuminosity[:,5] > 0)& (G_history[snap].StellarMass > 0))[0]
+
         #        if(len(w1) > dilute): w1 = sample(w1, dilute)
         
         Lradio1400_5 = np.log10(G_history[snap].RadioLuminosity[w1,5])
@@ -721,7 +719,7 @@ class Results:
         (counts_5, binedges_5) = np.histogram(Lradio1400_5, range=(mi_5, ma_5), bins=NB_5 )
         # Set the x-axis values to be the centre of the bins
         xaxeshisto_5 = binedges_5[:-1] + 0.5 * binwidth
-        plt.plot(xaxeshisto_5, counts_5   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5, 'r:',lw = 4, alpha=0.95, label='Jet model (z = 1.0)')
+        plt.plot(xaxeshisto_5, counts_5   / self.volume * self.Hubble_h*self.Hubble_h*self.Hubble_h/xaxeshisto_5, 'b--',lw = 2, alpha=0.9, label='Jet-model (z = 1)')
         
         
         
@@ -745,14 +743,18 @@ class Results:
                              ], dtype=np.float32)
             
             
-            
-        xplot= np.log10(10**(Best2012[:,0]+0.15))
+            #+0.15
+        xplot= np.log10(10**(Best2012[:,0]))+0.15
         yplot = (10**Best2012[:,4])
         yerr2 = 10**(Best2012[:,4]+Best2012[:,5]) -  yplot
         yerr1 = yplot - 10**(Best2012[:,4]-Best2012[:,6])
 #        plt.errorbar(xplot, yplot, yerr=[yerr1,yerr2], color='r', lw=2.0, alpha=0.6, marker='o', markersize=3, ls='none', label='Best 2012 (All-Radio)', mew=1)
-        plt.fill_between(xplot, yplot+yerr2, yplot-yerr1,facecolor='red', alpha=0.35,label= 'Best \& Heckman (2012)(z $\le$ 0.1)')
-        plt.plot(xplot, yplot, color='red',lw = 3, alpha=0.35, label='Best \& Heckman (2012)(z $\le$ 0.1)')
+        plt.fill_between(xplot, yplot+yerr2, yplot-yerr1,facecolor='red', alpha=0.45,label= 'Best \& Heckman (2012)(z $\le$ 0.1)')
+        plt.plot(xplot, yplot, color='red',lw = 2, alpha=0.45)
+        x_f = [1,2,3]
+        y_f = [1,2,3]
+        plt.plot(x_f, y_f, color='red',lw = 3, alpha=0.45, label='Best \& Heckman (2012)(z $\le$ 0.1)', linewidth =15)
+
         #             Lradio, logp_all, Uy_all, Ly_all, logp_AGN, Uy_AGN, Ly_AGN,
         Best2014_05 = np.array([
                              [  23.3, -4.69, 0.14, 0.22],
@@ -763,14 +765,19 @@ class Results:
                              [  26.3, -7.67, 0.26, 0.70],
                              [  26.9, -8.41, 0.26, 0.80],
                              ], dtype=np.float32)
-            
+            #+0.3
         xplot= Best2014_05[:,0]+0.3
         yplot = (10**Best2014_05[:,1])
         yerr2 = 10**(Best2014_05[:,1]+Best2014_05[:,2]) -  yplot
         yerr1 = yplot - 10**(Best2014_05[:,1]-Best2014_05[:,3])
 #        plt.errorbar(xplot, yplot, yerr=0, color='green', lw=4.0, alpha=0.6, marker='o', markersize=1, ls='none', label='Best 2014 (z= 0.5-0.7)', mew=1)
-        plt.fill_between(xplot, yplot+yerr2, yplot-yerr1,facecolor='green', alpha=0.15)
-        plt.plot(xplot, yplot, color='green',lw = 4, alpha=0.15, label='Best et al. (2014) (z = 0.5-0.7)')
+        plt.fill_between(xplot, yplot+yerr2, yplot-yerr1,facecolor='green', alpha=0.25, label='Best et al. (2014) (z = 0.5-0.7)')
+        plt.plot(xplot, yplot, color='green',lw = 2, alpha=0.25)
+        
+        x_f = [1,2,3]
+        y_f = [1,2,3]
+        plt.plot(x_f, y_f, color='green',lw = 4, alpha=0.25, label='Best et al. (2014) (z = 0.5-0.7)', linewidth =15)
+
         Best2014_1 = np.array([
                         [  23.9, -6.23, 0.26, 0.70],
                         [  24.5, -5.95, 0.23, 0.54],
@@ -785,8 +792,12 @@ class Results:
         yerr2 = 10**(Best2014_1[:,1]+Best2014_1[:,2]) -  yplot
         yerr1 = yplot - 10**(Best2014_1[:,1]-Best2014_1[:,3])
 #        plt.errorbar(xplot, yplot, yerr=0, color='green', lw=4.0, alpha=0.6, marker='o', markersize=1, ls='none', label='Best 2014 (z= 0.5-0.7)', mew=1)
-        plt.fill_between(xplot, yplot+yerr2, yplot-yerr1,facecolor='blue', alpha=0.15,label= 'Best \& Heckman (2012)-z=1')
-        plt.plot(xplot, yplot, color='blue',lw = 4, alpha=0.15, label='Best et al. (2014) (z = 0.7-1.0)')
+        plt.fill_between(xplot, yplot+yerr2, yplot-yerr1,facecolor='blue', alpha=0.25, label='Best et al. (2014) (z = 0.7-1.0)')
+        plt.plot(xplot, yplot, color='blue',lw = 2, alpha=0.15)
+
+        x_f = [1,2,3]
+        y_f = [1,2,3]
+        plt.plot(x_f, y_f, color='blue',lw = 4, alpha=0.25, label='Best et al. (2014) (z = 0.7-1.0)', linewidth =15)
 
 
         plt.yscale('log', nonposy='clip')
@@ -795,7 +806,7 @@ class Results:
         # Set the x-axis minor ticks
         ax.xaxis.set_minor_locator(plt.MultipleLocator(0.1))
             
-        plt.ylabel(r'$\phi\ (\mathrm{Mpc}^{-3}\ \mathrm{dex}^{-1})$')  # Set the y...
+        plt.ylabel(r'$\phi\ [\mathrm{Mpc}^{-3}\ \mathrm{dex}^{-1}]$')  # Set the y...
         plt.xlabel(r'$\log_{10} (L_{\mathrm{1.4 ~GHz}}\ [W~ Hz^{-1}])$')  # Set the y...
         
         leg = plt.legend(loc='lower left', numpoints=1,labelspacing=0.1)
@@ -803,7 +814,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
             t.set_fontsize('medium')
                               
-        outputFile = OutputDir + 'D_RadioLF_allz' + OutputFormat
+        outputFile = OutputDir + '24_RadioLF_allz' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -893,7 +904,7 @@ class Results:
         for t in leg.get_texts():  # Reduce the size of the text
                 t.set_fontsize('medium')
                                 
-        outputFile = OutputDir + 'E_Lradio_Qjet_allz' + OutputFormat
+        outputFile = OutputDir + '16_Lradio_Qjet_allz' + OutputFormat
         plt.savefig(outputFile)  # Save the figure
         print 'Saved file to', outputFile
         plt.close()
@@ -919,8 +930,7 @@ if __name__ == '__main__':
         dest='DirName',
         default='./results/millennium/',
         help='input directory name (default: ./results/millennium/)',
-                      
-                      
+                       
         metavar='DIR',
         )
     parser.add_option(
@@ -989,4 +999,5 @@ if __name__ == '__main__':
     res.StellarMassDensityEvolution(G_history)
     res.RadioLF(G_history)
     res.Lradio_Qjet(G_history)
+
 
