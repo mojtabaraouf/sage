@@ -73,3 +73,4 @@ double integrand_Z_dependent_SF(double q, void *p);
 double RadioLuminosity_jet(int p, int centralgal, double time, double dt);
 double density_profile (int p);
 double do_Jet_uplift(double coolingGas, int centralgal, double dt, double x, double rcool);
+double Concentration_halo (int p);
