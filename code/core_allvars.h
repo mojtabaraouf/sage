@@ -126,6 +126,7 @@ struct GALAXY_OUTPUT
   float b_gas;
   float Rs;
   float concentration;
+//   float conc_bullock;
   float Temp_Gas;
   float Lx_bol;
   float R_index;
@@ -209,14 +210,14 @@ struct GALAXY
   float infallVmax;
 
   //Jet-model properties
-  float Qjet;
+  double Qjet;
   float Rcocoon;
   float Rshocked;
   float t_AGN_returne;
   float t_AGN_on;
   float Tshocked;
   float Mshocked;
-  float RadioLuminosity[7];
+  double RadioLuminosity[7];
   float RadioAGNaccretionRate;
   float rho_zero_Makino;
   float rho_zero_Capelo;
@@ -224,6 +225,7 @@ struct GALAXY
   float b_gas;
   float Rs;
   float concentration;
+//   float conc_bullock;
   float Temp_Gas;
   float Lx_bol;
   float R_index;
@@ -288,15 +290,26 @@ extern double Hubble_h;
 extern double EnergySNcode, EnergySN;
 extern double EtaSNcode, EtaSN;
 
+
+
 // recipe flags 
 extern int    ReionizationOn;
 extern int    SupernovaRecipeOn;
 extern int    DiskInstabilityOn;
 extern int    AGNrecipeOn;
 extern int    SFprescription;
+// Jet SAGE
 extern int    AGN_model;
 extern int    Density_model;
 extern int    Uplifting;
+extern int    Concentration_Model;
+extern double  Co_delta;
+extern double  Co_return;
+extern double  eta;
+extern double  AxialRatiojet;
+extern double  a_D;
+extern double  Co_ton;
+extern double  Co_conc;
 
 // recipe parameters 
 extern double RecycleFraction;
