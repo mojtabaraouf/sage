@@ -227,6 +227,7 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
     o->b_gas =  g->b_gas;
     o->Rs =  g->Rs;
     o->concentration=  g->concentration;
+//     o->conc_bullock = g->conc_bullock;
     o->Temp_Gas =  g->Temp_Gas;
     
     if (g->Lx_bol > 0.0)
