@@ -67,8 +67,9 @@ double cooling_recipe(int gal, int centralgal, double dt, double time)
             // "cold accretion" regime
             coolingGas = Gal[gal].HotGas / (Gal[gal].Rvir / Gal[gal].Vvir) * dt;
         else if (rcool > 0.0)
-            // "hot halo cooling" regime
-            coolingGas = (2.0 * M_PI) * (rho0*A_b/pow(1+pow(rcool/Rc_eff,2),3*beta_eff/2)) * pow(rcool,3)/tcool * dt;
+            // "Hot halo cooling" regime base on some calculation on dr/dt according to t_cool relation 
+               coolingGas = (4.0 * M_PI * rho0 * pow(rcool,3)/tcool) * (rcool/Gal[gal].Rs) * exp(-13.5*Gal[gal].b_gas) * pow(1+(rcool/Gal[gal].Rs),13.5*Gal[gal].b_gas/(rcool/Gal[gal].Rs)) /(13.5*Gal[gal].b_gas*(log(1+(rcool/Gal[gal].Rs))-(rcool/(rcool+Gal[gal].Rs)))) * dt;
+               
         else
             coolingGas = 0.0;
         if(coolingGas > Gal[gal].HotGas)
@@ -76,11 +77,11 @@ double cooling_recipe(int gal, int centralgal, double dt, double time)
         else
             if(coolingGas < 0.0)
                 coolingGas = 0.0;
-    }
+   }
       
         // Uplifting gas for shocked radius. There is'nt cooling in the static time scale of
         // AGN activity
-        if(AGN_model == 1)
+        if (Uplifting == 1 )
         {
             if(AGNrecipeOn > 0 && coolingGas > 0.0)
                 coolingGas = do_Jet_uplift(coolingGas, gal, dt, x, rcool);
@@ -104,8 +105,6 @@ double cooling_recipe(int gal, int centralgal, double dt, double time)
     
 	assert(coolingGas >= 0.0);
     
-//  Gal[gal].R_cool = rcool;
-//  Gal[gal].t_cool = x / rho0 * 0.885;
   return coolingGas;
 
 }
@@ -207,11 +206,14 @@ double do_Jet_uplift(double coolingGas, int p, double dt, double x, double rcool
 {
     
     // AGN active time
-    double AGN_Active_time, C_s;
+    double AGN_Active_time, C_s,Mcool,rho0;
     AGN_Active_time = Gal[p].t_AGN_on;
-    
-    //  Duty cycle
-    Gal[p].delta = 0.03 * pow(Gal[p].StellarMass * 1e10/1e11,1.5);
+
+    //        Makino (1998) density
+    rho0 = density_profile (p);
+//     rho0 *= 1000.0 * UnitDensity_in_cgs * pow(Hubble_h,2);
+    //  Duty cycle  
+    Gal[p].delta = Co_delta * pow(Gal[p].StellarMass * 1e10/1e11,1.5);
     
     if (Gal[p].delta > 1)
         Gal[p].delta = 1.0;
@@ -224,7 +226,7 @@ double do_Jet_uplift(double coolingGas, int p, double dt, double x, double rcool
     
     // Time for gas to returne from r = Rshocked to r = 0
 //    Gal[p].t_AGN_returne =  5.0 *(Gal[p].Rshocked / C_s) * UnitTime_in_Megayears;
-    Gal[p].t_AGN_returne =  5.0 *(Gal[p].Rshocked / Gal[p].Vvir) * UnitTime_in_Megayears;
+    Gal[p].t_AGN_returne =  Co_return *(Gal[p].Rshocked / Gal[p].Vvir) * UnitTime_in_Megayears;
     
     // Time of next AGN on
     Gal[p].time_to_next_on = Gal[p].t_AGN_off + AGN_Active_time;
@@ -236,29 +238,15 @@ double do_Jet_uplift(double coolingGas, int p, double dt, double x, double rcool
         Gal[p].t_static = 0.0;
     
     // Fraction of cooling gas
-    Gal[p].fcool    = Gal[p].t_static/Gal[p].time_to_next_on;
-    
+    Mcool =  16 * M_PI * (rho0) * pow(Gal[p].Rs,3)*(log(1+rcool/Gal[p].Rs)- rcool/(Gal[p].Rs+rcool));
+
+    Gal[p].fcool    = (Gal[p].t_static/Gal[p].time_to_next_on)+((AGN_Active_time+Gal[p].t_AGN_returne)/Gal[p].time_to_next_on)*(Mcool-Gal[p].Mshocked)/Mcool;
+//     Gal[p].fcool    = (Gal[p].t_static/Gal[p].time_to_next_on)+((Gal[p].t_AGN_returne)/Gal[p].time_to_next_on)*(Mcool-Gal[p].Mshocked)/Mcool;
+
     // effect of cooling fraction on the cooling gas
     if (Gal[p].fcool > 0.0)
         coolingGas =  Gal[p].fcool * coolingGas;
     
-    if (Uplifting == 1)
-    {
-        double A_b, beta_eff, Rc_eff, rho0;
-//        Makino (1998) density
-        rho0 = density_profile (p);
-        A_b = -0.178 *Gal[p].b_gas + 0.982;
-        beta_eff =  0.9 * Gal[p].b_gas;
-        Rc_eff   = 0.22* Gal[p].Rs;
-        
-        // beta_eff should be less than 2/3
-        if (beta_eff > 2.0/3.0)
-            beta_eff = 1.99/3.0;
-        
-        // update the cooling rate based shock expansion
-        if(Gal[p].Rshocked < rcool)
-            coolingGas = (1.0 - pow(Gal[p].Rshocked /rcool,3*(1-beta_eff))) * coolingGas;
-    }
     assert(coolingGas >= 0.0);
     return coolingGas;
 }
@@ -292,7 +280,7 @@ void cool_gas_onto_galaxy(int centralgal, double coolingGas)
 
 double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
 {
-    double tcool, logZ, lambda, x, temp, AGNrate, EDDrate, rho_0, R_0, a_D, lambda_Rshock, fp, r, uB, V, temp_new, betaparameter, tau, p_v;
+    double tcool, logZ, lambda, x, temp, AGNrate, EDDrate, rho_0, R_0, a_D, lambda_Rshock, fp, r, uB, V, temp_new, betaparameter, tau, p_v, AGN_Active_time;
     tcool = Gal[p].Rvir / Gal[p].Vvir;
     temp = 35.9 * Gal[p].Vvir * Gal[p].Vvir;         // in Kelvin
     
@@ -319,14 +307,9 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
 
     Gal[p].RadioAGNaccretionRate = AGNrate * (1e10/Hubble_h/UnitTime_in_Megayears); // msun/Myr
 
-//    if(Gal[p].HotGas > 0.0 && AGNrate > 0)
-//    {
-        
         if(AGNrate < 0.03 * EDDrate)
         {
-//            Gal[p].Qjet = 1.066e39 * ((Gal[p].BlackHoleMass * 1e10/Hubble_h)/ 1e9 ) * (AGNrate/Hubble_h /(0.1 * EDDrate));
-//            [W]- kg m2/s3
-           Gal[p].Qjet =  0.2 * AGNrate * 2.9979e8 * 2.9979e8 * (UnitMass_in_g/ Hubble_h / 1e3 / UnitTime_in_s);
+           Gal[p].Qjet =  eta * AGNrate * 2.9979e8 * 2.9979e8 * (UnitMass_in_g/ Hubble_h/ 1e3 / UnitTime_in_s);
            Gal[p].R_index =1.0;
         }
         else
@@ -334,8 +317,6 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
            Gal[p].Qjet = 3.42e36 * pow((Gal[p].BlackHoleMass * 1e10/Hubble_h)/ 1e9,-0.3) * pow(AGNrate * (1e10/Hubble_h/1e6),1.2);
            Gal[p].Q_index =1.0;
         }
-  //  }
-    
     //    Isothermal density profile
     if(Density_model == 0)
     {
@@ -361,12 +342,9 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
         
     }
     
-    //eq (24) Shabala & Alexander (2009) or appendix of Shabala (2013)
-    double AxialRatiojet = 6;
-    double AGN_Active_time ;   // time of AGN active in Myr
-    
+  
     // Turner & Shabala et al.  (2015)
-    Gal[p].t_AGN_on = 100.0 * pow(Gal[p].StellarMass * 1e10/1e11,0.7);
+    Gal[p].t_AGN_on = Co_ton * pow(Gal[p].StellarMass * 1e10/1e11,0.7);
     AGN_Active_time = Gal[p].t_AGN_on;
     
 //    a_D   = pow((pow(AxialRatiojet,4.0)/(18.0 * M_PI)) * ((Gama_x + 1.0) * (Gama_c - 1.0) * pow(5.0 - betaparameter,3.0))/(9.0 * (Gama_c + (Gama_c - 1.0) * pow(AxialRatiojet, 2.0)/2.0) - 4.0 - betaparameter ),1.0/(5.0 - betaparameter));
@@ -378,16 +356,15 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
     lambda_Rshock = pow(1.0 - (15.0/(4.0*(11.0-betaparameter))), 1.0/3.0);
     Gal[p].Rshocked = (1.0/lambda_Rshock) * Gal[p].Rcocoon;
 
-    // cannot shocked more radius than virial radius!
-    if(Gal[p].Rshocked > Gal[p].Rvir)
-        Gal[p].Rshocked = Gal[p].Rvir;
+    // cannot shocked more radius than virial radius!? (if applicable) 
+//     if(Gal[p].Rshocked > Gal[p].Rvir)
+//         Gal[p].Rshocked = Gal[p].Rvir;
     
     // Alexander (2002)- Shabala et al. (2013) Temperature of post-shock (mu mH/kB = 0.59 * mH/kB = 71.8 s2/km2)
     Gal[p].Tshocked = (15.0/16.0) * (3.0 - betaparameter)/(11.0 - betaparameter) * (71.8)  * pow((3/(5-betaparameter)) * Gal[p].Rshocked/Hubble_h * ( KM_PER_MPC ) /( AGN_Active_time * SEC_PER_MEGAYEAR ),2.0);
     
     // Shock mass in system unit
-    Gal[p].Mshocked = 16 * M_PI * (rho_0/(1000.0 * UnitDensity_in_cgs * pow(Hubble_h,2))) * pow(R_0,3)*(log(1+Gal[p].Rshocked/R_0)- Gal[p].Rshocked/(R_0+Gal[p].Rshocked));
-    
+    Gal[p].Mshocked =  16 * M_PI * (rho_0/(1000.0 * UnitDensity_in_cgs * pow(Hubble_h,2))) * pow(Gal[p].Rs,3)*(log(1+Gal[p].Rshocked/Gal[p].Rs)- Gal[p].Rshocked/(Gal[p].Rs+Gal[p].Rshocked));   
     // Radio Luminosity base on Shabala (2013)
     double re = 2.8179403267e-15; // m
     double q = 1.60217662e-19;    // coulombs
@@ -401,10 +378,6 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
     int ii = 0;
     double c2_p[7];
 
-    // limit on Qjet and Rshock and just for avoiding the infinity value in radio luminosity
-    // t_off sould be bigger than t_returne lead to fcool > 0
-//    if (Gal[p].Rshocked > 0 && Gal[p].Qjet < 1e50)
-//    {
      for(p_v = 2.1; p_v < 2.8; p_v+=0.1)  //  ? The Fiducial Values
      {
         //    calculate c2_p with http://www.wolframalpha.com --->(3^(x/2)/((2^((x+13)/2))* 3.14^((x+2)/2)))*gama function ((x+1)/4) * gama function (x/4 + 19/12) * gama function (x/4 - 1/12) / gama function ((x+7)/4) for x=p_v
@@ -428,7 +401,6 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
         Gal[p].RadioLuminosity[ii] =  A1 * pow(uB, (5.0 + p_v)/4) * V * pow(1.4e9, (1.0 - p_v)/2.0) * pow(1 + ZZ[Gal[p].SnapNum], (3.0 - p_v)/2.0);
         ii +=1;
      }
-//    }
     // New hot temperature
     temp_new = ((Gal[p].Mshocked * Gal[p].Tshocked) + (Gal[p].HotGas * temp))/(Gal[p].Mshocked + Gal[p].HotGas);         // in Kelvin
 
@@ -443,16 +415,24 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
 
 double density_profile (int p)
 {
-    double delta_crit, rho_crit, conc, Rvir, Rs, Tvir, delta_nfw, cs, b, rho0, rho0_Makino, rho0_Capelo, zplus1, hubble_of_z_sq;
+    double delta_crit, rho_crit, conc,conc2, Rvir, Rs, Tvir, delta_nfw, cs, b, rho0, rho0_Makino, rho0_Capelo, zplus1, hubble_of_z_sq;
     //    (Bryan & Norman 1998)
     delta_crit= 18.0 * M_PI * M_PI;
     zplus1 = 1 + ZZ[Gal[p].SnapNum];
     hubble_of_z_sq = Hubble * Hubble *(Omega * zplus1 * zplus1 * zplus1 + (1 - Omega - OmegaLambda) * zplus1 * zplus1 +OmegaLambda);
     rho_crit = 3 * hubble_of_z_sq / (8 * M_PI * G) * UnitDensity_in_cgs/1000.0; // kg/m3
-    
+
+    if(Concentration_Model == 0 )
+    {
     //    Bullock et al. (2001) M* = 1.3 * 1e13 M_sun/h
-    conc  = (5.0/zplus1) * pow(10,((-0.13)*(log10(Gal[p].Mvir * 1e10/Hubble_h) - log10(1.3*1e13/Hubble_h))));
-    
+          conc  = (Co_conc/zplus1) * pow(10,((-0.13)*(log10(Gal[p].Mvir * 1e10/Hubble_h) - log10(1.3*1e13/Hubble_h))));
+//           Gal[p].conc_bullock = conc2;
+    }
+    if(Concentration_Model == 1 )    
+    {
+    //    Prada et al. 2012 base on Vmax/Vvir    
+          conc  = Concentration_halo(p);
+    }
     Rvir  = Gal[p].Rvir; // Mpc
     Rs    = Rvir/conc;   // Mpc
 
@@ -496,4 +476,27 @@ double density_profile (int p)
     return rho0;
 }
 
-
+// Estimation of halo concentration base on Prada et al. 2012 by using Newton-raphson method
+double Concentration_halo (int p)
+{
+    double conc, v_ratio,x,X0;
+    float fx,dfx;
+    int itt=100,i=0;
+    
+    fx=0;
+    dfx=0;
+    X0 = 5.0;
+    
+    v_ratio = Gal[p].Vmax/Gal[p].Vvir;
+    x= X0;
+    for (i = 0; i < itt; i += 1)
+    {
+      fx = ((0.216 * x)/(log(1+x)-x/(1+x)))-v_ratio;
+    
+      dfx = (0.216/(log(1+x)-x/(1+x)))-((0.216 * pow(x,2))/(pow(x+1,2)*pow(log(1+x)-x/(1+x),2)));
+    
+      x = x - fx/dfx;
+    }
+      conc = x; 
+    return conc;
+}
