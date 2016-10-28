@@ -24,6 +24,7 @@ INCL   =	./code/core_allvars.h  \
 
 
 #OPT += -DMPI
+#OPT += -DMINIMIZE_IO
 
 SYSTYPE = "mac"
 # SYSTYPE = "green"
@@ -31,7 +32,7 @@ SYSTYPE = "mac"
 
 
 CC       =   mpicc            # sets the C-compiler (default)
-OPTIMIZE =   -pg -O2 -Wall    # optimization and warning flags (default)
+OPTIMIZE =   -g -O2 -Wall    # optimization and warning flags (default)
 
 ifeq ($(SYSTYPE),"mac")
 CC       =  mpicc
@@ -54,14 +55,14 @@ GSL_LIBS = -L/usr/local/x86_64/gnu/gsl-1.9/lib
 endif
 
 
-LIBS   =   -pg -lm  $(GSL_LIBS) -lgsl -lgslcblas 
+LIBS   =   -g -lm  $(GSL_LIBS) -lgsl -lgslcblas
 
-CFLAGS =   -pg $(OPTIONS) $(OPT) $(OPTIMIZE) $(GSL_INCL)
+CFLAGS =   -g $(OPTIONS) $(OPT) $(OPTIMIZE) $(GSL_INCL)
 
 default: all
 
 $(EXEC): $(OBJS) 
-	$(CC) $(OPTIMIZE) $(OBJS) $(LIBS)   -o  $(EXEC) -pg
+	$(CC) $(OPTIMIZE) $(OBJS) $(LIBS)   -o  $(EXEC) -g
 
 $(OBJS): $(INCL) 
 
