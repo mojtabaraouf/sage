@@ -208,7 +208,7 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
     o->infallVmax = 0.0;
   }
     //Jet-model properties
-    o->Qjet =  g->Qjet;
+    o->Qjet =  log10(g->Qjet);
     o->Rcocoon =  g->Rcocoon;
     o->Rshocked =  g->Rshocked;
     o->t_AGN_returne =  g->t_AGN_returne;
@@ -243,6 +243,7 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
     o->t_AGN_off=  g->t_AGN_off;
     o->time_to_next_on = g->time_to_next_on;
     o->delta=  g->delta;
+    o->t_cool_Makino=  g->t_cool_Makino * UnitTime_in_s / SEC_PER_MEGAYEAR ;
 
 }
 

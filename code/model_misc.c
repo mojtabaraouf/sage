@@ -116,6 +116,7 @@ void init_galaxy(int p, int halonr)
   Gal[p].t_AGN_off = 0.0;
   Gal[p].time_to_next_on = 0.0;
   Gal[p].delta = 0.0;
+  Gal[p].t_cool_Makino = 0.0;
 }
 
 
