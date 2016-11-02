@@ -19,7 +19,9 @@ FILE* save_fd[ABSOLUTEMAXSNAPS] = { 0 };
 
 void save_galaxies(int filenr, int tree)
 {
+#ifndef MINIMIZE_IO
     char buf[1000];
+#endif
     int i, n;
     struct GALAXY_OUTPUT galaxy_output;
     int OutputGalCount[MAXSNAPS], *OutputGalOrder;
@@ -53,6 +55,7 @@ void save_galaxies(int filenr, int tree)
     // now prepare and write galaxies
     for(n = 0; n < NOUT; n++)
     {
+#ifndef MINIMIZE_IO
         // only open the file if it is not already open.
         if( !save_fd[n] )
         {
@@ -71,6 +74,7 @@ void save_galaxies(int filenr, int tree)
             fwrite( tmp_buf, sizeof(int), Ntrees + 2, save_fd[n] );
             free( tmp_buf );
         }
+#endif
         
         for(i = 0; i < NumGals; i++)
         {
@@ -260,19 +264,24 @@ void finalize_galaxy_file(int filenr)
     
     for(n = 0; n < NOUT; n++)
     {
+#ifndef MINIMIZE_IO
         // file must already be open.
         assert( save_fd[n] );
         
         // seek to the beginning.
         fseek( save_fd[n], 0, SEEK_SET );
-        
+#endif
         myfwrite(&Ntrees, sizeof(int), 1, save_fd[n]);
         myfwrite(&TotGalaxies[n], sizeof(int), 1, save_fd[n]);
         myfwrite(TreeNgals[n], sizeof(int), Ntrees, save_fd[n]);
         
+#ifndef MINIMIZE_IO
         // close the file and clear handle after everything has been written
         fclose( save_fd[n] );
         save_fd[n] = NULL;
+#else
+        write_galaxy_data_snap(n, filenr);
+#endif
     }
     
 }

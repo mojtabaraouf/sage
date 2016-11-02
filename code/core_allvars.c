@@ -118,3 +118,10 @@ gsl_rng *random_generator;
 
 int TreeID;
 int FileNum;
+
+#ifdef MINIMIZE_IO
+char *ptr_treedata, *ptr_galaxydata, *ptr_galsnapdata[ABSOLUTEMAXSNAPS];
+size_t offset_auxdata, offset_treedata, offset_dbids;
+size_t offset_galaxydata, maxstorage_galaxydata, filled_galaxydata;
+size_t offset_galsnapdata[ABSOLUTEMAXSNAPS], maxstorage_galsnapdata[ABSOLUTEMAXSNAPS], filled_galsnapdata[ABSOLUTEMAXSNAPS];
+#endif

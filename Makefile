@@ -24,7 +24,7 @@ INCL   =	./code/core_allvars.h  \
 
 
 #OPT += -DMPI
-#OPT += -DMINIMIZE_IO
+OPT += -DMINIMIZE_IO
 
 SYSTYPE = "mac"
 # SYSTYPE = "green"

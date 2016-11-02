@@ -371,5 +371,12 @@ extern int FileNum;
 double DiscBinEdge[N_BINS+1];
 int RetroCount, ProCount;
 
+#ifdef MINIMIZE_IO
+extern char *ptr_treedata, *ptr_galaxydata, *ptr_galsnapdata[ABSOLUTEMAXSNAPS];
+extern size_t offset_auxdata, offset_treedata, offset_dbids;
+extern size_t offset_galaxydata, maxstorage_galaxydata, filled_galaxydata;
+extern size_t offset_galsnapdata[ABSOLUTEMAXSNAPS], maxstorage_galsnapdata[ABSOLUTEMAXSNAPS], filled_galsnapdata[ABSOLUTEMAXSNAPS];
+#endif
+
 
 #endif  // #ifndef ALLVARS_H
