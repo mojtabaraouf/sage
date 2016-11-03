@@ -14,12 +14,15 @@
 void init_galaxy(int p, int halonr)
 {
     int j, step;
+    double SpinMag;
     
     if(halonr != Halo[halonr].FirstHaloInFOFgroup)
     {
         printf("Hah?\n");
         ABORT(1);
     }
+    
+    SpinMag = pow(pow(Halo[halonr].Spin[0], 2.0) + pow(Halo[halonr].Spin[1], 2.0) + pow(Halo[halonr].Spin[2], 2.0), 0.5);
     
     Gal[p].Type = 0;
     
@@ -39,9 +42,18 @@ void init_galaxy(int p, int halonr)
     {
         Gal[p].Pos[j] = Halo[halonr].Pos[j];
         Gal[p].Vel[j] = Halo[halonr].Vel[j];
-        Gal[p].SpinStars[j] = Halo[halonr].Spin[j] / pow(pow(Halo[halonr].Spin[0], 2.0) + pow(Halo[halonr].Spin[1], 2.0) + pow(Halo[halonr].Spin[2], 2.0), 0.5);
-        Gal[p].SpinGas[j] = Halo[halonr].Spin[j] / pow(pow(Halo[halonr].Spin[0], 2.0) + pow(Halo[halonr].Spin[1], 2.0) + pow(Halo[halonr].Spin[2], 2.0), 0.5);
-        Gal[p].SpinHot[j] = Halo[halonr].Spin[j] / pow(pow(Halo[halonr].Spin[0], 2.0) + pow(Halo[halonr].Spin[1], 2.0) + pow(Halo[halonr].Spin[2], 2.0), 0.5);
+        if(SpinMag>0)
+        {
+            Gal[p].SpinStars[j] = Halo[halonr].Spin[j] / SpinMag;
+            Gal[p].SpinGas[j] = Halo[halonr].Spin[j] / SpinMag;
+            Gal[p].SpinHot[j] = Halo[halonr].Spin[j] / SpinMag;
+        }
+        else
+        {
+            Gal[p].SpinStars[j] = 0.0;
+            Gal[p].SpinGas[j] = 0.0;
+            Gal[p].SpinHot[j] = 0.0;
+        }
         Gal[p].SpinClassicalBulge[j] = 0.0;
         Gal[p].SpinSecularBulge[j] = 0.0;
     }
@@ -141,6 +153,8 @@ double get_disk_radius(int halonr, int p)
     SpinMagnitude = sqrt(Halo[halonr].Spin[0] * Halo[halonr].Spin[0] +
                          Halo[halonr].Spin[1] * Halo[halonr].Spin[1] + Halo[halonr].Spin[2] * Halo[halonr].Spin[2]);
     
+    if(SpinMagnitude==0 && Gal[p].DiskScaleRadius>=0) return Gal[p].DiskScaleRadius;
+    
     // trim the extreme tail of the spin distribution for more a realistic r_s
     //if(SpinMagnitude > 1.5) SpinMagnitude = 1.5;
     
@@ -155,7 +169,7 @@ double get_disk_radius(int halonr, int p)
         if(!(SpinMagnitude>0)) printf("SpinMagntiude 0\n");
         radius = 0.0;
         printf("Len = %i\n", Gal[p].Len);
-        printf("Rvir, Vvir = %e, %e, %e\n", Gal[p].Rvir, Gal[p].Vvir);
+        printf("Rvir, Vvir = %e, %e\n", Gal[p].Rvir, Gal[p].Vvir);
         printf("Mvir = %e, %e\n", Gal[p].Mvir, get_virial_mass(halonr,p));
         printf("SpinMagnitude, SpinParameter = %e, %e\n", SpinMagnitude, SpinParameter);
     }
@@ -251,7 +265,7 @@ double get_disc_gas(int p)
     int l;
     
     DiscGasSum = DiscMetalsSum = 0.0;
-    for(l=0; l<N_BINS; l++)
+    for(l=N_BINS-1; l>=0; l--)
     {
         if(Gal[p].DiscGas[l] < 1e-20) // Negligible gas content is negligible
         {
@@ -314,7 +328,7 @@ double get_disc_stars(int p)
     
     DiscStarSum = 0.0;
     dumped_mass = 0.0;
-    for(l=0; l<N_BINS; l++)
+    for(l=N_BINS-1; l>=0; l--)
     {
         if(Gal[p].DiscStars[l] < 1e-11) // This would be less than a single star in an aperture.  Not likely.
         {
@@ -377,12 +391,12 @@ double get_disc_ang_mom(int p, int type)
     J_sum = 0.0;
     if(type==0)
     {
-        for(l=0; l<N_BINS; l++) // Calculation of average J_sum in bin no longer so straight forward
+        for(l=N_BINS-1; l>=0; l--) // Calculation of average J_sum in bin no longer so straight forward
             J_sum += Gal[p].DiscGas[l] * (DiscBinEdge[l]+DiscBinEdge[l+1])/2.0;
     }
     else if(type==1)
     {
-        for(l=0; l<N_BINS; l++)
+        for(l=N_BINS-1; l>=0; l--)
             J_sum += Gal[p].DiscStars[l] * (DiscBinEdge[l]+DiscBinEdge[l+1])/2.0;
     }
     

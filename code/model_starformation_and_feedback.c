@@ -55,7 +55,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
           strdotfull = 0.0;
       
       H2sum = 0.0;
-      for(i=0; i<N_BINS; i++) H2sum += Gal[p].DiscH2[i];
+      for(i=N_BINS-1; i>=0; i--) H2sum += Gal[p].DiscH2[i];
   }
 
   for(i=0; i<N_BINS; i++)
@@ -198,7 +198,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
   update_from_ejection(p, centralgal, ejected_sum);
     
   double NewStarSum = 0.0;
-  for(i=0; i<N_BINS; i++) NewStarSum += NewStars[i];
+  for(i=N_BINS-1; i>=0; i--) NewStarSum += NewStars[i];
     
   // Sum stellar discs together
   if(NewStarSum>0.0)
@@ -413,7 +413,7 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
 	// Try not to get confused, where "new" here implies the newly formed stars.  In the cooling recipe, "new" meant the combined disc, here instead denoted "comb".
 	
 	J_new = 0.0;
-	for(i=0; i<N_BINS; i++)
+	for(i=N_BINS-1; i>=0; i--)
 		J_new += NewStars[i] * (DiscBinEdge[i]+DiscBinEdge[i+1])/2.0; // The assumption that DiscBinEdge is now proportional to radius has broken down
 	
 	// Determine projection angles for combining discs
@@ -478,7 +478,7 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
 		
         Gal[p].StellarMass = Gal[p].SecularBulgeMass + Gal[p].ClassicalBulgeMass;
         Gal[p].MetalsStellarMass = Gal[p].SecularMetalsBulgeMass + Gal[p].ClassicalMetalsBulgeMass;
-		for(i=0; i<N_BINS; i++)
+		for(i=N_BINS-1; i>=0; i--)
 		{
 			if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 			assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
@@ -496,9 +496,9 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
         //printf("adding directly with cos_angle_sdisc_comb = %e\n", cos_angle_sdisc_comb);
         DiscStarSum = get_disc_stars(p);
         double NewStarSum = 0.0;
-        for(i=0; i<N_BINS; i++) NewStarSum += NewStars[i];
+        for(i=N_BINS-1; i>=0; i--) NewStarSum += NewStars[i];
         //printf("DiscStarSum, StellarMass, NewStarSum = %e, %e, %e\n", DiscStarSum, Gal[p].StellarMass, NewStarSum);
-		for(i=0; i<N_BINS; i++)
+		for(i=N_BINS-1; i>=0; i--)
 		{
 			if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 			assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);

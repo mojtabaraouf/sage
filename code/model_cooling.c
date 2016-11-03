@@ -170,7 +170,7 @@ double do_AGN_heating(double coolingGas, int p, double dt, double x, double rcoo
 // This cools the gas onto the correct disc bins
 void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, int step)
 {
-  double metallicity, coolingGasBin, coolingGasBinSum, DiscGasSum, DiscGasSum_new, cos_angle_disc_new, cos_angle_halo_new, ratio_last_bin, high_bound, disc_spin_mag, J_disc, J_cool;
+  double metallicity, coolingGasBin, coolingGasBinSum, DiscGasSum, DiscGasSum_new, cos_angle_disc_new, cos_angle_halo_new, ratio_last_bin, high_bound, disc_spin_mag, J_disc, J_cool, SpinMag;
 //  double r_inner, r_outer;
   double HaloSpin[3], DiscNewSpin[3];
   double OldDisc[N_BINS], OldDiscMetals[N_BINS], RetroGas[N_BINS];
@@ -232,13 +232,27 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 		cos_angle_disc_new = 1.0;
 		cos_angle_halo_new = 1.0;
 		J_disc = 0.0;
+        SpinMag = pow(pow(Halo[Gal[p].HaloNr].Spin[0], 2.0) + pow(Halo[Gal[p].HaloNr].Spin[1], 2.0) + pow(Halo[Gal[p].HaloNr].Spin[2], 2.0), 0.5);
         for(i=0; i<3; i++)
-            DiscNewSpin[i] = Halo[Gal[p].HaloNr].Spin[i] / pow(pow(Halo[Gal[p].HaloNr].Spin[0], 2.0) + pow(Halo[Gal[p].HaloNr].Spin[1], 2.0) + pow(Halo[Gal[p].HaloNr].Spin[2], 2.0), 0.5);
+        {
+            if(SpinMag>0)
+                DiscNewSpin[i] = Halo[Gal[p].HaloNr].Spin[i] / SpinMag;
+            else
+                DiscNewSpin[i] = 0.0;
+        }
 	}
 	
     assert(Gal[p].ColdGas == Gal[p].ColdGas);
+      
+      if(!(cos_angle_disc_new==cos_angle_disc_new))
+      {
+          printf("SpinGas = %e, %e, %e\n", Gal[p].SpinGas[0], Gal[p].SpinGas[1], Gal[p].SpinGas[2]);
+          printf("SpinHot = %e, %e, %e\n", Gal[p].SpinHot[0], Gal[p].SpinHot[1], Gal[p].SpinHot[2]);
+          printf("DiscNewSpin = %e, %e, %e\n", DiscNewSpin[0], DiscNewSpin[1], DiscNewSpin[2]);
+      }
+      assert(cos_angle_disc_new==cos_angle_disc_new);
 		
-	if(cos_angle_disc_new != 1.0)
+	if(cos_angle_disc_new != 1.0 && cos_angle_disc_new != 0.0)
 	{
 		// Project current disc to new orientation -- I have a function to shorten code here
 		for(i=0; i<N_BINS; i++)
@@ -274,6 +288,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 			{
 				if(j!=N_BINS-1){
 					ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (DiscBinEdge[j+1]-DiscBinEdge[j]), 2.0);
+                    if(!(ratio_last_bin<=1.0)) printf("j, high_bound, DiscBinEdges = %i, %e, %e, %e\n", j, high_bound, DiscBinEdge[j], DiscBinEdge[j+1]);
 					assert(ratio_last_bin<=1.0);}
 				else if(high_bound < Gal[p].Rvir/Gal[p].Vvir){
 					ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (Gal[p].Rvir/Gal[p].Vvir-DiscBinEdge[j]), 2.0);

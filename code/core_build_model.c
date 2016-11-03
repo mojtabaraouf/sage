@@ -76,7 +76,7 @@ void construct_galaxies(int halonr, int tree)
 int join_galaxies_of_progenitors(int halonr, int ngalstart)
 {
   int ngal, prog, mother_halo=-1, i, j, first_occupied, lenmax, lenoccmax, centralgal;
-  double previousMvir, previousVvir, previousVmax;
+  double previousMvir, previousVvir, previousVmax, SpinMag;
   int step;
 
   lenmax = 0;
@@ -185,8 +185,12 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
               
             Gal[ngal].DiskScaleRadius = get_disk_radius(halonr, ngal); // Only update the scale radius for centrals.  Satellites' spin will be too variable and untrustworthy for new cooling.
               
-            for(j = 0; j < 3; j++) // Also only update the spin direction of the hot gas for centrals
-                Gal[ngal].SpinHot[j] = Halo[halonr].Spin[j] / pow(pow(Halo[halonr].Spin[0], 2.0) + pow(Halo[halonr].Spin[1], 2.0) + pow(Halo[halonr].Spin[2], 2.0), 0.5);
+            SpinMag = pow(pow(Halo[halonr].Spin[0], 2.0) + pow(Halo[halonr].Spin[1], 2.0) + pow(Halo[halonr].Spin[2], 2.0), 0.5);
+            if(SpinMag>0)
+            {
+                for(j = 0; j < 3; j++) // Also only update the spin direction of the hot gas for centrals
+                    Gal[ngal].SpinHot[j] = Halo[halonr].Spin[j] / SpinMag;
+            }
 
             Gal[ngal].Type = 0;
           }
@@ -329,6 +333,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
         assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
         assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
+        assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
 
       // for central galaxy only
       if(p == centralgal)
@@ -343,11 +348,13 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
             assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
           assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
       }
+        assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
 
       assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
         assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
       if(ReIncorporationFactor > 0.0)
         reincorporate_gas(p, deltaT / STEPS);
+        assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
         
       // Ram pressure stripping of cold gas from satellites
       if(RamPressureOn>0 && Gal[p].Type == 1 && Gal[p].ColdGas>0.0 && (Gal[p].ColdGas+Gal[p].StellarMass)>Gal[p].HotGas)
@@ -356,11 +363,17 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
         assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
         assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
+        assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
         
       // determine cooling gas given halo properties
-      coolingGas = cooling_recipe(p, deltaT / STEPS);
-        Gal[p].AccretedGasMass += coolingGas;
-      cool_gas_onto_galaxy(p, centralgal, coolingGas, deltaT / STEPS, step);
+      // Preventing cooling when there's no angular momentum, as the code isn't built to handle that.  This only cropped up for Vishnu haloes with 2 particles, which clearly weren't interesting/physical.  Haloes always have some spin otherwise.
+        if(!(Gal[p].SpinHot[0]==0 & Gal[p].SpinHot[1]==0 && Gal[p].SpinHot[2]==0))
+        {
+          coolingGas = cooling_recipe(p, deltaT / STEPS);
+          Gal[p].AccretedGasMass += coolingGas;
+          cool_gas_onto_galaxy(p, centralgal, coolingGas, deltaT / STEPS, step);
+        }
+        assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
 
       DiscGasSum = get_disc_gas(p);
       assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
@@ -369,6 +382,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
         assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
         assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
+        assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
 
         // Update radii of the annuli
         if(Gal[p].Mvir > 0 && Gal[p].Rvir > 0) update_disc_radii(p);
@@ -384,10 +398,12 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
         assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
         assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
+        assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
         
       // precess gas disc
-      if(GasPrecessionOn)
+      if(GasPrecessionOn && Gal[p].StellarMass>0.0 && Gal[p].ColdGas>0.0)
         precess_gas(p, deltaT / STEPS, halonr);
+      assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
 	
     }
 
@@ -400,7 +416,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
         if(Gal[p].MergTime > 999.0)
         {
           printf("satellite doesn't have a merging time! %f\n", Gal[p].MergTime);
-          ABORT(77);
+          //ABORT(77);
         }
 
         deltaT = Age[Gal[p].SnapNum] - Age[Halo[halonr].SnapNum];

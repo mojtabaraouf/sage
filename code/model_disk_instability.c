@@ -201,7 +201,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
         assert(Gal[p].StellarMass==star_init);
         
         double NewStarsSum = 0.0;
-		for(i=0; i<N_BINS; i++)
+		for(i=N_BINS-1; i>=0; i--)
         {
             assert(NewStarsMetals[i] <= NewStars[i]);
             NewStarsSum += NewStars[i];
@@ -586,21 +586,25 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 void precess_gas(int p, double dt, int halonr)
 {
     int i;
-    double tdyn, deg_ann, deg, DiscGasSum, DiscStarSum, NewDisc[N_BINS], NewDiscMetals[N_BINS], cos_angle_gas_stars;
+    double tdyn, deg_ann, deg, DiscGasSum, DiscStarSum, NewDisc[N_BINS], NewDiscMetals[N_BINS], cos_angle_gas_stars, SpinSqr;
     double StarSpin[3];
     
     // Axis of symmetry assumed to be the bulge in a bulge-dominated system, else it's the disc
     for(i=0; i<3; i++)
     {
-        if(Gal[p].ClassicalBulgeMass>0.5*Gal[p].StellarMass && fabs(Gal[p].SpinClassicalBulge[0]+Gal[p].SpinClassicalBulge[1]+Gal[p].SpinClassicalBulge[2]) > 0.0){
+        if(Gal[p].ClassicalBulgeMass>0.5*Gal[p].StellarMass && fabs(Gal[p].SpinClassicalBulge[0]+Gal[p].SpinClassicalBulge[1]+Gal[p].SpinClassicalBulge[2]) > 0.0)
             StarSpin[i] = Gal[p].SpinClassicalBulge[i] / pow(pow(Gal[p].SpinClassicalBulge[0],2.0)+pow(Gal[p].SpinClassicalBulge[1],2.0)+pow(Gal[p].SpinClassicalBulge[2],2.0),0.5);
-            assert(fabs(StarSpin[0]+StarSpin[1]+StarSpin[2]) > 0.0);}
-        else{
+        else
             StarSpin[i] = Gal[p].SpinStars[i];
-            assert(fabs(StarSpin[0]+StarSpin[1]+StarSpin[2]) > 0.0);}
     }
     
-    assert(fabs(StarSpin[0]+StarSpin[1]+StarSpin[2]) > 0.0);
+    SpinSqr = pow(StarSpin[0],2.0) + pow(StarSpin[1],2.0) + pow(StarSpin[2],2.0);
+    if(SpinSqr==0)
+    {
+        printf("StarSpin in precess_gas is zero. Skipping.\n");
+        return;
+    }
+    assert(SpinSqr > 0.0);
     
     cos_angle_gas_stars = StarSpin[0]*Gal[p].SpinGas[0] + StarSpin[1]*Gal[p].SpinGas[1] + StarSpin[2]*Gal[p].SpinGas[2];
         
@@ -610,13 +614,14 @@ void precess_gas(int p, double dt, int halonr)
     //printf("disc stars from instability\n");
     DiscStarSum = get_disc_stars(p);
     
-    if(cos_angle_gas_stars==0)
+    // This should be so rare it never happens.
+    if(cos_angle_gas_stars==0 && (StarSpin[0]>0 || StarSpin[1]>0 || StarSpin[2]>0) && (Gal[p].SpinGas[0]>0 || Gal[p].SpinGas[1]>0 || Gal[p].SpinGas[2]>0))
         printf("Spin of gas and stars orthogonal -- no precession\n");
     
-    if(fabs(cos_angle_gas_stars)<1.0 && DiscGasSum>0.0 && DiscStarSum>0.0 && cos_angle_gas_stars!=0.0)
+    if(fabs(cos_angle_gas_stars)<0.999 && DiscGasSum>0.0 && DiscStarSum>0.0 && cos_angle_gas_stars!=0.0)
     {
         deg = 0.0;
-        for(i=0; i<N_BINS; i++)
+        for(i=N_BINS-1; i>=0; i--)
         {
             tdyn = pow(Gal[p].DiscRadii[i+1],2.0) / DiscBinEdge[i+1];
             if(tdyn!=tdyn) printf("tdyn = %e\n", tdyn);
@@ -665,6 +670,7 @@ void precess_gas(int p, double dt, int halonr)
                 {
                     printf("angle, cos_angle_precess, cos_angle_gas_stars = %e, %e, %e\n", deg, cos_angle_precess, cos_angle_gas_stars);
                     printf("SpinStars = %e, %e, %e\n", StarSpin[0], StarSpin[1], StarSpin[2]);
+                    printf("SpinGas = %e, %e, %e\n", Gal[p].SpinGas[0], Gal[p].SpinGas[1], Gal[p].SpinGas[2]);
                     printf("HaloSpin = %e, %e, %e\n", Halo[halonr].Spin[0], Halo[halonr].Spin[1], Halo[halonr].Spin[2]);
                     printf("axis = %e, %e, %e\n", axis[0], axis[1], axis[2]);
                     printf("NewSpin = %e, %e, %e \n", NewSpin[0], NewSpin[1], NewSpin[2]);
@@ -675,6 +681,6 @@ void precess_gas(int p, double dt, int halonr)
             }
         }
         
-        // check instability here
+        // check instability here?
     }
 }

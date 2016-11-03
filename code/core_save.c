@@ -130,7 +130,7 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
     o->Spin[j] = Halo[g->HaloNr].Spin[j];
     o->SpinStars[j] = g->SpinStars[j];
     o->SpinGas[j] = g->SpinGas[j];
-      o->SpinSecularBulge[j] = g->SpinSecularBulge[j];
+//      o->SpinSecularBulge[j] = g->SpinSecularBulge[j];
       o->SpinClassicalBulge[j] = g->SpinClassicalBulge[j];
   }
 
@@ -163,29 +163,29 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
   o->MetalsEjectedMass = g->MetalsEjectedMass;
   o->MetalsICS = g->MetalsICS;
     
-  o->StarsInSitu = g->StarsInSitu;
-  o->StarsInstability = g->StarsInstability;
-  o->StarsMergeBurst = g->StarsMergeBurst;
+//  o->StarsInSitu = g->StarsInSitu;
+//  o->StarsInstability = g->StarsInstability;
+//  o->StarsMergeBurst = g->StarsMergeBurst;
     
-    o->AccretedGasMass = g->AccretedGasMass;
-    o->EjectedSNGasMass = g->EjectedSNGasMass;
-    o->EjectedQuasarGasMass = g->EjectedQuasarGasMass;
+//    o->AccretedGasMass = g->AccretedGasMass;
+//    o->EjectedSNGasMass = g->EjectedSNGasMass;
+//    o->EjectedQuasarGasMass = g->EjectedQuasarGasMass;
 
-    o->TotInstabEvents = g->TotInstabEvents;
-    o->TotInstabEventsGas = g->TotInstabEventsGas;
-    o->TotInstabEventsStar = g->TotInstabEventsStar;
-    o->TotInstabAnnuliGas = g->TotInstabAnnuliGas;
-    o->TotInstabAnnuliStar = g->TotInstabAnnuliStar;
-    
-    if(g->TotInstabEventsGas)
-        o->FirstUnstableAvGas = (1.0*g->FirstUnstableGas) / (1.0*g->TotInstabEventsGas);
-    else
-        o->FirstUnstableAvGas = 0.0;
-    
-    if(g->TotInstabEventsStar)
-        o->FirstUnstableAvStar = (1.0*g->FirstUnstableStar) / (1.0*g->TotInstabEventsStar);
-    else
-        o->FirstUnstableAvStar = 0.0;
+//    o->TotInstabEvents = g->TotInstabEvents;
+//    o->TotInstabEventsGas = g->TotInstabEventsGas;
+//    o->TotInstabEventsStar = g->TotInstabEventsStar;
+//    o->TotInstabAnnuliGas = g->TotInstabAnnuliGas;
+//    o->TotInstabAnnuliStar = g->TotInstabAnnuliStar;
+//    
+//    if(g->TotInstabEventsGas)
+//        o->FirstUnstableAvGas = (1.0*g->FirstUnstableGas) / (1.0*g->TotInstabEventsGas);
+//    else
+//        o->FirstUnstableAvGas = 0.0;
+//    
+//    if(g->TotInstabEventsStar)
+//        o->FirstUnstableAvStar = (1.0*g->FirstUnstableStar) / (1.0*g->TotInstabEventsStar);
+//    else
+//        o->FirstUnstableAvStar = 0.0;
   
   for(j=0; j<N_BINS; j++)
   {
@@ -196,8 +196,8 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
       o->DiscHI[j] = g->DiscHI[j];
       o->DiscH2[j] = g->DiscH2[j];
       o->DiscSFR[j] = g->DiscSFR[j] * UnitMass_in_g / UnitTime_in_s * SEC_PER_YEAR / SOLAR_MASS / STEPS;
-      o->TotSinkGas[j] = g->TotSinkGas[j];
-      o->TotSinkStar[j] = g->TotSinkStar[j];
+//      o->TotSinkGas[j] = g->TotSinkGas[j];
+//      o->TotSinkStar[j] = g->TotSinkStar[j];
   }
 
   o->SfrDisk = 0.0;

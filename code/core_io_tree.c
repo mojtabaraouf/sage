@@ -119,7 +119,7 @@ void load_tree(int filenr, int nr)
   if(MaxGals < 10000)
     MaxGals = 10000;
 
-  FoF_MaxGals = 10000;
+  FoF_MaxGals = 50000;
 
   HaloAux = mymalloc(sizeof(struct halo_aux_data) * TreeNHalos[nr]);
   HaloGal = mymalloc(sizeof(struct GALAXY) * MaxGals);
@@ -202,7 +202,7 @@ size_t myfwrite(void *ptr, size_t size, size_t nmemb, FILE * fd)
         printf("offset_galsnapdata[n] filled_galsnapdata[n] = %i, %i\n", offset_galsnapdata[n], size, nmemb, filled_galsnapdata[n]);
         if(offset_galsnapdata[n] > filled_galsnapdata[n])
         filled_galsnapdata[n] = offset_galsnapdata[n];
-    }
+//    }
     
     return size * nmemb;
 }
