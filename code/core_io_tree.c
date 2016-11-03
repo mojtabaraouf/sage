@@ -42,9 +42,12 @@ void load_tree_table(int filenr)
     
   TreeNHalos = mymalloc(sizeof(int) * Ntrees);
   TreeFirstHalo = mymalloc(sizeof(int) * Ntrees);
-
+    
   for(n = 0; n < NOUT; n++)
-    TreeNgals[n] = mymalloc(sizeof(int) * Ntrees);
+    {
+        TreeNgals[n] = mymalloc(sizeof(int) * Ntrees);
+        fd_offsets[n] = sizeof(int) + sizeof(int) + Ntrees*sizeof(int);
+    }
   myfread(TreeNHalos, Ntrees, sizeof(int), load_fd);
 
   if(Ntrees)
@@ -145,6 +148,23 @@ void free_galaxies_and_tree(void)
 }
 
 
+
+ssize_t mypwrite(int fildes, const void *buf, size_t nbyte, off_t offset)
+{
+    char *inbuf = (char*) buf;
+    size_t bytes_written = 0;
+    while(bytes_written < nbyte)
+    {
+        ssize_t pstat = pwrite(fildes, inbuf+bytes_written, nbyte-bytes_written, offset+bytes_written); // pstat is no of bytes written, or negative on error
+        if(pstat<0) perror(NULL); // prints out why pstat why pwrite failed
+        assert(pstat>=0);
+        bytes_written += pstat;
+    }
+    return (ssize_t) bytes_written;
+}
+
+
+
 #ifndef MINIMIZE_IO
 
 
@@ -202,11 +222,10 @@ size_t myfwrite(void *ptr, size_t size, size_t nmemb, FILE * fd)
         printf("offset_galsnapdata[n] filled_galsnapdata[n] = %i, %i\n", offset_galsnapdata[n], size, nmemb, filled_galsnapdata[n]);
         if(offset_galsnapdata[n] > filled_galsnapdata[n])
         filled_galsnapdata[n] = offset_galsnapdata[n];
-//    }
+    }
     
     return size * nmemb;
 }
-
 
 
 size_t myfread(void *ptr, size_t size, size_t nmemb, FILE * fd)

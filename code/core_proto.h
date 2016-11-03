@@ -1,5 +1,5 @@
 #include "core_allvars.h"
-
+ssize_t mypwrite(int fildes, const void *buf, size_t nbyte, off_t offset);
 size_t myfread(void  *ptr,  size_t  size,  size_t  nmemb,  FILE *stream);
 size_t myfwrite(void  *ptr,  size_t  size,  size_t  nmemb,  FILE *stream);
 int myfseek(FILE *stream, long offset, int whence);

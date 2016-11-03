@@ -5,8 +5,8 @@
 FileNameGalaxies       model
 OutputDir              ./output/results/vishnu/
 
-FirstFile                 8
-LastFile                  15
+FirstFile                 0
+LastFile                  7
 
 
 %------------------------------------------

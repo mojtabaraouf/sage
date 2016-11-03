@@ -371,6 +371,9 @@ extern int FileNum;
 double DiscBinEdge[N_BINS+1];
 int RetroCount, ProCount;
 
+
+extern off_t fd_offsets[ABSOLUTEMAXSNAPS];
+
 #ifdef MINIMIZE_IO
 extern char *ptr_treedata, *ptr_galaxydata, *ptr_galsnapdata[ABSOLUTEMAXSNAPS];
 extern size_t offset_auxdata, offset_treedata, offset_dbids;
