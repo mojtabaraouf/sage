@@ -130,6 +130,7 @@ struct GALAXY_OUTPUT
   float Cooling;
   float Heating;
   float LastMajorMerger;
+  float LastMinorMerger;
   float OutflowRate;
 
   //infall properties
@@ -235,6 +236,7 @@ struct GALAXY
   double Heating;
   double r_heat;
   double LastMajorMerger;
+  double LastMinorMerger;
   double OutflowRate;
   double TotalSatelliteBaryons;
 

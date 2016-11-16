@@ -228,7 +228,10 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
     Gal[p].mergeType = 2;  // Mark as major merger
   }
   else
+  {
+    Gal[merger_centralgal].LastMinorMerger = time;
     Gal[p].mergeType = 1;  // Mark as minor merger
+  }
 
 
   if(DiskInstabilityOn>0)
