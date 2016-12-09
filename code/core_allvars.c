@@ -119,9 +119,6 @@ gsl_rng *random_generator;
 int TreeID;
 int FileNum;
 
-
-off_t fd_offsets[ABSOLUTEMAXSNAPS];
-
 #ifdef MINIMIZE_IO
 char *ptr_treedata, *ptr_galaxydata, *ptr_galsnapdata[ABSOLUTEMAXSNAPS];
 size_t offset_auxdata, offset_treedata, offset_dbids;
