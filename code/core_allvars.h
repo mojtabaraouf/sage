@@ -84,9 +84,9 @@ struct GALAXY_OUTPUT
   float SpinGas[3];
 //  float SpinSecularBulge[3];
   float SpinClassicalBulge[3];
-//  float StarsInSitu;
-//  float StarsInstability;
-//  float StarsMergeBurst;
+  float StarsInSitu;
+  float StarsInstability;
+  float StarsMergeBurst;
   float DiscHI[N_BINS];
   float DiscH2[N_BINS];
   float DiscSFR[N_BINS];
@@ -340,6 +340,8 @@ extern double DegPerTdyn;
 extern double Reionization_z0;
 extern double Reionization_zr;
 extern double ThresholdSatDisruption;
+extern double AlphaBurst;
+extern double BetaBurst;
 
 extern double UnitLength_in_cm,
   UnitTime_in_s,

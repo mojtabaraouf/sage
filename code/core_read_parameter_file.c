@@ -249,6 +249,14 @@ void read_parameter_file(char *fname)
   addr[nt] = &ThresholdSatDisruption;
   id[nt++] = DOUBLE;
     
+    strcpy(tag[nt], "AlphaBurst");
+    addr[nt] = &AlphaBurst;
+    id[nt++] = DOUBLE;
+    
+    strcpy(tag[nt], "BetaBurst");
+    addr[nt] = &BetaBurst;
+    id[nt++] = DOUBLE;
+    
     strcpy(tag[nt], "NumOutputs");
     addr[nt] = &NOUT;
     id[nt++] = INT;

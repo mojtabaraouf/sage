@@ -857,7 +857,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
     if(mode == 1)
       eburst = disc_mass_ratio[k];
     else
-      eburst = 0.56 * pow(disc_mass_ratio[k], 0.7);
+      eburst = BetaBurst * pow(disc_mass_ratio[k], AlphaBurst);
 
     stars = eburst * Gal[merger_centralgal].DiscGas[k];
     if(stars < MIN_STARFORMATION)

@@ -94,6 +94,8 @@ double DegPerTdyn;
 double Reionization_z0;
 double Reionization_zr;
 double ThresholdSatDisruption;
+double AlphaBurst;
+double BetaBurst;
 
 // more misc 
 double UnitLength_in_cm,

@@ -4,7 +4,6 @@
 
 FileNameGalaxies       model
 OutputDir              ./output/results/gigglez
-%OutputDir           /Volumes/AdamDrive/Swinburne/SAGE_disc_runs/102
 
 FirstFile					0
 LastFile					7
@@ -17,19 +16,19 @@ LastFile					7
 NumOutputs        12  ; sets the desired number of galaxy outputs; use -1 for all outputs
 
 % List your output snapshots after the arrow, highest to lowest (ignored when NumOutputs=-1).
-%-> 233 232 231 230 168 140 104 84 72 64 52 48
-%-> 116 115 114 113 84 70 52 42 36 32 26 24
--> 58 57 56 55 42 35 26 21 18 16 13 12
-%-> 29 28 27 26 25 21 17 13 9 8 7 6
+%-> 234 233 232 231 169 141 105 85 73 65 53 49
+%-> 117 116 115 114 85 71 53 43 37 33 27 25
+%-> 58 57 56 55 42 35 26 21 18 16 13 12
+-> 29 28 27 26 25 21 17 13 9 8 7 6
 
 %------------------------------------------
 %----- Simulation information  ------------
 %------------------------------------------
 
-TreeName					    trees_058		; assumes the trees are named TreeName.n where n is the snapshot number
-SimulationDir				../../../trees/GiggleZ-MR/mill
-FileWithSnapList			../../../trees/GiggleZ-MR/mill/a_list.txt
-LastSnapShotNr				58
+TreeName					    trees_029		; assumes the trees are named TreeName.n where n is the snapshot number
+SimulationDir				../../../trees/GiggleZ-HR/min
+FileWithSnapList			../../../trees/GiggleZ-HR/min/gigglez.a_list
+LastSnapShotNr				29
 
 Omega				0.273
 OmegaLambda			0.727
@@ -96,6 +95,9 @@ DegPerTdyn                  5.0    ;degrees the gas disc precesses to come in li
 
 ThreshMajorMerger			0.3		;major merger when mass ratio greater than this
 ThresholdSatDisruption		1.0		;Mvir-to-baryonic mass ratio threshold for satellite merger or disruption
+
+AlphaBurst                  0.7     ;normalisation of fraction of gas consumed in a merger starburst
+BetaBurst                   0.28    ;exponent of gas consumed in a merger starburst
 
 Yield						0.025
 RecycleFraction				0.43	;fraction of SF mass instantaneously recycled back to cold

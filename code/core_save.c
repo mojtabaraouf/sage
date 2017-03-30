@@ -163,9 +163,9 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
   o->MetalsEjectedMass = g->MetalsEjectedMass;
   o->MetalsICS = g->MetalsICS;
     
-//  o->StarsInSitu = g->StarsInSitu;
-//  o->StarsInstability = g->StarsInstability;
-//  o->StarsMergeBurst = g->StarsMergeBurst;
+  o->StarsInSitu = g->StarsInSitu;
+  o->StarsInstability = g->StarsInstability;
+  o->StarsMergeBurst = g->StarsMergeBurst;
     
 //    o->AccretedGasMass = g->AccretedGasMass;
 //    o->EjectedSNGasMass = g->EjectedSNGasMass;

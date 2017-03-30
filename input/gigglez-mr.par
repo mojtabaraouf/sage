@@ -3,40 +3,40 @@
 %------------------------------------------
 
 FileNameGalaxies       model
-OutputDir              ./output/results/millennium/
-%OutputDir               /Volumes/AdamDrive/Swinburne/SAGE_disc_runs/412/
+OutputDir              ./output/results/gigglez
+%OutputDir           /Volumes/AdamDrive/Swinburne/SAGE_disc_runs/102
 
-FirstFile                 0
-LastFile                  15
+FirstFile					0
+LastFile					7
 
 
 %------------------------------------------
 %----- Snapshot output list ---------------
 %------------------------------------------
 
-NumOutputs        1   ; sets the desired number of galaxy outputs; use -1 for all outputs
+NumOutputs        12  ; sets the desired number of galaxy outputs; use -1 for all outputs
 
 % List your output snapshots after the arrow, highest to lowest (ignored when NumOutputs=-1).
--> 63 62 61 60 48 40 32 27 23 21 19 17
-%-> 63 57 53 48 44 40 36 32 29 27 25 23 21 20 19 18 17 16
-
+%-> 233 232 231 230 168 140 104 84 72 64 52 48
+-> 116 115 114 113 84 70 52 42 36 32 26 24
+%-> 58 57 56 55 42 35 26 21 18 16 13 12
+%-> 29 28 27 26 25 21 17 13 9 8 7 6
 
 %------------------------------------------
 %----- Simulation information  ------------
 %------------------------------------------
 
-TreeName					    trees_063		; assumes the trees are named TreeName.n where n is the snapshot number
-%SimulationDir				/Volumes/AdamDrive/Swinburne/treefiles/millennium/full
-SimulationDir               ../../../trees/Millennium/treedata
-FileWithSnapList			../../../trees/Millennium/millennium.a_list
-LastSnapShotNr				63
+TreeName					    trees_116		; assumes the trees are named TreeName.n where n is the snapshot number
+SimulationDir				../../../trees/GiggleZ-MR/nom
+FileWithSnapList			../../../trees/GiggleZ-MR/nom/a_list.txt
+LastSnapShotNr				116
 
-Omega				0.25
-OmegaLambda			0.75
-BaryonFrac			0.17
-Hubble_h			0.73
+Omega				0.273
+OmegaLambda			0.727
+BaryonFrac			0.167
+Hubble_h			0.705
 
-PartMass			0.0860657
+PartMass			0.09395545
 
 
 %------------------------------------------
@@ -44,7 +44,7 @@ PartMass			0.0860657
 %------------------------------------------
 
 SFprescription				0		;0: proportional to H2; 1: as 0 but all gas for low H2 fraction a la Fu et al 2010; 2: Threshold cold mass (closest to SAGE implementation)
-H2prescription              0       ;0: mid-plane pressure; 1: metallicity-dependent (McKee & Krumholz 2010)
+H2prescription              1       ;0: mid-plane pressure; 1: metallicity-dependent (McKee & Krumholz 2010)
 AGNrecipeOn					2		;0: switch off; 1: empirical model; 2: Bondi-Hoyle model; 3: cold cloud accretion model
 SupernovaRecipeOn			1		;0: switch off; 1: scale with local density; 2: uniform reheated fraction
 ReionizationOn				1		;0: switch off
@@ -69,7 +69,7 @@ ExponentBin                 1.4     ; The factor in spec ang mom between bins
 %----- Parameters of physical model -------
 %------------------------------------------
 
-SfrEfficiency				0.7
+SfrEfficiency				0.25
 
 FeedbackReheatingEpsilon	6.0
 FeedbackGasSigma            10.9     ; For SupernovaRecipeOn=1, scales SN feedback based on this density scale [h Msun/pc^2]
@@ -118,4 +118,3 @@ EtaSN						5.0e-3	;supernova efficiency
 UnitLength_in_cm			3.08568e+24		;WATCH OUT: Mpc/h
 UnitMass_in_g				1.989e+43		;WATCH OUT: 10^10Msun/h
 UnitVelocity_in_cm_per_s	100000			;WATCH OUT: km/s
-
