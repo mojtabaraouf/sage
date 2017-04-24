@@ -329,8 +329,9 @@ double RadioLuminosity_jet(int p, int centralgal, double time, double dt)
         }
         else
         {
-           Gal[p].Qjet = 3.42e36 * pow((Gal[p].BlackHoleMass * 1e10/Hubble_h)/ 1e9,-0.3) * pow(AGNrate * (1e10/Hubble_h/1e6),1.2);
-           Gal[p].Q_index =1.0;
+          // Gal[p].Qjet = 3.42e36 * pow((Gal[p].BlackHoleMass * 1e10/Hubble_h)/ 1e9,-0.3) * pow(AGNrate * (1e10/Hubble_h/1e6),1.2);
+           Gal[p].Qjet = 3.42e38 * pow((Gal[p].BlackHoleMass *UnitMass_in_g/SOLAR_MASS/Hubble_h)/ 1e9,-0.9) * (AGNrate * (100.0 * UnitMass_in_g/SOLAR_MASS/Hubble_h)/(UnitTime_in_s/SEC_PER_YEAR)); // [W]
+	   Gal[p].Q_index =1.0;
         }
     //    Isothermal density profile
     if(Density_model == 0)
