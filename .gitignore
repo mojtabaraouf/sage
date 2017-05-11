@@ -2,3 +2,9 @@ sage
 gmon.out
 input/treefiles
 output/results
+sage.qsub
+cmd_file
+output/extraresults.py
+output/growth.py
+output/discplots.py
+

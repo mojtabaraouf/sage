@@ -54,23 +54,26 @@ class Results:
         """Here we set up some of the variables which will be global to this
         class."""
 
-        self.Hubble_h = 0.678
 
         if whichsimulation == 0:    # Mini-Millennium
           self.BoxSize = 62.5       # Mpc/h
           self.MaxTreeFiles = 8     # FilesPerSnapshot
+          self.Hubble_h = 0.73
 
         elif whichsimulation == 1:  # Millennium
           self.BoxSize = 500        # Mpc/h
           self.MaxTreeFiles = 512   # FilesPerSnapshot
+          self.Hubble_h = 0.73
 
         elif whichsimulation == 2:  # Bolshoi
           self.BoxSize = 250.0      # Mpc/h
           self.MaxTreeFiles = 12987 # FilesPerSnapshot
+          self.Hubble_h = 0.7
 
         elif whichsimulation == 3:  # GiggleZ MR
           self.BoxSize = 125.0      # Mpc/h
           self.MaxTreeFiles = 8 # FilesPerSnapshot
+          self.Hubble_h = 0.705
 
         else:
           print "Please pick a valid simulation!"
@@ -89,7 +92,7 @@ class Results:
                         ('SimulationHaloIndex'          , np.int32),
                         ('TreeIndex'                    , np.int32),
                         ('SnapNum'                      , np.int32),
-                        ('CentralGalaxyIndex'           , np.int64), # Changed to 64-bit at run 96
+                        ('CentralGalaxyIndex'           , np.int64),
                         ('CentralMvir'                  , floattype),
                         ('mergeType'                    , np.int32),
                         ('mergeIntoID'                  , np.int32),
@@ -99,12 +102,13 @@ class Results:
                         ('Vel'                          , (floattype, 3)),
                         ('Spin'                         , (floattype, 3)),
                         ('Len'                          , np.int32),
+                        ('LenMax'                       , np.int32),
                         ('Mvir'                         , floattype),
                         ('Rvir'                         , floattype),
                         ('Vvir'                         , floattype),
                         ('Vmax'                         , floattype),
                         ('VelDisp'                      , floattype),
-                        ('DiscRadii'                    , (floattype, 31)), # Added at run 145
+                        ('DiscRadii'                    , (floattype, 31)),
                         ('ColdGas'                      , floattype),
                         ('StellarMass'                  , floattype),
                         ('ClassicalBulgeMass'           , floattype),
@@ -117,22 +121,13 @@ class Results:
                         ('DiscStars'                    , (floattype, 30)),
                         ('SpinStars'                    , (floattype, 3)),
                         ('SpinGas'                      , (floattype, 3)),
-                        ('SpinSecularBulge'             , (floattype, 3)), #=# This and next added at run 154
-                        ('SpinClassicalBulge'           , (floattype, 3)), #=#
-                        ('StarsInSitu'                  , floattype), # This and next 2 introduced at run 66
-                        ('StarsInstability'             , floattype), #
-                        ('StarsMergeBurst'              , floattype), #
-                        ('DiscHI'                       , (floattype, 30)), ## This and next introduced at run 69
-                        ('DiscH2'                       , (floattype, 30)), ##
-                        ('TotInstabEvents'              , np.int32), ### This and next few introduced at run 144
-                        ('TotInstabEventsGas'           , np.int32), ###
-                        ('TotInstabEventsStar'          , np.int32), ###
-                        ('TotInstabAnnuliGas'           , np.int32), ###
-                        ('TotInstabAnnuliStar'          , np.int32), ###
-                        ('FirstUnstableAvGas'           , floattype), ###
-                        ('FirstUnstableAvStar'          , floattype), ###
-                        ('TotSinkGas'                   , (floattype, 30)), ###
-                        ('TotSinkStar'                  , (floattype, 30)), ###
+                        ('SpinClassicalBulge'           , (floattype, 3)),
+                        ('StarsInSitu'                  , floattype),
+                        ('StarsInstability'             , floattype),
+                        ('StarsMergeBurst'              , floattype),
+                        ('DiscHI'                       , (floattype, 30)),
+                        ('DiscH2'                       , (floattype, 30)),
+                        ('DiscSFR'                      , (floattype, 30)),
                         ('MetalsColdGas'                , floattype),
                         ('MetalsStellarMass'            , floattype),
                         ('ClassicalMetalsBulgeMass'     , floattype),
@@ -151,6 +146,7 @@ class Results:
                         ('Cooling'                      , floattype),
                         ('Heating'                      , floattype),
                         ('LastMajorMerger'              , floattype),
+                        ('LastMinorMerger'              , floattype),
                         ('OutflowRate'                  , floattype),
                         ('infallMvir'                   , floattype),
                         ('infallVvir'                   , floattype),
