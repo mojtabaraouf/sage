@@ -219,11 +219,11 @@ double dmax(double x, double y)
 double get_virial_mass(int halonr, int p)
 {
     if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir > 0.0)
-        return Halo[halonr].Mvir;   /* take spherical overdensity mass estimate */
+    return Halo[halonr].Mvir;   /* take spherical overdensity mass estimate */
     else if(Halo[halonr].Len>0)
-        return Halo[halonr].Len * PartMass;
+    return Halo[halonr].Len * PartMass;
     else if(p!=-1)
-        return Gal[p].StellarMass + Gal[p].ColdGas + Gal[p].HotGas + Gal[p].BlackHoleMass + Gal[p].ICS;
+    return Gal[p].StellarMass + Gal[p].ColdGas + Gal[p].HotGas + Gal[p].BlackHoleMass + Gal[p].ICS;
 }
 
 
@@ -312,11 +312,11 @@ double get_disc_gas(int p)
             Gal[p].MetalsColdGas = 0.0;
         }
         
-//        if((DiscGasSum<1.01*Gal[p].ColdGas && DiscGasSum>Gal[p].ColdGas/1.01) || (DiscGasSum==0.0 && Gal[p].ColdGas<1e-10) || DiscGasSum < 1e-10)
-//        {
-            Gal[p].ColdGas = DiscGasSum; // If difference is small, just set the numbers to be the same to prevent small errors from blowing up
-            Gal[p].MetalsColdGas = DiscMetalsSum;
-//        }
+        //        if((DiscGasSum<1.01*Gal[p].ColdGas && DiscGasSum>Gal[p].ColdGas/1.01) || (DiscGasSum==0.0 && Gal[p].ColdGas<1e-10) || DiscGasSum < 1e-10)
+        //        {
+        Gal[p].ColdGas = DiscGasSum; // If difference is small, just set the numbers to be the same to prevent small errors from blowing up
+        Gal[p].MetalsColdGas = DiscMetalsSum;
+        //        }
         
     }
     return DiscGasSum;
@@ -345,12 +345,12 @@ double get_disc_stars(int p)
     if(DiscAndBulge>1.001*Gal[p].StellarMass || DiscAndBulge<Gal[p].StellarMass/1.001)
     {
         printf("get_disc_stars report: DiscAndBulge, StellarMass, dumped_mass = %e, %e, %e\n", DiscAndBulge, Gal[p].StellarMass, dumped_mass);
-//        if(DiscAndBulge<1.01*Gal[p].StellarMass && DiscAndBulge>Gal[p].StellarMass/1.01)
+        //        if(DiscAndBulge<1.01*Gal[p].StellarMass && DiscAndBulge>Gal[p].StellarMass/1.01)
         Gal[p].StellarMass = DiscAndBulge; // If difference is small, just set the numbers to be the same to prevent small errors from blowing up
         if(Gal[p].StellarMass <= Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass)
         {
             for(l=0; l<N_BINS; l++)
-                Gal[p].DiscStars[l] = 0.0;
+            Gal[p].DiscStars[l] = 0.0;
             DiscStarSum = 0.0;
             Gal[p].StellarMass = Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass;
         }
@@ -393,12 +393,12 @@ double get_disc_ang_mom(int p, int type)
     if(type==0)
     {
         for(l=N_BINS-1; l>=0; l--) // Calculation of average J_sum in bin no longer so straight forward
-            J_sum += Gal[p].DiscGas[l] * (DiscBinEdge[l]+DiscBinEdge[l+1])/2.0;
+        J_sum += Gal[p].DiscGas[l] * (DiscBinEdge[l]+DiscBinEdge[l+1])/2.0;
     }
     else if(type==1)
     {
         for(l=N_BINS-1; l>=0; l--)
-            J_sum += Gal[p].DiscStars[l] * (DiscBinEdge[l]+DiscBinEdge[l+1])/2.0;
+        J_sum += Gal[p].DiscStars[l] * (DiscBinEdge[l]+DiscBinEdge[l+1])/2.0;
     }
     
     return J_sum;
@@ -426,6 +426,7 @@ void update_disc_radii(int p)
     double M_D, M_int, M_DM, M_CB, M_SB, M_ICS, M_hot;
     double z, a, b, c_DM, c, r_2, X, M_DM_tot, rho_const;
     double a_CB, M_CB_inf, a_SB, M_SB_inf, a_ICS, M_ICS_inf;
+    double f_support;
     
     // Try to stably set discs up first -- this might no longer be necessary with NFW treatment
     //    M_D = Gal[p].StellarMass + Gal[p].ColdGas - Gal[p].SecularBulgeMass - Gal[p].ClassicalBulgeMass;
@@ -451,9 +452,12 @@ void update_disc_radii(int p)
     z = ZZ[Gal[p].SnapNum];
     if(z>5.0) z=5.0;
     a = 0.520 + (0.905-0.520)*exp(-0.617*pow(z,1.21)); // Dutton & Maccio 2014
-    b = -1.01 + 0.026*z; // Dutton & Maccio 2014
+    b = -0.101 + 0.026*z; // Dutton & Maccio 2014
     c_DM = pow(10.0, a+b*log10(Gal[p].Mvir*UnitMass_in_g/(SOLAR_MASS*1e12))); // Dutton & Maccio 2014
-    c = c_DM * (1.0 + 3e-5*exp(3.4*(X+4.5))); // Di Cintio et al 2014b
+    if(Gal[p].Type==0)
+        c = c_DM * (1.0 + 3e-5*exp(3.4*(X+4.5))); // Di Cintio et al 2014b
+    else
+        c = 1.0*c_DM; // Should only happen for satellite-satellite mergers, where X cannot be trusted
     r_2 = Gal[p].Rvir / c; // Di Cintio et al 2014b
     rho_const = M_DM_tot / (log((Gal[p].Rvir+r_2)/r_2) - Gal[p].Rvir/(Gal[p].Rvir+r_2));
     // ===========================================================
@@ -510,11 +514,23 @@ void update_disc_radii(int p)
                 M_hot = Gal[p].HotGas * r_try / Gal[p].Rvir;
                 M_int = M_DM + M_D + M_CB + M_SB + M_ICS + M_hot + Gal[p].BlackHoleMass;
                 
-                v_try = sqrt(G*M_int/r_try);
+                //f_support = 1 - exp(-3*r_try/Gal[p].DiskScaleRadius);
+                f_support = 1.0;
+                v_try = sqrt(G*M_int*f_support/r_try);
                 if(v_try<Gal[p].Vmax || Gal[p].Vmax <= 0)
                     j_try = r_try*v_try;
                 else
+                {
                     j_try = r_try*Gal[p].Vmax;
+//                    printf("v_try %e was capped at 3*Vmax %e\n", v_try, 3*Gal[p].Vmax);
+//                    printf("j_try, M_int, r_try = %e, %e, %e\n", j_try, M_int, r_try);
+//                    printf("M_DM, M_D, M_CB, M_SB, M_ICS, M_Hot, M_BH = %e, %e, %e, %e, %e, %e, %e\n", M_DM, M_D, M_CB, M_SB, M_ICS, M_hot, Gal[p].BlackHoleMass);
+//                    printf("M_CB_inf, M_SB_inf, M_ICS_tot, M_ICS_inf = %e, %e, %e, %e\n", M_CB_inf, M_SB_inf, Gal[p].ICS, M_ICS_inf);
+//                    printf("a_CB, a_SB, a_ICS = %e, %e, %e\n", a_CB, a_SB, a_ICS);
+//                    printf("R_vir, M_vir = %e, %e\n", Gal[p].Rvir, Gal[p].Mvir);
+//                    printf("Redshift, c_DM, c, log(SM/Mvir) = %e, %e, %e, %.6f\n", z, c_DM, c, X);
+//                    printf("Len, LenMax, Type = %i, %i, %i\n\n", Gal[p].Len, Gal[p].LenMax, Gal[p].Type);
+                }
                 dif = j_try/DiscBinEdge[i] - 1.0;
                 
                 if(j_try!=j_try || j_try<=0 || j_try==INFINITY)

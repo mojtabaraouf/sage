@@ -385,7 +385,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
         assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
 
         // Update radii of the annuli
-        if(Gal[p].Mvir > 0 && Gal[p].Rvir > 0) update_disc_radii(p);
+        if(Gal[p].Mvir > 0 && Gal[p].Rvir > 0 && Gal[p].Type==0) update_disc_radii(p);
 	
 	  // stars form and then explode!
       //if(p==centralgal)
