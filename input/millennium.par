@@ -45,7 +45,7 @@ H2prescription              1       ;0: mid-plane pressure; 1: metallicity-depen
 AGNrecipeOn					2		;0: switch off; 1: empirical model; 2: Bondi-Hoyle model; 3: cold cloud accretion model
 SupernovaRecipeOn			1		;0: switch off; 1: scale with local density; 2: uniform reheated fraction
 ReionizationOn				1		;0: switch off
-DiskInstabilityOn			1		;0: switch off; 1: unstable mass moves through disc; 2: inner unstable stars straight to bulge
+DiskInstabilityOn			2		;0: switch off; 1: unstable mass moves through disc; 2: inner unstable stars straight to bulge
 GasPrecessionOn             1       ;0: switch off; 1: gas discs will precess to naturally come in line with stellar discs
 RamPressureOn               1       ;0: switch off; 1: cold gas is stripped in satellites' annuli immediately; 2: stripped gradually
 HotStripOn                  1       ;0: switch off; 1: hot gas is gradually transferred from satellites to centrals; 2: strip all hot gas of satellites instantly; 3: ram pressure on the hot gas

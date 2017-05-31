@@ -426,7 +426,7 @@ void update_disc_radii(int p)
     double M_D, M_int, M_DM, M_CB, M_SB, M_ICS, M_hot;
     double z, a, b, c_DM, c, r_2, X, M_DM_tot, rho_const;
     double a_CB, M_CB_inf, a_SB, M_SB_inf, a_ICS, M_ICS_inf;
-    double f_support;
+    double f_support, BTT, v_max;
     
     // Try to stably set discs up first -- this might no longer be necessary with NFW treatment
     //    M_D = Gal[p].StellarMass + Gal[p].ColdGas - Gal[p].SecularBulgeMass - Gal[p].ClassicalBulgeMass;
@@ -454,7 +454,7 @@ void update_disc_radii(int p)
     a = 0.520 + (0.905-0.520)*exp(-0.617*pow(z,1.21)); // Dutton & Maccio 2014
     b = -0.101 + 0.026*z; // Dutton & Maccio 2014
     c_DM = pow(10.0, a+b*log10(Gal[p].Mvir*UnitMass_in_g/(SOLAR_MASS*1e12))); // Dutton & Maccio 2014
-    if(Gal[p].Type==0)
+    if(Gal[p].Type==0 && Gal[p].StellarMass>0 && Gal[p].Mvir>0)
         c = c_DM * (1.0 + 3e-5*exp(3.4*(X+4.5))); // Di Cintio et al 2014b
     else
         c = 1.0*c_DM; // Should only happen for satellite-satellite mergers, where X cannot be trusted
@@ -491,7 +491,19 @@ void update_disc_radii(int p)
     //    }
     
     
-    if(Gal[p].Mvir>0.0)
+    BTT = (Gal[p].ClassicalBulgeMass+Gal[p].SecularBulgeMass)/(Gal[p].StellarMass+Gal[p].ColdGas);
+
+    if(Gal[p].Vmax > Gal[p].Vvir)
+        v_max = 1.0*Gal[p].Vmax;
+    else if(Gal[p].Vvir > 0.0)
+        v_max = 1.0*Gal[p].Vvir;
+    else
+    {
+        v_max = 500.0; // Randomly large value here...
+        printf("Set v_max to %.1f\n\n", v_max);
+    }
+    
+    if(Gal[p].Mvir>0.0 && BTT<1.0)
     {
         for(i=1; i<N_BINS+1; i++)
         {
@@ -505,42 +517,46 @@ void update_disc_radii(int p)
                 r_try = (left+right)/2.0;
                 
                 if(Gal[p].Mvir>0.0)
-                M_DM = rho_const * (log((r_try+r_2)/r_2) - r_try/(r_try+r_2));
+                    M_DM = rho_const * (log((r_try+r_2)/r_2) - r_try/(r_try+r_2));
                 else
-                M_DM = 0.0;
+                    M_DM = 0.0;
                 M_SB = M_SB_inf * pow(r_try/(r_try + a_SB), 2.0);
                 M_CB = M_CB_inf * pow(r_try/(r_try + a_CB), 2.0);
                 M_ICS = M_ICS_inf * pow(r_try/(r_try + a_ICS), 2.0);
                 M_hot = Gal[p].HotGas * r_try / Gal[p].Rvir;
                 M_int = M_DM + M_D + M_CB + M_SB + M_ICS + M_hot + Gal[p].BlackHoleMass;
                 
-                //f_support = 1 - exp(-3*r_try/Gal[p].DiskScaleRadius);
-                f_support = 1.0;
+                
+                f_support = 1 - exp(-3*(1-BTT)*r_try/Gal[p].DiskScaleRadius);
+                //f_support = 1.0;
                 v_try = sqrt(G*M_int*f_support/r_try);
-                if(v_try<Gal[p].Vmax || Gal[p].Vmax <= 0)
+                if(v_try<2*v_max || v_max <= 0)
                     j_try = r_try*v_try;
                 else
                 {
-                    j_try = r_try*Gal[p].Vmax;
-//                    printf("v_try %e was capped at 3*Vmax %e\n", v_try, 3*Gal[p].Vmax);
-//                    printf("j_try, M_int, r_try = %e, %e, %e\n", j_try, M_int, r_try);
+                    j_try = r_try*2*v_max;
+//                    printf("v_try %e was capped at 2*Vmax %e\n", v_try, 2*v_max);
+//                    printf("j_try, M_int, r_try, f_support = %e, %e, %e, %.4f\n", j_try, M_int, r_try, f_support);
 //                    printf("M_DM, M_D, M_CB, M_SB, M_ICS, M_Hot, M_BH = %e, %e, %e, %e, %e, %e, %e\n", M_DM, M_D, M_CB, M_SB, M_ICS, M_hot, Gal[p].BlackHoleMass);
 //                    printf("M_CB_inf, M_SB_inf, M_ICS_tot, M_ICS_inf = %e, %e, %e, %e\n", M_CB_inf, M_SB_inf, Gal[p].ICS, M_ICS_inf);
+//                    printf("M_disc/M_vir, M_bulge/M_vir, B/T = %.4f, %.4f, %.4f/%.4f\n", (Gal[p].StellarMass+Gal[p].ColdGas-Gal[p].ClassicalBulgeMass-Gal[p].SecularBulgeMass)/Gal[p].Mvir, (Gal[p].ClassicalBulgeMass+Gal[p].SecularBulgeMass)/Gal[p].Mvir, (Gal[p].ClassicalBulgeMass+Gal[p].SecularBulgeMass)/Gal[p].StellarMass, BTT);
 //                    printf("a_CB, a_SB, a_ICS = %e, %e, %e\n", a_CB, a_SB, a_ICS);
 //                    printf("R_vir, M_vir = %e, %e\n", Gal[p].Rvir, Gal[p].Mvir);
-//                    printf("Redshift, c_DM, c, log(SM/Mvir) = %e, %e, %e, %.6f\n", z, c_DM, c, X);
+//                    printf("Redshift, c_DM, c, log(SM/Mvir) = %e, %e, %e, %.4f\n", z, c_DM, c, X);
 //                    printf("Len, LenMax, Type = %i, %i, %i\n\n", Gal[p].Len, Gal[p].LenMax, Gal[p].Type);
                 }
                 dif = j_try/DiscBinEdge[i] - 1.0;
                 
                 if(j_try!=j_try || j_try<=0 || j_try==INFINITY)
                 {
-                    printf("\nj_try has illogical value\n");
-                    printf("j_try, M_int, r_try = %e, %e, %e\n", j_try, M_int, r_try);
+                    printf("j_try, M_int, r_try, f_support = %e, %e, %e, %.4f\n", j_try, M_int, r_try, f_support);
                     printf("M_DM, M_D, M_CB, M_SB, M_ICS, M_Hot, M_BH = %e, %e, %e, %e, %e, %e, %e\n", M_DM, M_D, M_CB, M_SB, M_ICS, M_hot, Gal[p].BlackHoleMass);
                     printf("M_CB_inf, M_SB_inf, M_ICS_tot, M_ICS_inf = %e, %e, %e, %e\n", M_CB_inf, M_SB_inf, Gal[p].ICS, M_ICS_inf);
+                    printf("M_disc/M_vir, M_bulge/M_vir, B/T = %.4f, %.4f, %.4f/%.4f\n", (Gal[p].StellarMass+Gal[p].ColdGas-Gal[p].ClassicalBulgeMass-Gal[p].SecularBulgeMass)/Gal[p].Mvir, (Gal[p].ClassicalBulgeMass+Gal[p].SecularBulgeMass)/Gal[p].Mvir, (Gal[p].ClassicalBulgeMass+Gal[p].SecularBulgeMass)/Gal[p].StellarMass, BTT);
                     printf("a_CB, a_SB, a_ICS = %e, %e, %e\n", a_CB, a_SB, a_ICS);
-                    printf("R_vir = %e\n", Gal[p].Rvir);
+                    printf("R_vir, M_vir = %e, %e\n", Gal[p].Rvir, Gal[p].Mvir);
+                    printf("Redshift, c_DM, c, log(SM/Mvir) = %e, %e, %e, %.4f\n", z, c_DM, c, X);
+                    printf("Len, LenMax, Type = %i, %i, %i\n\n", Gal[p].Len, Gal[p].LenMax, Gal[p].Type);
                 }
                 assert(j_try==j_try && j_try>0.0 && j_try!=INFINITY);
                 
