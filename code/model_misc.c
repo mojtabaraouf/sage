@@ -128,7 +128,6 @@ void init_galaxy(int p, int halonr)
     
     Gal[p].DiskScaleRadius = get_disk_radius(halonr, p);
     Gal[p].CoolScaleRadius = 1.0*Gal[p].DiskScaleRadius;
-    Gal[p].ClassicalBulgeRadius = 0.0;
     Gal[p].MergTime = 999.9;
     Gal[p].Cooling = 0.0;
     Gal[p].Heating = 0.0;
@@ -156,25 +155,15 @@ double get_disk_radius(int halonr, int p)
     
     if(SpinMagnitude==0 && Gal[p].DiskScaleRadius>=0) return Gal[p].DiskScaleRadius;
     
-    // trim the extreme tail of the spin distribution for more a realistic r_s
-    //if(SpinMagnitude > 1.5) SpinMagnitude = 1.5;
-    
     SpinParameter = SpinMagnitude / (1.414 * Gal[p].Vvir * Gal[p].Rvir);
     
     radius = (SpinParameter / 1.414) * Gal[p].Rvir;
-    //radius = pow(10, 0.23*log10(SpinParameter) - 0.67) * Gal[p].Rvir;
     
     if(radius <= 0.0 || radius!=radius || radius==INFINITY)
     {
-        //printf("Reset DSR from %e to 0\n", radius);
-        if(!(SpinMagnitude>0)) printf("SpinMagntiude 0\n");
+        if(!(SpinMagnitude>0)) printf("ERROR: Halo with SpinMagntiude of 0\n");
         radius = 0.0;
-        printf("Len = %i\n", Gal[p].Len);
-        printf("Rvir, Vvir = %e, %e\n", Gal[p].Rvir, Gal[p].Vvir);
-        printf("Mvir = %e, %e\n", Gal[p].Mvir, get_virial_mass(halonr,p));
-        printf("SpinMagnitude, SpinParameter = %e, %e\n", SpinMagnitude, SpinParameter);
     }
-    
     assert(radius>0);
     
     return radius;
@@ -187,20 +176,19 @@ double get_metallicity(double gas, double metals)
 {
     double metallicity;
     
-    if(metals>gas)
-    printf("get_metallicity report: metals, gas/stars = %e, %e\n", metals, gas);
-    //assert(gas>metals);
+//    if(metals>gas)
+//    printf("get_metallicity report: metals, gas/stars = %e, %e\n", metals, gas);
     
     if(gas > 0.0 && metals > 0.0)
     {
         metallicity = metals / gas;
         if(metallicity < 1.0)
-        return metallicity;
+            return metallicity;
         else
-        return 1.0;
+            return 1.0;
     }
     else
-    return 0.0;
+        return 0.0;
     
 }
 
@@ -209,9 +197,9 @@ double get_metallicity(double gas, double metals)
 double dmax(double x, double y)
 {
     if(x > y)
-    return x;
+        return x;
     else
-    return y;
+        return y;
 }
 
 
@@ -219,11 +207,11 @@ double dmax(double x, double y)
 double get_virial_mass(int halonr, int p)
 {
     if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir > 0.0)
-    return Halo[halonr].Mvir;   /* take spherical overdensity mass estimate */
+        return Halo[halonr].Mvir;   /* take spherical overdensity mass estimate */
     else if(Halo[halonr].Len>0)
-    return Halo[halonr].Len * PartMass;
+        return Halo[halonr].Len * PartMass;
     else if(p!=-1)
-    return Gal[p].StellarMass + Gal[p].ColdGas + Gal[p].HotGas + Gal[p].BlackHoleMass + Gal[p].ICS;
+        return Gal[p].StellarMass + Gal[p].ColdGas + Gal[p].HotGas + Gal[p].BlackHoleMass + Gal[p].ICS;
 }
 
 
@@ -235,9 +223,9 @@ double get_virial_velocity(int halonr, int p)
     Rvir = get_virial_radius(halonr, p);
     
     if(Rvir > 0.0)
-    return sqrt(G * get_virial_mass(halonr, p) / Rvir);
+        return sqrt(G * get_virial_mass(halonr, p) / Rvir);
     else
-    return 0.0;
+        return 0.0;
 }
 
 
@@ -263,9 +251,10 @@ double get_virial_radius(int halonr, int p)
 double get_disc_gas(int p)
 {
     double DiscGasSum, DiscMetalsSum;
-    int l;
+    int l, fix;
     
     DiscGasSum = DiscMetalsSum = 0.0;
+    fix = 1;
     for(l=N_BINS-1; l>=0; l--)
     {
         if(Gal[p].DiscGas[l] < 1e-20) // Negligible gas content is negligible
@@ -280,7 +269,6 @@ double get_disc_gas(int p)
     
     if((Gal[p].ColdGas < 1e-15 && Gal[p].ColdGas!=0.0) || (DiscGasSum < 1e-15 && DiscGasSum!=0.0) || (Gal[p].ColdGas<=0 && Gal[p].MetalsColdGas>0.0))
     {
-        //printf("get_disc_gas initial DiscGasSum, ColdGas = %e, %e\n", DiscGasSum, Gal[p].ColdGas);
         Gal[p].ColdGas = 0.0;
         Gal[p].MetalsColdGas = 0.0;
         for(l=0; l<N_BINS; l++)
@@ -289,34 +277,25 @@ double get_disc_gas(int p)
             Gal[p].DiscGasMetals[l] = 0.0;
         }
         DiscGasSum = 0.0;
+        DiscMetalsSum = 0.0;
+        fix = 0;
+    }
+    
+    if(Gal[p].MetalsColdGas<=0.0 && fix)
+    {
+        for(l=0; l<N_BINS; l++)
+            Gal[p].DiscGasMetals[l] = 0.0;
+        DiscMetalsSum = 0.0;
+        Gal[p].MetalsColdGas = 0.0;
     }
     
     if(DiscGasSum>1.001*Gal[p].ColdGas || DiscGasSum<Gal[p].ColdGas/1.001)
     {
-        printf("get_disc_gas report ... DiscSum, ColdGas =  %e, %e\n", DiscGasSum, Gal[p].ColdGas);
-        printf("get_disc_gas report ... MetalsSum, ColdMetals =  %e, %e\n", DiscMetalsSum, Gal[p].MetalsColdGas);
+//        printf("get_disc_gas report ... DiscSum, ColdGas =  %e, %e\n", DiscGasSum, Gal[p].ColdGas);
+//        printf("get_disc_gas report ... MetalsSum, ColdMetals =  %e, %e\n", DiscMetalsSum, Gal[p].MetalsColdGas);
         
-        if(Gal[p].ColdGas<=1e-15)
-        {
-            for(l=0; l<N_BINS; l++)
-            Gal[p].DiscGas[l] = 0.0; // Sometimes a tiny non-zero difference can creep in (probably due to projecting discs).  This just takes care of that.
-            DiscGasSum = 0.0;
-            Gal[p].ColdGas = 0.0;
-        }
-        
-        if(Gal[p].ColdGas<=1e-15 || Gal[p].MetalsColdGas<=0.0)
-        {
-            for(l=0; l<N_BINS; l++)
-            Gal[p].DiscGasMetals[l] = 0.0;
-            DiscMetalsSum = 0.0;
-            Gal[p].MetalsColdGas = 0.0;
-        }
-        
-        //        if((DiscGasSum<1.01*Gal[p].ColdGas && DiscGasSum>Gal[p].ColdGas/1.01) || (DiscGasSum==0.0 && Gal[p].ColdGas<1e-10) || DiscGasSum < 1e-10)
-        //        {
-        Gal[p].ColdGas = DiscGasSum; // If difference is small, just set the numbers to be the same to prevent small errors from blowing up
+        Gal[p].ColdGas = DiscGasSum; // Prevent small errors from blowing up
         Gal[p].MetalsColdGas = DiscMetalsSum;
-        //        }
         
     }
     return DiscGasSum;
@@ -331,7 +310,7 @@ double get_disc_stars(int p)
     dumped_mass = 0.0;
     for(l=N_BINS-1; l>=0; l--)
     {
-        if(Gal[p].DiscStars[l] < 1e-11) // This would be less than a single star in an aperture.  Not likely.
+        if(Gal[p].DiscStars[l] < 1e-11) // This would be less than a single star in an annulus.  Not likely.
         {
             dumped_mass += Gal[p].DiscStars[l];
             Gal[p].DiscStars[l] = 0.0;
@@ -344,13 +323,12 @@ double get_disc_stars(int p)
     
     if(DiscAndBulge>1.001*Gal[p].StellarMass || DiscAndBulge<Gal[p].StellarMass/1.001)
     {
-        printf("get_disc_stars report: DiscAndBulge, StellarMass, dumped_mass = %e, %e, %e\n", DiscAndBulge, Gal[p].StellarMass, dumped_mass);
-        //        if(DiscAndBulge<1.01*Gal[p].StellarMass && DiscAndBulge>Gal[p].StellarMass/1.01)
-        Gal[p].StellarMass = DiscAndBulge; // If difference is small, just set the numbers to be the same to prevent small errors from blowing up
+//        printf("get_disc_stars report: DiscAndBulge, StellarMass, dumped_mass = %e, %e, %e\n", DiscAndBulge, Gal[p].StellarMass, dumped_mass);
+        Gal[p].StellarMass = DiscAndBulge; // Prevent small errors from blowing up
         if(Gal[p].StellarMass <= Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass)
         {
             for(l=0; l<N_BINS; l++)
-            Gal[p].DiscStars[l] = 0.0;
+                Gal[p].DiscStars[l] = 0.0;
             DiscStarSum = 0.0;
             Gal[p].StellarMass = Gal[p].ClassicalBulgeMass + Gal[p].SecularBulgeMass;
         }
@@ -365,13 +343,11 @@ double get_channel_stars(int p)
     
     if(Gal[p].StellarMass>0.0)
     {
-        ChannelFrac = (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst) / Gal[p].StellarMass;
-        if(ChannelFrac>1.01 || ChannelFrac<0.99) printf("1. ChannelFrac, StellarMass = %e, %e\n", ChannelFrac, Gal[p].StellarMass);
-        Gal[p].StarsInSitu /= ChannelFrac;
-        Gal[p].StarsInstability /= ChannelFrac;
-        Gal[p].StarsMergeBurst /= ChannelFrac;
-        ChannelFrac = (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst) / Gal[p].StellarMass;
-        if(ChannelFrac>1.01 || ChannelFrac<0.99) printf("2. ChannelFrac, StellarMass = %e, %e\n", ChannelFrac, Gal[p].StellarMass);
+        ChannelFrac = Gal[p].StellarMass / (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst);
+//        if(ChannelFrac>1.01 || ChannelFrac<0.99) printf("1. ChannelFrac, StellarMass = %e, %e\n", ChannelFrac, Gal[p].StellarMass);
+        Gal[p].StarsInSitu *= ChannelFrac;
+        Gal[p].StarsInstability *= ChannelFrac;
+        Gal[p].StarsMergeBurst *= ChannelFrac;
     }
     else
     {
@@ -392,7 +368,7 @@ double get_disc_ang_mom(int p, int type)
     J_sum = 0.0;
     if(type==0)
     {
-        for(l=N_BINS-1; l>=0; l--) // Calculation of average J_sum in bin no longer so straight forward
+        for(l=N_BINS-1; l>=0; l--)
         J_sum += Gal[p].DiscGas[l] * (DiscBinEdge[l]+DiscBinEdge[l+1])/2.0;
     }
     else if(type==1)
@@ -408,7 +384,7 @@ void check_ejected(int p)
 {
     if(!(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass))
     {
-        printf("ejected mass, metals = %e, %e\n", Gal[p].EjectedMass, Gal[p].MetalsEjectedMass);
+//        printf("ejected mass, metals = %e, %e\n", Gal[p].EjectedMass, Gal[p].MetalsEjectedMass);
         if(Gal[p].EjectedMass <= 1e-10 || Gal[p].MetalsEjectedMass <= 1e-10)
         {
             Gal[p].EjectedMass = 0.0;
@@ -428,22 +404,11 @@ void update_disc_radii(int p)
     double a_CB, M_CB_inf, a_SB, M_SB_inf, a_ICS, M_ICS_inf;
     double f_support, BTT, v_max;
     
-    // Try to stably set discs up first -- this might no longer be necessary with NFW treatment
-    //    M_D = Gal[p].StellarMass + Gal[p].ColdGas - Gal[p].SecularBulgeMass - Gal[p].ClassicalBulgeMass;
-    //    if(M_D == 0.0)
-    //    {
-    //        if(Gal[p].Vvir>0.0)
-    //            Gal[p].DiscRadii[j+1] = DiscBinEdge[j+1] / Gal[p].Vvir;
-    //        else
-    //            Gal[p].DiscRadii[j+1] = DiscBinEdge[j+1]; // This is essentially just a place-holder for problem galaxies
-    //        return;
-    //    }
-    
     tol = 1e-3;
     j_max = 100;
     
     // Determine the distribution of dark matter in the halo =====
-    M_DM_tot = Gal[p].Mvir - Gal[p].HotGas - Gal[p].ColdGas - Gal[p].StellarMass - Gal[p].ICS - Gal[p].BlackHoleMass; // Should this include ejected mass?!!!
+    M_DM_tot = Gal[p].Mvir - Gal[p].HotGas - Gal[p].ColdGas - Gal[p].StellarMass - Gal[p].ICS - Gal[p].BlackHoleMass; // One may want to include Ejected Gas in this too
     
     if(M_DM_tot < 0.0) M_DM_tot = 0.0;
     
@@ -470,26 +435,16 @@ void update_disc_radii(int p)
     M_CB_inf = Gal[p].ClassicalBulgeMass * pow((Gal[p].Rvir+a_CB)/Gal[p].Rvir, 2.0);
     
     if(Gal[p].ClassicalBulgeMass>0.0)
-    a_ICS = 13.0 * a_CB; // Gonzalez et al (2005)
+        a_ICS = 13.0 * a_CB; // Gonzalez et al (2005)
     else if(Gal[p].DiskScaleRadius>0.0)
-    a_ICS = 13.0 * a_SB; // Feeding Fisher & Drory (2008) relation into Gonzalez et al (2005)
+        a_ICS = 13.0 * a_SB; // Feeding Fisher & Drory (2008) relation into Gonzalez et al (2005)
     else if(Gal[p].ICS > 0.0)
-    printf("Issue with ICS size\n");
+        printf("Issue with ICS size\n");
     M_ICS_inf = Gal[p].ICS * pow((Gal[p].Rvir+a_ICS)/Gal[p].Rvir, 2.0);
     // ===========================================================
     
     M_D = 0.0;
     left = 0.0;
-    
-    //    if(Gal[p].Mvir<=0.0)
-    //    {
-    //        printf("In update_disc_radii\n");
-    //        printf("Mvir = %e\n", Gal[p].Mvir);
-    //        printf("Cold, Hot, Ejected = %e, %e, %e\n", Gal[p].ColdGas, Gal[p].HotGas, Gal[p].EjectedMass);
-    //        printf("Stars total, secular, classical = %e, %e, %e\n", Gal[p].StellarMass, Gal[p].SecularBulgeMass, Gal[p].ClassicalBulgeMass);
-    //        printf("Black hole = %e\n", Gal[p].BlackHoleMass);
-    //    }
-    
     
     BTT = (Gal[p].ClassicalBulgeMass+Gal[p].SecularBulgeMass)/(Gal[p].StellarMass+Gal[p].ColdGas);
 
@@ -528,48 +483,24 @@ void update_disc_radii(int p)
                 
                 
                 f_support = 1 - exp(-3*(1-BTT)*r_try/Gal[p].DiskScaleRadius);
-                //f_support = 1.0;
                 v_try = sqrt(G*M_int*f_support/r_try);
                 if(v_try<2*v_max || v_max <= 0)
                     j_try = r_try*v_try;
                 else
-                {
                     j_try = r_try*2*v_max;
-//                    printf("v_try %e was capped at 2*Vmax %e\n", v_try, 2*v_max);
-//                    printf("j_try, M_int, r_try, f_support = %e, %e, %e, %.4f\n", j_try, M_int, r_try, f_support);
-//                    printf("M_DM, M_D, M_CB, M_SB, M_ICS, M_Hot, M_BH = %e, %e, %e, %e, %e, %e, %e\n", M_DM, M_D, M_CB, M_SB, M_ICS, M_hot, Gal[p].BlackHoleMass);
-//                    printf("M_CB_inf, M_SB_inf, M_ICS_tot, M_ICS_inf = %e, %e, %e, %e\n", M_CB_inf, M_SB_inf, Gal[p].ICS, M_ICS_inf);
-//                    printf("M_disc/M_vir, M_bulge/M_vir, B/T = %.4f, %.4f, %.4f/%.4f\n", (Gal[p].StellarMass+Gal[p].ColdGas-Gal[p].ClassicalBulgeMass-Gal[p].SecularBulgeMass)/Gal[p].Mvir, (Gal[p].ClassicalBulgeMass+Gal[p].SecularBulgeMass)/Gal[p].Mvir, (Gal[p].ClassicalBulgeMass+Gal[p].SecularBulgeMass)/Gal[p].StellarMass, BTT);
-//                    printf("a_CB, a_SB, a_ICS = %e, %e, %e\n", a_CB, a_SB, a_ICS);
-//                    printf("R_vir, M_vir = %e, %e\n", Gal[p].Rvir, Gal[p].Mvir);
-//                    printf("Redshift, c_DM, c, log(SM/Mvir) = %e, %e, %e, %.4f\n", z, c_DM, c, X);
-//                    printf("Len, LenMax, Type = %i, %i, %i\n\n", Gal[p].Len, Gal[p].LenMax, Gal[p].Type);
-                }
                 dif = j_try/DiscBinEdge[i] - 1.0;
                 
-                if(j_try!=j_try || j_try<=0 || j_try==INFINITY)
-                {
-                    printf("j_try, M_int, r_try, f_support = %e, %e, %e, %.4f\n", j_try, M_int, r_try, f_support);
-                    printf("M_DM, M_D, M_CB, M_SB, M_ICS, M_Hot, M_BH = %e, %e, %e, %e, %e, %e, %e\n", M_DM, M_D, M_CB, M_SB, M_ICS, M_hot, Gal[p].BlackHoleMass);
-                    printf("M_CB_inf, M_SB_inf, M_ICS_tot, M_ICS_inf = %e, %e, %e, %e\n", M_CB_inf, M_SB_inf, Gal[p].ICS, M_ICS_inf);
-                    printf("M_disc/M_vir, M_bulge/M_vir, B/T = %.4f, %.4f, %.4f/%.4f\n", (Gal[p].StellarMass+Gal[p].ColdGas-Gal[p].ClassicalBulgeMass-Gal[p].SecularBulgeMass)/Gal[p].Mvir, (Gal[p].ClassicalBulgeMass+Gal[p].SecularBulgeMass)/Gal[p].Mvir, (Gal[p].ClassicalBulgeMass+Gal[p].SecularBulgeMass)/Gal[p].StellarMass, BTT);
-                    printf("a_CB, a_SB, a_ICS = %e, %e, %e\n", a_CB, a_SB, a_ICS);
-                    printf("R_vir, M_vir = %e, %e\n", Gal[p].Rvir, Gal[p].Mvir);
-                    printf("Redshift, c_DM, c, log(SM/Mvir) = %e, %e, %e, %.4f\n", z, c_DM, c, X);
-                    printf("Len, LenMax, Type = %i, %i, %i\n\n", Gal[p].Len, Gal[p].LenMax, Gal[p].Type);
-                }
-                assert(j_try==j_try && j_try>0.0 && j_try!=INFINITY);
-                
+                if(j==j_max-1) printf("Iterations maxed out in update_disc_radii\n");
                 
                 // Found correct r (within tolerance)
                 if(fabs(dif) <= tol || (right-left)/right <= tol)
-                break;
+                    break;
                 
                 // Reset boundaries for next guess
                 if(dif>0)
-                right = r_try;
+                    right = r_try;
                 else
-                left = r_try;
+                    left = r_try;
             }
             assert(r_try==r_try && r_try!=INFINITY);
             Gal[p].DiscRadii[i] = r_try;

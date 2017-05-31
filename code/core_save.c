@@ -219,14 +219,6 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
   }
 
   o->DiskScaleRadius = g->DiskScaleRadius;
-  
-  if(g->ClassicalBulgeMass + g->SecularBulgeMass > 0.0)
-    o->BulgeEffectiveRadius = 
-      ((g->ClassicalBulgeMass * g->ClassicalBulgeRadius) + (g->SecularBulgeMass * 0.2*g->DiskScaleRadius)) /
-         (g->ClassicalBulgeMass + g->SecularBulgeMass);
-  else 
-    o->BulgeEffectiveRadius = 0.0;
-    
 
   if (g->Cooling > 0.0)
     o->Cooling = log10(g->Cooling * UnitEnergy_in_cgs / UnitTime_in_s);

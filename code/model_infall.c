@@ -197,7 +197,7 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
           z = ZZ[Gal[gal].SnapNum];
           if(z>5.0) z=5.0;
           a = 0.520 + (0.905-0.520)*exp(-0.617*pow(z,1.21)); // Dutton & Maccio 2014
-          b = -1.01 + 0.026*z; // Dutton & Maccio 2014
+          b = -0.101 + 0.026*z; // Dutton & Maccio 2014
           c_DM = pow(10.0, a+b*log10(Gal[gal].Mvir*UnitMass_in_g/(SOLAR_MASS*1e12))); // Dutton & Maccio 2014
           c = c_DM * (1.0 + 3e-5*exp(3.4*(X+4.5))); // Di Cintio et al 2014b
           r_2 = Gal[gal].Rvir / c; // Di Cintio et al 2014b
@@ -244,7 +244,6 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
           }
           
           // Actually strip the gas
-//          if(Gal[gal].Len>200) printf("Rstrip/Rvir = %e\n", r_try/Gal[gal].Rvir);
           strippedGas = (1.0 - r_try/Gal[gal].Rvir) * Gal[gal].HotGas / STEPS;
           metallicity = get_metallicity(Gal[gal].HotGas, Gal[gal].MetalsHotGas);
           strippedGasMetals = metallicity * strippedGas;
@@ -351,8 +350,6 @@ void ram_pressure_stripping(int centralgal, int gal)
             Gal[gal].MetalsColdGas -= MstripZ;
             Gal[gal].DiscGas[i] -= Mstrip;
             Gal[gal].DiscGasMetals[i] -= MstripZ;
-//            printf("Pram, Pgrav = %e, %e\n", Pram, Pgrav);
-//            printf("Hot, metals = %e, %e\n", Gal[centralgal].HotGas, Gal[centralgal].MetalsHotGas);
             assert(Gal[centralgal].MetalsHotGas<=Gal[centralgal].HotGas);
         }
     }
@@ -466,10 +463,7 @@ void add_infall_to_hot(int centralgal, double infallingGas)
     Gal[centralgal].HotGas += infallingGas;
 
   metallicity = get_metallicity(Gal[centralgal].HotGas, Gal[centralgal].MetalsHotGas);
-  if(infallingGas<0.0)
-  	assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
-  else
-  	assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
+  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 
 }
 

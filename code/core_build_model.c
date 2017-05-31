@@ -305,7 +305,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
   for(p = 0; p < ngal; p++)
   {
       for(i=0; i<N_BINS; i++)
-          Gal[p].DiscSFR[i] = 0.0;
+        Gal[p].DiscSFR[i] = 0.0;
   }
     
   // we integrate things forward by using a number of intervals equal to STEPS 
@@ -316,9 +316,6 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
     for(p = 0; p < ngal; p++)
     {
 	  DiscGasSum = get_disc_gas(p);
-	  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
-	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
-	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
         
       // don't treat galaxies that have already merged 
       if(Gal[p].mergeType > 0)
@@ -329,79 +326,38 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
       
       if(Gal[p].dT < 0.0)
         Gal[p].dT = deltaT;
-        
-	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
-        assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
-        assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
-        assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
 
       // for central galaxy only
       if(p == centralgal)
-      {
         add_infall_to_hot(centralgal, infallingGas / STEPS);
-        assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
-          assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
-      }
       else if(HotStripOn>0 && Gal[p].Type == 1 && Gal[p].HotGas > 0.0)
-      {
-            strip_from_satellite(halonr, centralgal, p);
-            assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
-          assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
-      }
-        assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
+        strip_from_satellite(halonr, centralgal, p);
 
-      assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
-        assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
       if(ReIncorporationFactor > 0.0)
         reincorporate_gas(p, deltaT / STEPS);
-        assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
         
       // Ram pressure stripping of cold gas from satellites
       if(RamPressureOn>0 && Gal[p].Type == 1 && Gal[p].ColdGas>0.0 && (Gal[p].ColdGas+Gal[p].StellarMass)>Gal[p].HotGas)
           ram_pressure_stripping(centralgal, p);
-	
-	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
-        assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
-        assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
-        assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
         
       // determine cooling gas given halo properties
       // Preventing cooling when there's no angular momentum, as the code isn't built to handle that.  This only cropped up for Vishnu haloes with 2 particles, which clearly weren't interesting/physical.  Haloes always have some spin otherwise.
-        if(!(Gal[p].SpinHot[0]==0 & Gal[p].SpinHot[1]==0 && Gal[p].SpinHot[2]==0))
+      if(!(Gal[p].SpinHot[0]==0 & Gal[p].SpinHot[1]==0 && Gal[p].SpinHot[2]==0))
         {
           coolingGas = cooling_recipe(p, deltaT / STEPS);
           Gal[p].AccretedGasMass += coolingGas;
           cool_gas_onto_galaxy(p, centralgal, coolingGas, deltaT / STEPS, step);
         }
-        assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
 
-      DiscGasSum = get_disc_gas(p);
-      assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
-	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
-	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
-	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
-        assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
-        assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
-        assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
-
-        // Update radii of the annuli
-        if(Gal[p].Mvir > 0 && Gal[p].Rvir > 0 && Gal[p].Type==0) update_disc_radii(p);
+      // Update radii of the annuli
+      if(Gal[p].Mvir > 0 && Gal[p].Rvir > 0 && Gal[p].Type==0)
+        update_disc_radii(p);
 	
 	  // stars form and then explode!
-      //if(p==centralgal)
-        starformation_and_feedback(p, centralgal, time, deltaT / STEPS, halonr, step);
-
-      DiscGasSum = get_disc_gas(p);
-	  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
-	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
-	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
-	  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
-        assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
-        assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
-        assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
+      starformation_and_feedback(p, centralgal, time, deltaT / STEPS, halonr, step);
         
       // precess gas disc
-      if(GasPrecessionOn && Gal[p].StellarMass>0.0 && Gal[p].ColdGas>0.0)
+      if(GasPrecessionOn && Gal[p].StellarMass>0.0 && get_disc_gas(p)>0.0)
         precess_gas(p, deltaT / STEPS, halonr);
       assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
 	
@@ -449,10 +405,6 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
         }
      
       }
-	  DiscGasSum = get_disc_gas(p);
-	  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
-	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
-	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
     }
 
   } // end move forward in interval STEPS 
@@ -483,7 +435,6 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
   for(p = 0, currenthalo = -1; p < ngal; p++)
   {
     
-	assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
     if(Gal[p].HaloNr != currenthalo)
     {
       currenthalo = Gal[p].HaloNr;
@@ -538,10 +489,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
       HaloGal[NumGals++] = Gal[p];
       HaloAux[currenthalo].NGalaxies++;
     }
-	assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
   }
-
-  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 }
 
 
