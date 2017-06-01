@@ -32,7 +32,7 @@ INCL   =	./code/core_allvars.h  \
 
 
 CC       =   mpicc            # sets the C-compiler (default)
-OPTIMIZE =   -g -O2 -Wall    # optimization and warning flags (default)
+#OPTIMIZE =   -g -O2 -Wall    # optimization and warning flags (default)
 
 #ifdef USE-MPI
 #OPT += -DMPI  #  This creates an MPI version that can be used to process files in parallel
