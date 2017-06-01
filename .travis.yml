@@ -63,7 +63,7 @@ include:
 
 
 install:
-    - make -r CC=$COMPILER
+    - make -r 
 
 script:
     - python test.py
