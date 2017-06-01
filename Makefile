@@ -1,29 +1,28 @@
 EXEC   = darksage
 
 OBJS   = 	./code/main.o \
-			./code/core_read_parameter_file.o \
-			./code/core_init.o \
-			./code/core_io_tree.o \
-			./code/core_cool_func.o \
-			./code/core_build_model.o \
-			./code/core_save.o \
-			./code/core_mymalloc.o \
-			./code/core_allvars.o \
-			./code/model_infall.o \
-			./code/model_cooling.o \
-			./code/model_starformation_and_feedback.o \
-			./code/model_disk_instability.o \
-			./code/model_reincorporation.o \
-			./code/model_mergers.o \
-			./code/model_misc.o \
+		./code/core_read_parameter_file.o \
+		./code/core_init.o \
+		./code/core_io_tree.o \
+		./code/core_cool_func.o \
+		./code/core_build_model.o \
+		./code/core_save.o \
+		./code/core_mymalloc.o \
+		./code/core_allvars.o \
+		./code/model_infall.o \
+		./code/model_cooling.o \
+		./code/model_starformation_and_feedback.o \
+		./code/model_disk_instability.o \
+		./code/model_reincorporation.o \
+		./code/model_mergers.o \
+		./code/model_misc.o 
 
 INCL   =	./code/core_allvars.h  \
 			./code/core_proto.h  \
 			./code/core_simulation.h  \
 			./Makefile
 
-
-#OPT += -DMPI
+#USE-MPI=yes
 #OPT += -DMINIMIZE_IO
 
 #SYSTYPE = "mac"
@@ -31,7 +30,7 @@ INCL   =	./code/core_allvars.h  \
 # SYSTYPE = "gstar"
 
 ifndef CC
-CC       =   mpicc            # sets the C-compiler (default)
+CC       =   gcc            # sets the C-compiler (default)
 
 #ifdef USE-MPI
 #OPT += -DMPI  #  This creates an MPI version that can be used to process files in parallel
