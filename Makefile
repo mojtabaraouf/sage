@@ -30,9 +30,8 @@ INCL   =	./code/core_allvars.h  \
 # SYSTYPE = "green"
 # SYSTYPE = "gstar"
 
-
+ifndef CC
 CC       =   mpicc            # sets the C-compiler (default)
-#OPTIMIZE =   -g -O2 -Wall    # optimization and warning flags (default)
 
 #ifdef USE-MPI
 #OPT += -DMPI  #  This creates an MPI version that can be used to process files in parallel
@@ -41,6 +40,9 @@ CC       =   mpicc            # sets the C-compiler (default)
 #CC = cc  # sets the C-compiler
 #endif
 
+endif
+
+OPTIMIZE =   -g -O2 -Wall -Wextra -Wshadow   # optimization and warning flags (default)
 
 # GSL automatic detection
 GSL_FOUND := $(shell gsl-config --version 2>/dev/null)
