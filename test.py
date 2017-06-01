@@ -10,14 +10,18 @@ import filecmp
 import subprocess
 
 dir = 'test/'
-if not os.path.exists(dir): os.makedirs(dir)
+if not os.path.exists(dir):
+    os.makedirs(dir)
 
 if not os.path.isfile(dir+'model_to_test_against_z2.239_0'):
     zip = urllib.urlretrieve('https://github.com/arhstevens/DarkSageTest/archive/master.zip')
     subprocess.call(['unzip', '-j', zip[0], '-d', dir])
     subprocess.call(['rm', zip[0]])
 
-subprocess.call(['./darksage', 'test/test.par'])
+if os.path.isfile(dir+'model_z2.239_0'):
+    subprocess.call(['rm', dir+'model_z2.239_0'])
+
+subprocess.call(['./darksage', dir+'test.par'])
 
 if filecmp.cmp('test/model_to_test_against_z2.239_0', 'test/model_z2.239_0'):
     print 'Success! Dark Sage output matches what is expected!'
