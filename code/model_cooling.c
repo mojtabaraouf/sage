@@ -92,7 +92,7 @@ double do_AGN_heating(double coolingGas, int p, double dt, double x, double rcoo
     else if(AGNrecipeOn == 3)
     {
       // Cold cloud accretion: trigger: rBH > 1.0e-4 Rsonic, and accretion rate = 0.01% cooling rate 
-      if(Gal[p].BlackHoleMass > 0.0001 * Gal[p].Mvir * pow(rcool/Gal[p].Rvir, 3.0))
+      if(Gal[p].BlackHoleMass > 0.0001 * Gal[p].Mvir * cube(rcool/Gal[p].Rvir))
         AGNrate = 0.0001 * coolingGas / dt;
       else
         AGNrate = 0.0;
@@ -102,11 +102,11 @@ double do_AGN_heating(double coolingGas, int p, double dt, double x, double rcoo
       // empirical (standard) accretion recipe 
       if(Gal[p].Mvir > 0.0)
         AGNrate = RadioModeEfficiency / (UnitMass_in_g / UnitTime_in_s * SEC_PER_YEAR / SOLAR_MASS)
-          * (Gal[p].BlackHoleMass / 0.01) * pow(Gal[p].Vvir / 200.0, 3.0)
+          * (Gal[p].BlackHoleMass / 0.01) * cube(Gal[p].Vvir / 200.0)
             * ((Gal[p].HotGas / Gal[p].Mvir) / 0.1);
       else
         AGNrate = RadioModeEfficiency / (UnitMass_in_g / UnitTime_in_s * SEC_PER_YEAR / SOLAR_MASS)
-          * (Gal[p].BlackHoleMass / 0.01) * pow(Gal[p].Vvir / 200.0, 3.0);
+          * (Gal[p].BlackHoleMass / 0.01) * cube(Gal[p].Vvir / 200.0);
     }
     
     // Eddington rate 
@@ -180,7 +180,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
   assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
   assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 
-  disc_spin_mag = pow(pow(Gal[p].SpinGas[0], 2.0) + pow(Gal[p].SpinGas[1], 2.0) + pow(Gal[p].SpinGas[2], 2.0), 0.5);
+  disc_spin_mag = sqrt(sqr(Gal[p].SpinGas[0]) + sqr(Gal[p].SpinGas[1]) + sqr(Gal[p].SpinGas[2]));
   assert(disc_spin_mag==disc_spin_mag);
     
   if(disc_spin_mag>0.0)
@@ -211,7 +211,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 		for(i=0; i<3; i++)
 			DiscNewSpin[i] = Gal[p].SpinHot[i]*J_cool + Gal[p].SpinGas[i]*J_disc; // Not normalised yet
 
-		disc_spin_mag = pow(pow(DiscNewSpin[0], 2.0) + pow(DiscNewSpin[1], 2.0) + pow(DiscNewSpin[2], 2.0), 0.5);
+		disc_spin_mag = sqrt(sqr(DiscNewSpin[0]) + sqr(DiscNewSpin[1]) + sqr(DiscNewSpin[2]));
 		for(i=0; i<3; i++)
 			DiscNewSpin[i] /= disc_spin_mag; // Normalise it now
 		cos_angle_disc_new = Gal[p].SpinGas[0]*DiscNewSpin[0] + Gal[p].SpinGas[1]*DiscNewSpin[1] + Gal[p].SpinGas[2]*DiscNewSpin[2];
@@ -222,7 +222,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 		cos_angle_disc_new = 1.0;
 		cos_angle_halo_new = 1.0;
 		J_disc = 0.0;
-        SpinMag = pow(pow(Halo[Gal[p].HaloNr].Spin[0], 2.0) + pow(Halo[Gal[p].HaloNr].Spin[1], 2.0) + pow(Halo[Gal[p].HaloNr].Spin[2], 2.0), 0.5);
+        SpinMag = sqrt(sqr(Halo[Gal[p].HaloNr].Spin[0]) + sqr(Halo[Gal[p].HaloNr].Spin[1]) + sqr(Halo[Gal[p].HaloNr].Spin[2]));
         for(i=0; i<3; i++)
         {
             if(SpinMag>0)
@@ -270,12 +270,12 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 			{
 				if(j!=N_BINS-1)
                 {
-					ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (DiscBinEdge[j+1]-DiscBinEdge[j]), 2.0);
+					ratio_last_bin = sqr((high_bound - DiscBinEdge[j]) / (DiscBinEdge[j+1]-DiscBinEdge[j]));
 					assert(ratio_last_bin<=1.0);
                 }
 				else if(high_bound < Gal[p].Rvir/Gal[p].Vvir)
                 {
-					ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (Gal[p].Rvir/Gal[p].Vvir-DiscBinEdge[j]), 2.0);
+					ratio_last_bin = sqr((high_bound - DiscBinEdge[j]) / (Gal[p].Rvir/Gal[p].Vvir-DiscBinEdge[j]));
 					assert(ratio_last_bin<=1.0);
                 }
 				else

@@ -60,15 +60,15 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 	{
         r_inner = Gal[p].DiscRadii[i];
         r_outer = Gal[p].DiscRadii[i+1];
-        r_av = pow((r_inner*r_inner+r_outer*r_outer)/2.0, 0.5);
+        r_av = sqrt((sqr(r_inner)+sqr(r_outer))/2.0);
         
         if(Gal[p].DiscGas[i]==0.0)
             continue;
         
         if(i>0)
-            Kappa = sqrt(2.0*DiscBinEdge[i]/pow(r_inner,3.0) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
+            Kappa = sqrt(2.0*DiscBinEdge[i]/cube(r_inner) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
         else
-            Kappa = sqrt(2.0*DiscBinEdge[i+1]/pow(r_outer,3.0) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
+            Kappa = sqrt(2.0*DiscBinEdge[i+1]/cube(r_outer) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
         
         sigma_R = 0.5*Gal[p].Vvir*exp(-r_av/2.0/Gal[p].DiskScaleRadius);
 
@@ -202,12 +202,12 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
 
         r_inner = Gal[p].DiscRadii[i];
         r_outer = Gal[p].DiscRadii[i+1];
-        r_av = pow((r_inner*r_inner+r_outer*r_outer)/2.0, 0.5);
+        r_av = sqrt((sqr(r_inner)+sqr(r_outer))/2.0);
         
         if(i>0)
-            Kappa = sqrt(2.0*DiscBinEdge[i]/pow(r_inner,3.0) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
+            Kappa = sqrt(2.0*DiscBinEdge[i]/cube(r_inner) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
         else
-            Kappa = sqrt(2.0*DiscBinEdge[i+1]/pow(r_outer,3.0) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
+            Kappa = sqrt(2.0*DiscBinEdge[i+1]/cube(r_outer) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
         
         sigma_R = 0.5*Gal[p].Vvir*exp(-r_av/2.0/Gal[p].DiskScaleRadius);
         
@@ -390,7 +390,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
             
             if(SupernovaRecipeOn == 1)
             {
-                Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
+                Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / sqr(CM_PER_MPC/1e6 / UnitLength_in_cm);
                 reheated_mass = FeedbackReheatingEpsilon * stars * pow(Sigma_0gas / (Gal[p].DiscGas[i]/area), FeedbackExponent);
             }
             else if(SupernovaRecipeOn == 2)
@@ -472,12 +472,12 @@ void precess_gas(int p, double dt, int halonr)
     for(i=0; i<3; i++)
     {
         if(Gal[p].ClassicalBulgeMass>0.5*Gal[p].StellarMass && fabs(Gal[p].SpinClassicalBulge[0]+Gal[p].SpinClassicalBulge[1]+Gal[p].SpinClassicalBulge[2]) > 0.0)
-            StarSpin[i] = Gal[p].SpinClassicalBulge[i] / pow(pow(Gal[p].SpinClassicalBulge[0],2.0)+pow(Gal[p].SpinClassicalBulge[1],2.0)+pow(Gal[p].SpinClassicalBulge[2],2.0),0.5);
+            StarSpin[i] = Gal[p].SpinClassicalBulge[i] / sqrt(sqr(Gal[p].SpinClassicalBulge[0])+sqr(Gal[p].SpinClassicalBulge[1])+sqr(Gal[p].SpinClassicalBulge[2]));
         else
             StarSpin[i] = Gal[p].SpinStars[i];
     }
     
-    SpinSqr = pow(StarSpin[0],2.0) + pow(StarSpin[1],2.0) + pow(StarSpin[2],2.0);
+    SpinSqr = sqr(StarSpin[0]) + sqr(StarSpin[1]) + sqr(StarSpin[2]);
     if(SpinSqr==0)
         return;
     assert(SpinSqr > 0.0);
@@ -496,7 +496,7 @@ void precess_gas(int p, double dt, int halonr)
         deg = 0.0;
         for(i=N_BINS-1; i>=0; i--)
         {
-            tdyn = pow(Gal[p].DiscRadii[i+1],2.0) / DiscBinEdge[i+1];
+            tdyn = sqr(Gal[p].DiscRadii[i+1]) / DiscBinEdge[i+1];
             if(tdyn!=tdyn) printf("tdyn = %e\n", tdyn);
             deg_ann = DegPerTdyn * dt / tdyn; // degrees this annulus wants to precess
             deg += deg_ann * Gal[p].DiscGas[i] / DiscGasSum;
@@ -530,7 +530,7 @@ void precess_gas(int p, double dt, int halonr)
             axis[2] = Gal[p].SpinGas[0]*StarSpin[1] - Gal[p].SpinGas[1]*StarSpin[0];
             if(cos_angle_gas_stars < 0.0)
                 for(i=0; i<3; i++) axis[i] *= -1.0;
-            axis_mag = pow(pow(axis[0],2.0)+pow(axis[1],2.0)+pow(axis[2],2.0),0.5);
+            axis_mag = sqrt(sqr(axis[0])+sqr(axis[1])+sqr(axis[2]));
             for(i=0; i<3; i++) axis[i] /= axis_mag;
             double dot = axis[0]*Gal[p].SpinGas[0] + axis[1]*Gal[p].SpinGas[1] + axis[2]*Gal[p].SpinGas[2];
             NewSpin[0] = axis[0]*dot*(1.0-cos_angle_precess) + Gal[p].SpinGas[0]*cos_angle_precess + (axis[1]*Gal[p].SpinGas[2] - axis[2]*Gal[p].SpinGas[1])*sin_angle_precess;

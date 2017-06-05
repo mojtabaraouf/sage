@@ -84,7 +84,7 @@ class Results:
     def read_gals(self, model_name, first_file, last_file):
 
         # The input galaxy structure:
-        floattype = np.float32 # Run 160 onward uses 32, was 64 prior
+        floattype = np.float32
         Galdesc_full = [
                         ('Type'                         , np.int32),
                         ('GalaxyIndex'                  , np.int64),
@@ -142,7 +142,6 @@ class Results:
                         ('SfrDiskZ'                     , floattype),
                         ('SfrBulgeZ'                    , floattype),
                         ('DiskScaleRadius'              , floattype),
-                        ('BulgeRadius'                  , floattype),
                         ('Cooling'                      , floattype),
                         ('Heating'                      , floattype),
                         ('LastMajorMerger'              , floattype),

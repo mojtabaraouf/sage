@@ -22,7 +22,7 @@ void init_galaxy(int p, int halonr)
         ABORT(1);
     }
     
-    SpinMag = pow(pow(Halo[halonr].Spin[0], 2.0) + pow(Halo[halonr].Spin[1], 2.0) + pow(Halo[halonr].Spin[2], 2.0), 0.5);
+    SpinMag = sqrt(sqr(Halo[halonr].Spin[0]) + sqr(Halo[halonr].Spin[1]) + sqr(Halo[halonr].Spin[2]));
     
     Gal[p].Type = 0;
     
@@ -202,6 +202,17 @@ double dmax(double x, double y)
         return y;
 }
 
+
+double sqr(double x)
+{
+    return x*x;
+}
+
+
+double cube(double x)
+{
+    return x*x*x;
+}
 
 
 double get_virial_mass(int halonr, int p)
@@ -429,18 +440,19 @@ void update_disc_radii(int p)
     
     // Determine distribution for bulge and ICS ==================
     a_SB = 0.2 * Gal[p].DiskScaleRadius / (1.0 + sqrt(0.5)); // Fisher & Drory (2008)
-    M_SB_inf = Gal[p].SecularBulgeMass * pow((Gal[p].Rvir+a_SB)/Gal[p].Rvir, 2.0);
+    M_SB_inf = Gal[p].SecularBulgeMass * sqr((Gal[p].Rvir+a_SB)/Gal[p].Rvir);
     
     a_CB = pow(10.0, (log10(Gal[p].ClassicalBulgeMass*UnitMass_in_g/SOLAR_MASS/Hubble_h)-10.21)/1.13) * (CM_PER_MPC/1e3) / UnitLength_in_cm * Hubble_h; // Sofue 2015
-    M_CB_inf = Gal[p].ClassicalBulgeMass * pow((Gal[p].Rvir+a_CB)/Gal[p].Rvir, 2.0);
+    M_CB_inf = Gal[p].ClassicalBulgeMass * sqr((Gal[p].Rvir+a_CB)/Gal[p].Rvir);
     
+    a_ICS = 0.0;
     if(Gal[p].ClassicalBulgeMass>0.0)
         a_ICS = 13.0 * a_CB; // Gonzalez et al (2005)
     else if(Gal[p].DiskScaleRadius>0.0)
         a_ICS = 13.0 * a_SB; // Feeding Fisher & Drory (2008) relation into Gonzalez et al (2005)
     else if(Gal[p].ICS > 0.0)
         printf("Issue with ICS size\n");
-    M_ICS_inf = Gal[p].ICS * pow((Gal[p].Rvir+a_ICS)/Gal[p].Rvir, 2.0);
+    M_ICS_inf = Gal[p].ICS * sqr((Gal[p].Rvir+a_ICS)/Gal[p].Rvir);
     // ===========================================================
     
     M_D = 0.0;
@@ -460,9 +472,14 @@ void update_disc_radii(int p)
     
     if(Gal[p].Mvir>0.0 && BTT<1.0)
     {
+        double inv_Vvir = 1.0/Gal[p].Vvir;
+        double inv_r_2 = 1.0/r_2;
+        double inv_Rvir = 1.0/Gal[p].Rvir;
+        double inv_ScaleRadius = 1.0/Gal[p].DiskScaleRadius;
+        
         for(i=1; i<N_BINS+1; i++)
         {
-            right = 2.0*DiscBinEdge[i] / Gal[p].Vvir;
+            right = 2.0*DiscBinEdge[i] * inv_Vvir;
             if(right<Gal[p].Rvir) right = Gal[p].Rvir;
             if(right<8.0*left) right = 8.0*left;
             M_D += Gal[p].DiscStars[i-1] + Gal[p].DiscGas[i-1];
@@ -472,22 +489,22 @@ void update_disc_radii(int p)
                 r_try = (left+right)/2.0;
                 
                 if(Gal[p].Mvir>0.0)
-                    M_DM = rho_const * (log((r_try+r_2)/r_2) - r_try/(r_try+r_2));
+                    M_DM = rho_const * (log((r_try+r_2)*inv_r_2) - r_try/(r_try+r_2));
                 else
                     M_DM = 0.0;
-                M_SB = M_SB_inf * pow(r_try/(r_try + a_SB), 2.0);
-                M_CB = M_CB_inf * pow(r_try/(r_try + a_CB), 2.0);
-                M_ICS = M_ICS_inf * pow(r_try/(r_try + a_ICS), 2.0);
-                M_hot = Gal[p].HotGas * r_try / Gal[p].Rvir;
+                M_SB = M_SB_inf * sqr(r_try/(r_try + a_SB));
+                M_CB = M_CB_inf * sqr(r_try/(r_try + a_CB));
+                M_ICS = M_ICS_inf * sqr(r_try/(r_try + a_ICS));
+                M_hot = Gal[p].HotGas * r_try * inv_Rvir;
                 M_int = M_DM + M_D + M_CB + M_SB + M_ICS + M_hot + Gal[p].BlackHoleMass;
                 
                 
-                f_support = 1 - exp(-3*(1-BTT)*r_try/Gal[p].DiskScaleRadius);
+                f_support = 1.0 - exp(-3.0*(1.0-BTT)*r_try*inv_ScaleRadius);
                 v_try = sqrt(G*M_int*f_support/r_try);
-                if(v_try<2*v_max || v_max <= 0)
+                if(v_try<2.0*v_max || v_max <= 0)
                     j_try = r_try*v_try;
                 else
-                    j_try = r_try*2*v_max;
+                    j_try = r_try*2.0*v_max;
                 dif = j_try/DiscBinEdge[i] - 1.0;
                 
                 if(j==j_max-1) printf("Iterations maxed out in update_disc_radii\n");

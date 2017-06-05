@@ -193,7 +193,7 @@ int main(int argc, char **argv)
       
       finalize_galaxy_file(filenr);
       free_tree_table();
-      printf("\nPro v retro = %d, %d", ProCount, RetroCount);
+//      printf("\nPro v retro = %d, %d", ProCount, RetroCount);
       printf("\ndone file %d\n\n", filenr);
   }
     

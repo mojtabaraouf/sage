@@ -68,6 +68,8 @@ void update_disc_radii(int p);
 double get_channel_stars(int p);
 void check_ejected(int p);
 void ram_pressure_stripping(int centralgal, int gal);
+double sqr(double x);
+double cube(double x);
 //
 
 void strip_from_satellite(int halonr, int centralgal, int gal);

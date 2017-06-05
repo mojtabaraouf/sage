@@ -72,11 +72,11 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	{
         if(SFprescription==1 && Gal[p].DiscH2[i]<0.5*Gal[p].DiscHI[i])
         {
-            double bb = pow(Gal[p].DiscStars[i]*Gal[p].DiscStars[0], 0.5)/area; // quadratic b term
+            double bb = sqrt(Gal[p].DiscStars[i]*Gal[p].DiscStars[0])/area; // quadratic b term
             double cc = -pow(0.5/f_H2_const, 1.0/0.92);
-            double Sig_gas_half = 0.5*(-bb + pow(bb*bb-4.0*cc, 0.5));
+            double Sig_gas_half = 0.5*(-bb + sqrt(bb*bb-4.0*cc));
             double SFE_gas = SFE_H2 * 0.75 * 1.0/(1.0/0.5 + 1) * (1 - Gal[p].DiscGasMetals[i]/Gal[p].DiscGas[i])/1.3 / Sig_gas_half;
-            strdot = SfrEfficiency * SFE_gas * pow(Gal[p].DiscGas[i], 2.0) / area;
+            strdot = SfrEfficiency * SFE_gas * sqr(Gal[p].DiscGas[i]) / area;
         }
         else if(SFprescription==2)
         {
@@ -103,7 +103,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 	{
         if(SupernovaRecipeOn == 1)
         {
-            Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
+            Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / sqr(CM_PER_MPC/1e6 / UnitLength_in_cm);
             reheated_mass = FeedbackReheatingEpsilon * stars * pow(Sigma_0gas / (Gal[p].DiscGas[i]/area), FeedbackExponent);
         }
         else if(SupernovaRecipeOn == 2)
@@ -420,7 +420,7 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
 	if(Gal[p].StellarMass > Gal[p].SecularBulgeMass + Gal[p].ClassicalBulgeMass)
 	{
 		// Ensure the stellar disc spin magnitude is normalised
-		sdisc_spin_mag = pow(pow(Gal[p].SpinStars[0], 2.0) + pow(Gal[p].SpinStars[1], 2.0) + pow(Gal[p].SpinStars[2], 2.0), 0.5);
+		sdisc_spin_mag = sqrt(sqr(Gal[p].SpinStars[0]) + sqr(Gal[p].SpinStars[1]) + sqr(Gal[p].SpinStars[2]));
 		assert(sdisc_spin_mag==sdisc_spin_mag);
 		if(sdisc_spin_mag>0.0)
 		{
@@ -439,14 +439,14 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
             assert(SDiscNewSpin[i]==SDiscNewSpin[i]);}
         
 		// Normalise the new spin
-		sdisc_spin_mag = pow(pow(SDiscNewSpin[0], 2.0) + pow(SDiscNewSpin[1], 2.0) + pow(SDiscNewSpin[2], 2.0), 0.5);
+		sdisc_spin_mag = sqrt(sqr(SDiscNewSpin[0]) + sqr(SDiscNewSpin[1]) + sqr(SDiscNewSpin[2]));
         if(sdisc_spin_mag>0.0)
         {
             for(i=0; i<3; i++)
                 SDiscNewSpin[i] /= sdisc_spin_mag;
         }
 		
-        sdisc_spin_mag = pow(pow(SDiscNewSpin[0], 2.0) + pow(SDiscNewSpin[1], 2.0) + pow(SDiscNewSpin[2], 2.0), 0.5);
+        sdisc_spin_mag = sqrt(sqr(SDiscNewSpin[0]) + sqr(SDiscNewSpin[1]) + sqr(SDiscNewSpin[2]));
         if(sdisc_spin_mag<0.99 || sdisc_spin_mag>1.01)
         {
             printf("SpinStars somehow became %e\n", sdisc_spin_mag);
@@ -585,10 +585,10 @@ void project_disc(double DiscMass[N_BINS], double cos_angle, int p, double *NewD
 		if(i!=N_BINS-1)
 		{
 			if(j!=N_BINS-1){
-				ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (DiscBinEdge[j+1]-DiscBinEdge[j]), 2.0);
+				ratio_last_bin = sqr((high_bound - DiscBinEdge[j]) / (DiscBinEdge[j+1]-DiscBinEdge[j]));
 				assert(ratio_last_bin<=1.0);}
 			else if(high_bound < Gal[p].Rvir/Gal[p].Vvir){
-				ratio_last_bin = pow((high_bound - DiscBinEdge[j]) / (Gal[p].Rvir/Gal[p].Vvir-DiscBinEdge[j]), 2.0);
+				ratio_last_bin = sqr((high_bound - DiscBinEdge[j]) / (Gal[p].Rvir/Gal[p].Vvir-DiscBinEdge[j]));
 				assert(ratio_last_bin<=1.0);}
 			else
 				ratio_last_bin = 1.0;
@@ -617,7 +617,7 @@ void update_HI_H2(int p)
     {
         for(i=0; i<N_BINS; i++)
         {
-            area = M_PI * (pow(Gal[p].DiscRadii[i+1],2.0) - pow(Gal[p].DiscRadii[i],2.0));
+            area = M_PI * (sqr(Gal[p].DiscRadii[i+1]) - sqr(Gal[p].DiscRadii[i]));
             
             if(H2prescription==1)
             {
@@ -649,10 +649,10 @@ void update_HI_H2(int p)
                 if(angle <= ThetaThresh)
                 {
                     f_sigma =  1.1e6/UnitVelocity_in_cm_per_s / (0.5*Gal[p].Vvir*exp(-(Gal[p].DiscRadii[i]+Gal[p].DiscRadii[i+1])/4.0/Gal[p].DiskScaleRadius)); // Ratio of gas vel dispersion to stars', assuming gas is always 11 km/s
-                    Pressure = 0.5*M_PI*G * Gal[p].DiscGas[i] * (Gal[p].DiscGas[i] + f_sigma*Gal[p].DiscStars[i]) / pow(area,2.0);
+                    Pressure = 0.5*M_PI*G * Gal[p].DiscGas[i] * (Gal[p].DiscGas[i] + f_sigma*Gal[p].DiscStars[i]) / sqr(area);
                 }
                 else
-                    Pressure = 0.5*M_PI*G * pow(Gal[p].DiscGas[i]/area,2.0);
+                    Pressure = 0.5*M_PI*G * sqr(Gal[p].DiscGas[i]/area);
                 f_H2_HI = H2FractionFactor * pow(Pressure/P_0, H2FractionExponent);
 
             }

@@ -121,7 +121,7 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
         j_bin = (DiscBinEdge[i]+DiscBinEdge[i+1])/2;
         if(net_stars>0)
         {
-            double spinmagpre = pow(pow(Gal[merger_centralgal].SpinClassicalBulge[0],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[1],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[2],2.0), 0.5);
+            double spinmagpre = sqrt(sqr(Gal[merger_centralgal].SpinClassicalBulge[0])+sqr(Gal[merger_centralgal].SpinClassicalBulge[1])+sqr(Gal[merger_centralgal].SpinClassicalBulge[2]));
             for(s=0; s<3; s++)
             {
                 // Need to know magnitude of j of newstars, not just direction
@@ -129,7 +129,7 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
                 if(!(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY))
                     Gal[merger_centralgal].SpinClassicalBulge[s] = 0.0;
             }
-            double spinmag = pow(pow(Gal[merger_centralgal].SpinClassicalBulge[0],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[1],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[2],2.0), 0.5);
+            double spinmag = sqrt(sqr(Gal[merger_centralgal].SpinClassicalBulge[0])+sqr(Gal[merger_centralgal].SpinClassicalBulge[1])+sqr(Gal[merger_centralgal].SpinClassicalBulge[2]));
             
             Gal[merger_centralgal].ClassicalBulgeMass += net_stars;
             Gal[merger_centralgal].ClassicalMetalsBulgeMass += metallicity * net_stars;
@@ -168,7 +168,7 @@ double grow_black_hole(int merger_centralgal, double* disc_mass_ratio)
   {
 	if(Gal[merger_centralgal].DiscGas[i] > 0.0)
 	{
-		BHaccrete = BlackHoleGrowthRate * disc_mass_ratio[i] / (1.0 + pow(280.0 / Gal[merger_centralgal].Vvir, 2.0)) * Gal[merger_centralgal].DiscGas[i];
+		BHaccrete = BlackHoleGrowthRate * disc_mass_ratio[i] / (1.0 + sqr(280.0 / Gal[merger_centralgal].Vvir)) * Gal[merger_centralgal].DiscGas[i];
 		assert(disc_mass_ratio[i]<=1.0);
         assert(BHaccrete>=0.0);
 		if(BHaccrete > Gal[merger_centralgal].DiscGas[i]) // This could only be possible if BlackHoleGrowthRate is set to >1.0, which shouldn't happen...
@@ -359,7 +359,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 	double sat_sam_mag, cos_angle_sat_disc, sat_sam_max, sat_sam_min;
 	int i_min, i_max, bin_num;
 	
-    sat_sam_mag = pow(sat_sam[0]*sat_sam[0] + sat_sam[1]*sat_sam[1] + sat_sam[2]*sat_sam[2], 0.5);
+    sat_sam_mag = sqrt(sat_sam[0]*sat_sam[0] + sat_sam[1]*sat_sam[1] + sat_sam[2]*sat_sam[2]);
       
 	//if(CentralGasOrig > 0.0 && Gal[p].ColdGas > 0.0)
 	if(Gal[p].ColdGas > 0.0)
@@ -368,7 +368,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 		sat_sam_mag *= fabs(cos_angle_sat_disc); // Project satellite's (gas) angular momentum onto central's disc
 	
 		// Consider that the satellite will have rotation and hence it will have a distribution of angular momentum to contribute
-		sat_sam_max =  sat_sam_mag  +  Gal[p].Vvir * fabs(cos_angle_sat_disc) * pow(pow(Gal[p].Pos[0]-Gal[t].Pos[0], 2.0) + pow(Gal[p].Pos[1]-Gal[t].Pos[1], 2.0) + pow(Gal[p].Pos[2]-Gal[t].Pos[2], 2.0), 0.5);
+		sat_sam_max =  sat_sam_mag  +  Gal[p].Vvir * fabs(cos_angle_sat_disc) * sqrt(sqr(Gal[p].Pos[0]-Gal[t].Pos[0]) + sqr(Gal[p].Pos[1]-Gal[t].Pos[1]) + sqr(Gal[p].Pos[2]-Gal[t].Pos[2]));
 		sat_sam_min = 2.0*sat_sam_mag - sat_sam_max;
 		if(sat_sam_min<0.0)
 			sat_sam_min = 0.0;
@@ -460,7 +460,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 	
 		// Determine spin of new gaseous disc
 		for(i=0; i<3; i++) NewSpin[i] = Gal[t].SpinGas[i]*CentralGasOrig + Gal[p].SpinGas[i]*Gal[p].ColdGas;
-		new_spin_mag = pow(NewSpin[0]*NewSpin[0] + NewSpin[1]*NewSpin[1] + NewSpin[2]*NewSpin[2], 0.5);
+		new_spin_mag = sqrt(NewSpin[0]*NewSpin[0] + NewSpin[1]*NewSpin[1] + NewSpin[2]*NewSpin[2]);
 		for(i=0; i<3; i++) NewSpin[i] /= new_spin_mag;
 	
 		DiscGasSum = get_disc_gas(p);
@@ -543,7 +543,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
       j_t[1] = (Gal[t].Pos[2]-COM[2])*(Gal[t].Vel[0]-vCOM[0])*ExpFac - (Gal[t].Pos[0]-COM[0])*(Gal[t].Vel[2]-vCOM[2])*ExpFac;
       j_t[2] = (Gal[t].Pos[0]-COM[0])*(Gal[t].Vel[1]-vCOM[1])*ExpFac - (Gal[t].Pos[1]-COM[1])*(Gal[t].Vel[0]-vCOM[0])*ExpFac;
       
-      double spinmagpre = pow(pow(Gal[t].SpinClassicalBulge[0],2.0)+pow(Gal[t].SpinClassicalBulge[1],2.0)+pow(Gal[t].SpinClassicalBulge[2],2.0), 0.5);
+      double spinmagpre = sqrt(sqr(Gal[t].SpinClassicalBulge[0])+sqr(Gal[t].SpinClassicalBulge[1])+sqr(Gal[t].SpinClassicalBulge[2]));
       for(s=0; s<3; s++)
       {
           assert(Gal[t].SpinClassicalBulge[s] == Gal[t].SpinClassicalBulge[s] && Gal[t].SpinClassicalBulge[s] != INFINITY);
@@ -552,7 +552,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
               Gal[t].SpinClassicalBulge[s] = 0.0;
 
       }
-      double spinmag = pow(pow(Gal[t].SpinClassicalBulge[0],2.0)+pow(Gal[t].SpinClassicalBulge[1],2.0)+pow(Gal[t].SpinClassicalBulge[2],2.0), 0.5);
+      double spinmag = sqrt(sqr(Gal[t].SpinClassicalBulge[0])+sqr(Gal[t].SpinClassicalBulge[1])+sqr(Gal[t].SpinClassicalBulge[2]));
     Gal[t].ClassicalBulgeMass += Gal[p].StellarMass;
 	Gal[t].ClassicalMetalsBulgeMass += Gal[p].MetalsStellarMass;
       
@@ -718,7 +718,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
         
         if(SupernovaRecipeOn == 1)
         {
-            Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / pow(CM_PER_MPC/1e6 / UnitLength_in_cm, 2.0);
+            Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / sqr(CM_PER_MPC/1e6 / UnitLength_in_cm);
             reheated_mass = FeedbackReheatingEpsilon * stars * pow(Sigma_0gas / (Gal[merger_centralgal].DiscGas[k]/area), FeedbackExponent);
         }
         else if(SupernovaRecipeOn == 2)
@@ -804,14 +804,14 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
      
   if(stars_sum>0)
   {
-      double spinmagpre = pow(pow(Gal[merger_centralgal].SpinClassicalBulge[0],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[1],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[2],2.0), 0.5);
+      double spinmagpre = sqrt(sqr(Gal[merger_centralgal].SpinClassicalBulge[0])+sqr(Gal[merger_centralgal].SpinClassicalBulge[1])+sqr(Gal[merger_centralgal].SpinClassicalBulge[2]));
      // Update bulge spin
      for(s=0; s<3; s++)
      {
          Gal[merger_centralgal].SpinClassicalBulge[s] = (Gal[merger_centralgal].SpinClassicalBulge[s]*Gal[merger_centralgal].ClassicalBulgeMass + Gal[merger_centralgal].SpinGas[s]*stars_angmom) / (Gal[merger_centralgal].ClassicalBulgeMass+stars_sum);
          assert(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY);
      }
-      double spinmag = pow(pow(Gal[merger_centralgal].SpinClassicalBulge[0],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[1],2.0)+pow(Gal[merger_centralgal].SpinClassicalBulge[2],2.0), 0.5);
+      double spinmag = sqrt(sqr(Gal[merger_centralgal].SpinClassicalBulge[0])+sqr(Gal[merger_centralgal].SpinClassicalBulge[1])+sqr(Gal[merger_centralgal].SpinClassicalBulge[2]));
       
      // Now adding all new stars directly to the bulge
      Gal[merger_centralgal].StellarMass += stars_sum; // Recycling fraction already taken into account when adding to stars_sum etc above

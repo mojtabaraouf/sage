@@ -164,7 +164,6 @@ class Results:
                         ('SfrDiskZ'                     , floattype),
                         ('SfrBulgeZ'                    , floattype),
                         ('DiskScaleRadius'              , floattype),
-                        ('BulgeRadius'                  , floattype),
                         ('Cooling'                      , floattype),
                         ('Heating'                      , floattype),
                         ('LastMajorMerger'              , floattype),
