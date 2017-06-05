@@ -158,10 +158,6 @@ int main(int argc, char **argv)
     load_tree_table(filenr);
 
       
-      // Set manual limit to number of trees read in
-      if(Ntrees > 20000)
-          Ntrees = 20000;
-      
       for(tree = 0; tree < Ntrees; tree++)
       {
           
