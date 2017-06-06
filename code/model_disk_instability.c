@@ -9,13 +9,13 @@
 #include "core_proto.h"
 
 
-void check_disk_instability(int p, int centralgal, double time, double dt, int step)
+void check_disk_instability(int p, int centralgal, double dt, int step)
 {
 	// New treatment of instabilities based on the Toomre Q parameter
 	double Q_star, Q_gas, V_rot, Q_gas_min, Q_star_min, Q_tot, W, Q_stable;
 	double unstable_gas, unstable_stars, metallicity, stars, stars_sum, gas_sink;
-    double r_inner, r_outer, r_av, Omega, Kappa, sigma_R, c_s;
-	double NewStars[N_BINS], NewStarsMetals[N_BINS], SNgas[N_BINS], spinmag, angle, DiscGasSum, DiscStarSum, StarChannelSum;
+    double r_inner, r_outer, r_av, Kappa, sigma_R, c_s;
+	double NewStars[N_BINS], NewStarsMetals[N_BINS], SNgas[N_BINS], angle, DiscGasSum, DiscStarSum, StarChannelSum;
     double old_spin[3], SNgas_copy[N_BINS], SNgas_proj[N_BINS], cos_angle;
 	int i, s;
     int first, first_gas, first_star;
@@ -126,7 +126,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
                 assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);
                 assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
                 
-                stars = deal_with_unstable_gas(unstable_gas, p, i, V_rot, metallicity, centralgal, 0, r_inner, r_outer);
+                stars = deal_with_unstable_gas(unstable_gas, p, i, V_rot, metallicity, centralgal, r_inner, r_outer);
                 if(stars>=MIN_STARS_FOR_SN)
                     SNgas[i] = RecycleFraction * stars;
                 else
@@ -320,7 +320,7 @@ void check_disk_instability(int p, int centralgal, double time, double dt, int s
     if(Gal[p].Type==0) update_disc_radii(p);
 }
 
-double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, double metallicity, int centralgal, int direct_to_BH, double r_inner, double r_outer)
+double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, double metallicity, int centralgal, double r_inner, double r_outer)
 {
 	double gas_sink, gas_sf;
 	double stars, reheated_mass, ejected_mass, Sigma_0gas, fac, area;
@@ -329,8 +329,6 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
     if(unstable_gas > Gal[p].DiscGas[i])
         unstable_gas = Gal[p].DiscGas[i];
 
-    double GasOrig = Gal[p].DiscGas[i];
-    double GasMetalsOrig = Gal[p].DiscGasMetals[i];
     double ejected_sum = 0.0;
     double j_lose, j_gain, m_up, m_down;
     
@@ -395,6 +393,8 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
             }
             else if(SupernovaRecipeOn == 2)
                 reheated_mass = FeedbackReheatingEpsilon * stars;
+            else
+                reheated_mass = 0.0;
             assert(reheated_mass==reheated_mass && reheated_mass!=INFINITY);
 
 			// Can't use more cold gas than is available, so balance SF and feedback
@@ -462,7 +462,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 }
 
 
-void precess_gas(int p, double dt, int halonr)
+void precess_gas(int p, double dt)
 {
     int i;
     double tdyn, deg_ann, deg, DiscGasSum, DiscStarSum, NewDisc[N_BINS], NewDiscMetals[N_BINS], cos_angle_gas_stars, SpinSqr;

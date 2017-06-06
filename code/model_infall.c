@@ -180,7 +180,7 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
       Pgrav = G * Gal[gal].Mvir * Gal[gal].HotGas / 8.0 / sqr(sqr(Gal[gal].Rvir)); // First calculate restoring force at the virial radius of the subhalo
       if(Pram >= Pgrav)
       {
-          double M_D, M_int, M_DM, M_CB, M_SB, M_hot;
+          double M_int, M_DM, M_CB, M_SB, M_hot;
           double z, a, b, c_DM, c, r_2, X, M_DM_tot, rho_const;
           double a_CB, M_CB_inf, a_SB, M_SB_inf;
           
@@ -218,7 +218,7 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
               M_SB = M_SB_inf * sqr(r_try/(r_try + a_SB));
               M_CB = M_CB_inf * sqr(r_try/(r_try + a_CB));
               M_hot = Gal[gal].HotGas * r_try / Gal[gal].Rvir;
-              M_int = M_DM + M_D + M_CB + M_SB + M_hot + Gal[gal].BlackHoleMass;
+              M_int = M_DM + M_CB + M_SB + M_hot + Gal[gal].BlackHoleMass;
               
               // Add mass from the disc
               for(i=0; i<N_BINS; i++)

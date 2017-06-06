@@ -223,6 +223,8 @@ double get_virial_mass(int halonr, int p)
         return Halo[halonr].Len * PartMass;
     else if(p!=-1)
         return Gal[p].StellarMass + Gal[p].ColdGas + Gal[p].HotGas + Gal[p].BlackHoleMass + Gal[p].ICS;
+    else
+        return 0.0; // This completes the logic but shouldn't happen
 }
 
 

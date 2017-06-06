@@ -96,7 +96,7 @@ void free_tree_table(void)
 
 
 
-void load_tree(int filenr, int nr)
+void load_tree(int nr)
 {
   int i;
 #ifdef MINIMIZE_IO

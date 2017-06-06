@@ -66,7 +66,7 @@ void construct_galaxies(int halonr, int tree)
       fofhalo = Halo[fofhalo].NextHaloInFOFgroup;
     }
 
-    evolve_galaxies(Halo[halonr].FirstHaloInFOFgroup, ngal, tree);
+    evolve_galaxies(Halo[halonr].FirstHaloInFOFgroup, ngal);
   }
 
 }
@@ -283,7 +283,7 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
 
 
 
-void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the FOF-background subhalo (i.e. main halo) 
+void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-background subhalo (i.e. main halo)
 {
   int p, i, step, centralgal, merger_centralgal, currenthalo, offset;
   double infallingGas, coolingGas, deltaT, time, galaxyBaryons, currentMvir, DiscGasSum;
@@ -346,7 +346,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
         {
           coolingGas = cooling_recipe(p, deltaT / STEPS);
           Gal[p].AccretedGasMass += coolingGas;
-          cool_gas_onto_galaxy(p, centralgal, coolingGas, deltaT / STEPS, step);
+          cool_gas_onto_galaxy(p, coolingGas);
         }
 
       // Update radii of the annuli
@@ -354,11 +354,11 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
         update_disc_radii(p);
 	
 	  // stars form and then explode!
-      starformation_and_feedback(p, centralgal, time, deltaT / STEPS, halonr, step);
+      starformation_and_feedback(p, centralgal, deltaT / STEPS, step);
         
       // precess gas disc
       if(GasPrecessionOn && Gal[p].StellarMass>0.0 && get_disc_gas(p)>0.0)
-        precess_gas(p, deltaT / STEPS, halonr);
+        precess_gas(p, deltaT / STEPS);
       assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
 	
     }
@@ -399,7 +399,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
           else
           {
             time = Age[Gal[p].SnapNum] - (step + 0.5) * (deltaT / STEPS);
-            deal_with_galaxy_merger(p, merger_centralgal, centralgal, time, deltaT / STEPS, halonr, step);
+            deal_with_galaxy_merger(p, merger_centralgal, centralgal, time, deltaT / STEPS, step);
           }
  
         }

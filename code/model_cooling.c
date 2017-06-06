@@ -165,12 +165,12 @@ double do_AGN_heating(double coolingGas, int p, double dt, double x, double rcoo
 
 
 // This cools the gas onto the correct disc bins
-void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, int step)
+void cool_gas_onto_galaxy(int p, double coolingGas)
 {
   double metallicity, coolingGasBin, coolingGasBinSum, DiscGasSum, cos_angle_disc_new, cos_angle_halo_new, ratio_last_bin, high_bound, disc_spin_mag, J_disc, J_cool, SpinMag;
 //  double r_inner, r_outer;
   double DiscNewSpin[3];
-  double OldDisc[N_BINS], OldDiscMetals[N_BINS], RetroGas[N_BINS];
+  double OldDisc[N_BINS], OldDiscMetals[N_BINS];
   int i, j, k, j_old;
   double jfrac1, jfrac2;
   double rfrac1, rfrac2;
@@ -292,8 +292,6 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 			}
 			assert(Gal[p].DiscGas[i]>=0.0);
 			assert(Gal[p].DiscGasMetals[i]>=0.0);
-			if(cos_angle_disc_new<0.0)
-				RetroGas[i] = Gal[p].DiscGas[i];
 			j_old = j;
 		}
 	}
@@ -322,9 +320,6 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
           
 	    Gal[p].DiscGas[i] += coolingGasBin;
 		Gal[p].DiscGasMetals[i] += metallicity * coolingGasBin;
-		if(cos_angle_halo_new<0.0)
-			RetroGas[i] = coolingGasBin;
-          
         
 		assert(Gal[p].DiscGasMetals[i]<=Gal[p].DiscGas[i]);
 		coolingGasBinSum += coolingGasBin;
@@ -360,8 +355,6 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 
 		Gal[p].DiscGas[i] += coolingGasBin;
 		Gal[p].DiscGasMetals[i] += metallicity * coolingGasBin;
-		if(cos_angle_halo_new<0.0)
-			RetroGas[i] = coolingGasBin;
 		assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
 		coolingGasBinSum += coolingGasBin;
       }
@@ -379,7 +372,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 		Gal[p].SpinGas[i] = DiscNewSpin[i];
 	
 	if(cos_angle_disc_new < -1e-5 || cos_angle_halo_new < -1e-5) 
-		retrograde_gas_collision(p, RetroGas, cos_angle_halo_new, cos_angle_disc_new, J_disc, J_cool);
+		retrograde_gas_collision(p, cos_angle_halo_new, cos_angle_disc_new, J_disc, J_cool);
 	
   
   }
@@ -388,7 +381,7 @@ void cool_gas_onto_galaxy(int p, int centralgal, double coolingGas, double dt, i
 }
 
 
-void retrograde_gas_collision(int p, double RetroGas[N_BINS], double cos_angle_halo_new, double cos_angle_disc_new, double J_disc, double J_cool)
+void retrograde_gas_collision(int p, double cos_angle_halo_new, double cos_angle_disc_new, double J_disc, double J_cool)
 {
 	double J_sum, J_retro, bin_ratio;
 	double NewDisc[N_BINS];

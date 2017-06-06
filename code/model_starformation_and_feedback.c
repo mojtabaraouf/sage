@@ -10,7 +10,7 @@
 
 
 
-void starformation_and_feedback(int p, int centralgal, double time, double dt, int halonr, int step)
+void starformation_and_feedback(int p, int centralgal, double dt, int step)
 {
     double strdot, stars, reheated_mass, ejected_mass, fac, metallicity, stars_sum, area, SFE_H2, f_H2_const, Sigma_0gas, DiscGasSum, DiscStarsSum, DiscPre, ColdPre, StarChannelSum;
     double r_inner, r_outer;
@@ -221,7 +221,7 @@ void starformation_and_feedback(int p, int centralgal, double time, double dt, i
 
   // Check for disk instability
   if(DiskInstabilityOn>0)
-    check_disk_instability(p, centralgal, time, dt, step);
+    check_disk_instability(p, centralgal, dt, step);
 
   assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 
