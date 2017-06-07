@@ -41,7 +41,7 @@ CC       =   gcc            # sets the C-compiler (default)
 
 endif
 
-OPTIMIZE =   -g -O2 -Wall -Wextra -Wshadow   # optimization and warning flags (default)
+OPTIMIZE = -O2 -Wall -Wextra -Wshadow   # optimization and warning flags (default)
 
 # GSL automatic detection
 GSL_FOUND := $(shell gsl-config --version 2>/dev/null)

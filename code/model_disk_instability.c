@@ -70,7 +70,7 @@ void check_disk_instability(int p, int centralgal, double dt, int step)
         else
             Kappa = sqrt(2.0*DiscBinEdge[i+1]/cube(r_outer) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
         
-        sigma_R = 0.5*Gal[p].Vvir*exp(-r_av/2.0/Gal[p].DiskScaleRadius);
+        sigma_R = 0.5*Gal[p].Vvir*exp_f(-r_av/2.0/Gal[p].DiskScaleRadius);
 
         Q_gas = c_s * Kappa * (r_outer*r_outer - r_inner*r_inner) / G / Gal[p].DiscGas[i];
         
@@ -209,7 +209,7 @@ void check_disk_instability(int p, int centralgal, double dt, int step)
         else
             Kappa = sqrt(2.0*DiscBinEdge[i+1]/cube(r_outer) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
         
-        sigma_R = 0.5*Gal[p].Vvir*exp(-r_av/2.0/Gal[p].DiskScaleRadius);
+        sigma_R = 0.5*Gal[p].Vvir*exp_f(-r_av/2.0/Gal[p].DiskScaleRadius);
         
         if(Gal[p].DiscGas[i]-SNgas[i]>0.0 && angle<=ThetaThresh)
         {
@@ -317,7 +317,7 @@ void check_disk_instability(int p, int centralgal, double dt, int step)
 		}
 	}
     
-    if(Gal[p].Type==0) update_disc_radii(p);
+    //if(Gal[p].Type==0) update_disc_radii(p);
 }
 
 double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, double metallicity, int centralgal, double r_inner, double r_outer)

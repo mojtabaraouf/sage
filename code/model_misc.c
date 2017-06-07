@@ -215,6 +215,15 @@ double cube(double x)
 }
 
 
+double exp_f(double x)
+{
+    // Perform a faster (but less precise) exponential
+    x = 1.0 + x / 256.0;
+    x *= x; x *= x; x *= x; x *= x;
+    x *= x; x *= x; x *= x; x *= x;
+    return x;
+}
+
 double get_virial_mass(int halonr, int p)
 {
     if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir > 0.0)
@@ -429,11 +438,11 @@ void update_disc_radii(int p)
     
     z = ZZ[Gal[p].SnapNum];
     if(z>5.0) z=5.0;
-    a = 0.520 + (0.905-0.520)*exp(-0.617*pow(z,1.21)); // Dutton & Maccio 2014
+    a = 0.520 + (0.905-0.520)*exp_f(-0.617*pow(z,1.21)); // Dutton & Maccio 2014
     b = -0.101 + 0.026*z; // Dutton & Maccio 2014
     c_DM = pow(10.0, a+b*log10(Gal[p].Mvir*UnitMass_in_g/(SOLAR_MASS*1e12))); // Dutton & Maccio 2014
     if(Gal[p].Type==0 && Gal[p].StellarMass>0 && Gal[p].Mvir>0)
-        c = c_DM * (1.0 + 3e-5*exp(3.4*(X+4.5))); // Di Cintio et al 2014b
+        c = c_DM * (1.0 + 3e-5*exp_f(3.4*(X+4.5))); // Di Cintio et al 2014b
     else
         c = 1.0*c_DM; // Should only happen for satellite-satellite mergers, where X cannot be trusted
     r_2 = Gal[p].Rvir / c; // Di Cintio et al 2014b
@@ -463,9 +472,9 @@ void update_disc_radii(int p)
     BTT = (Gal[p].ClassicalBulgeMass+Gal[p].SecularBulgeMass)/(Gal[p].StellarMass+Gal[p].ColdGas);
 
     if(Gal[p].Vmax > Gal[p].Vvir)
-        v_max = 1.0*Gal[p].Vmax;
+        v_max = 2.0*Gal[p].Vmax;
     else if(Gal[p].Vvir > 0.0)
-        v_max = 1.0*Gal[p].Vvir;
+        v_max = 2.0*Gal[p].Vvir;
     else
     {
         v_max = 500.0; // Randomly large value here...
@@ -474,21 +483,23 @@ void update_disc_radii(int p)
     
     if(Gal[p].Mvir>0.0 && BTT<1.0)
     {
-        double inv_Vvir = 1.0/Gal[p].Vvir;
+        double two_inv_Vvir = 2.0/Gal[p].Vvir;
         double inv_r_2 = 1.0/r_2;
-        double inv_Rvir = 1.0/Gal[p].Rvir;
-        double inv_ScaleRadius = 1.0/Gal[p].DiskScaleRadius;
+        double hot_fraction = Gal[p].HotGas/Gal[p].Rvir;
+        double exponent_support = -3.0*(1.0-BTT)/Gal[p].DiskScaleRadius;
         
         for(i=1; i<N_BINS+1; i++)
         {
-            right = 2.0*DiscBinEdge[i] * inv_Vvir;
+            right = DiscBinEdge[i] * two_inv_Vvir;
             if(right<Gal[p].Rvir) right = Gal[p].Rvir;
             if(right<8.0*left) right = 8.0*left;
             M_D += Gal[p].DiscStars[i-1] + Gal[p].DiscGas[i-1];
             
+            double inv_DiscBinEdge = 1.0/DiscBinEdge[i];
+            
             for(j=0; j<j_max; j++)
             {
-                r_try = (left+right)/2.0;
+                r_try = (left+right)*0.5;
                 
                 if(Gal[p].Mvir>0.0)
                     M_DM = rho_const * (log((r_try+r_2)*inv_r_2) - r_try/(r_try+r_2));
@@ -497,17 +508,17 @@ void update_disc_radii(int p)
                 M_SB = M_SB_inf * sqr(r_try/(r_try + a_SB));
                 M_CB = M_CB_inf * sqr(r_try/(r_try + a_CB));
                 M_ICS = M_ICS_inf * sqr(r_try/(r_try + a_ICS));
-                M_hot = Gal[p].HotGas * r_try * inv_Rvir;
+                M_hot = hot_fraction * r_try;
                 M_int = M_DM + M_D + M_CB + M_SB + M_ICS + M_hot + Gal[p].BlackHoleMass;
                 
                 
-                f_support = 1.0 - exp(-3.0*(1.0-BTT)*r_try*inv_ScaleRadius);
+                f_support = 1.0 - exp_f(exponent_support*r_try); // Fraction of support in rotation
                 v_try = sqrt(G*M_int*f_support/r_try);
-                if(v_try<2.0*v_max || v_max <= 0)
+                if(v_try<v_max || v_max <= 0)
                     j_try = r_try*v_try;
                 else
-                    j_try = r_try*2.0*v_max;
-                dif = j_try/DiscBinEdge[i] - 1.0;
+                    j_try = r_try*v_max;
+                dif = j_try*inv_DiscBinEdge - 1.0;
                 
                 if(j==j_max-1) printf("Iterations maxed out in update_disc_radii\n");
                 

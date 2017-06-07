@@ -218,11 +218,6 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
 
   DiscGasSum = get_disc_gas(p);
   assert(DiscGasSum <= 1.01*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.01);
-
-  // Check for disk instability
-  if(DiskInstabilityOn>0)
-    check_disk_instability(p, centralgal, dt, step);
-
   assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 
 }

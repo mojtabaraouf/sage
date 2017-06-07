@@ -70,6 +70,7 @@ void check_ejected(int p);
 void ram_pressure_stripping(int centralgal, int gal);
 double sqr(double x);
 double cube(double x);
+double exp_f(double x);
 //
 
 void strip_from_satellite(int halonr, int centralgal, int gal);

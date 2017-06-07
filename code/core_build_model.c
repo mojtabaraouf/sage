@@ -286,7 +286,7 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
 void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-background subhalo (i.e. main halo)
 {
   int p, i, step, centralgal, merger_centralgal, currenthalo, offset;
-  double infallingGas, coolingGas, deltaT, time, galaxyBaryons, currentMvir, DiscGasSum;
+  double infallingGas, coolingGas, deltaT, time, galaxyBaryons, currentMvir, DiscGasSum, dt;
 
   centralgal = Gal[0].CentralGal;
   if(Gal[centralgal].Type != 0 || Gal[centralgal].HaloNr != halonr)
@@ -322,7 +322,8 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
         continue;
 
       deltaT = Age[Gal[p].SnapNum] - Age[Halo[halonr].SnapNum];
-      time = Age[Gal[p].SnapNum] - (step + 0.5) * (deltaT / STEPS);
+      dt = (deltaT / STEPS);
+      time = Age[Gal[p].SnapNum] - (step + 0.5) * dt;
       
       if(Gal[p].dT < 0.0)
         Gal[p].dT = deltaT;
@@ -334,7 +335,7 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
         strip_from_satellite(halonr, centralgal, p);
 
       if(ReIncorporationFactor > 0.0)
-        reincorporate_gas(p, deltaT / STEPS);
+        reincorporate_gas(p, dt);
         
       // Ram pressure stripping of cold gas from satellites
       if(RamPressureOn>0 && Gal[p].Type == 1 && Gal[p].ColdGas>0.0 && (Gal[p].ColdGas+Gal[p].StellarMass)>Gal[p].HotGas)
@@ -344,7 +345,7 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
       // Preventing cooling when there's no angular momentum, as the code isn't built to handle that.  This only cropped up for Vishnu haloes with 2 particles, which clearly weren't interesting/physical.  Haloes always have some spin otherwise.
       if(!(Gal[p].SpinHot[0]==0 & Gal[p].SpinHot[1]==0 && Gal[p].SpinHot[2]==0))
         {
-          coolingGas = cooling_recipe(p, deltaT / STEPS);
+          coolingGas = cooling_recipe(p, dt);
           Gal[p].AccretedGasMass += coolingGas;
           cool_gas_onto_galaxy(p, coolingGas);
         }
@@ -354,13 +355,17 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
         update_disc_radii(p);
 	
 	  // stars form and then explode!
-      starformation_and_feedback(p, centralgal, deltaT / STEPS, step);
-        
+      starformation_and_feedback(p, centralgal, dt, step);
+
       // precess gas disc
       if(GasPrecessionOn && Gal[p].StellarMass>0.0 && get_disc_gas(p)>0.0)
-        precess_gas(p, deltaT / STEPS);
+        precess_gas(p, dt);
       assert(Gal[p].SpinGas[0]==Gal[p].SpinGas[0]);
-	
+        
+      // Check for disk instability
+      if(DiskInstabilityOn>0)
+        check_disk_instability(p, centralgal, dt, step);
+        
     }
 
     // check for satellite disruption and merger events 
@@ -376,7 +381,7 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
         }
 
         deltaT = Age[Gal[p].SnapNum] - Age[Halo[halonr].SnapNum];
-        Gal[p].MergTime -= deltaT / STEPS;
+        Gal[p].MergTime -= dt;
         
         // only consider mergers or disruption for halo-to-baryonic mass ratios below the threshold
         // or for satellites with no baryonic mass (they don't grow and will otherwise hang around forever)
@@ -398,8 +403,8 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
             disrupt_satellite_to_ICS(merger_centralgal, p);
           else
           {
-            time = Age[Gal[p].SnapNum] - (step + 0.5) * (deltaT / STEPS);
-            deal_with_galaxy_merger(p, merger_centralgal, centralgal, time, deltaT / STEPS, step);
+            time = Age[Gal[p].SnapNum] - (step + 0.5) * dt;
+            deal_with_galaxy_merger(p, merger_centralgal, centralgal, time, dt, step);
           }
  
         }
