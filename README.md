@@ -6,6 +6,6 @@ DARK SAGE will run on any N-body simulation whose trees are organised in a suppo
 
 The code-base, written in C, should function as is, provided the required dependencies are installed.  You just need a C compiler and to point to installed GSL libraries before typing 'make'.  Once installed, please run the test script with 'python test.py' to make sure everything is working correctly.
 
-# The code-base is currently being tidied and optimised for a more streamlined public user experience.
+DARK SAGE is also listed on the [Astrophysics Source Code Library](http://ascl.net/1706.004)
 
 Queries, comments, and concerns can be emailed to Adam Stevens: astevens@swin.edu.au
