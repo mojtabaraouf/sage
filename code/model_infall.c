@@ -95,7 +95,7 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
 
 
 
-void strip_from_satellite(int halonr, int centralgal, int gal)
+double strip_from_satellite(int halonr, int centralgal, int gal, double max_strippedGas)
 {
   double reionization_modifier, strippedGas, strippedGasMetals, metallicity;
   assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
@@ -246,6 +246,7 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
           // Actually strip the gas
 //          if(Gal[gal].Len>200) printf("Rstrip/Rvir = %e\n", r_try/Gal[gal].Rvir);
           strippedGas = (1.0 - r_try/Gal[gal].Rvir) * Gal[gal].HotGas / STEPS;
+          if(strippedGas>max_strippedGas) strippedGas = max_strippedGas;
           metallicity = get_metallicity(Gal[gal].HotGas, Gal[gal].MetalsHotGas);
           strippedGasMetals = metallicity * strippedGas;
           
@@ -266,6 +267,7 @@ void strip_from_satellite(int halonr, int centralgal, int gal)
   }
 
     assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
+    return strippedGas;
 }
 
 

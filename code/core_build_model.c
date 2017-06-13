@@ -287,6 +287,7 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 {
   int p, i, step, centralgal, merger_centralgal, currenthalo, offset;
   double infallingGas, coolingGas, deltaT, time, galaxyBaryons, currentMvir, DiscGasSum;
+    double max_hotstrip;
 
   centralgal = Gal[0].CentralGal;
   if(Gal[centralgal].Type != 0 || Gal[centralgal].HaloNr != halonr)
@@ -319,6 +320,8 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
 	  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
 	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
+
+        if(step==0 || HotStripOn<2) max_hotstrip = Gal[p].HotGas / STEPS;
         
       // don't treat galaxies that have already merged 
       if(Gal[p].mergeType > 0)
@@ -342,9 +345,9 @@ void evolve_galaxies(int halonr, int ngal, int tree)	// note: halonr is here the
         assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
           assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
       }
-      else if(HotStripOn>0 && Gal[p].Type == 1 && Gal[p].HotGas > 0.0)
+      else if(HotStripOn>0 && Gal[p].Type == 1 && Gal[p].HotGas > 0.0 && max_hotstrip>0.0)
       {
-            strip_from_satellite(halonr, centralgal, p);
+            max_hotstrip = strip_from_satellite(halonr, centralgal, p, max_hotstrip);
             assert(Gal[p].EjectedMass >= Gal[p].MetalsEjectedMass);
           assert(Gal[centralgal].EjectedMass >= Gal[centralgal].MetalsEjectedMass);
       }
