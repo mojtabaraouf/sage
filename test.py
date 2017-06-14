@@ -4,11 +4,14 @@ This will fetch pre-made Dark Sage output, run the code on your machine, then co
 This script should run straight out of the box with "python test.py"
 """
 
+from __future__ import print_function
 import os
 import urllib
 import filecmp
 import subprocess
 import numpy as np
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
 
 def galdtype():
@@ -142,10 +145,10 @@ plt.savefig(dir+figname, bbox_inches='tight')
 
 # Compare output from installed Dark Sage to fetched data
 if filecmp.cmp(dir+'model_to_test_against_z2.239_0', dir+'model_z2.239_0'):
-    print 'Success! Dark Sage output matches what is expected!'
+    print('Success! Dark Sage output matches what is expected!')
 else:
-    print 'Uh oh! The Dark Sage output did not match what was expected!'
-    print 'This can happen if '+dir+'test.py or any of the Dark Sage codebase was modified from the main repository.'
-    print 'If you recently updated your local repository for Dark Sage, try deleting the `'+dir+'\' directory and running this again.'
-    print 'See', dir+figname, 'to check if the difference is significant.'
+    print('Uh oh! The Dark Sage output did not match what was expected!')
+    print ('This can happen if {0}test.py or any of the Dark Sage codebase was modified from the main repository.'.format(dir))
+    print('If you recently updated your local repository for Dark Sage, try deleting the `{0}\' directory and running this again.'.format(dir))
+    print('See {0} to check if the difference is significant.'.format(dir+figname))
 
