@@ -1,5 +1,5 @@
 language: c
-sudo: required
+sudo: false
 
 notifications:
   email:
@@ -51,7 +51,6 @@ matrix:
 
     - os: linux
       dist: trusty
-      sudo: required
       compiler: gcc
       env: COMPILER=gcc PYTHON_VERSION=2.7
       before_install:
