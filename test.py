@@ -6,7 +6,10 @@ This script should run straight out of the box with "python test.py"
 
 from __future__ import print_function
 import os
-import urllib
+try: # Python 2
+    from urllib import urlretrieve
+except ImportError: # Python 3
+    from urllib.request import urlretrieve
 import filecmp
 import subprocess
 import numpy as np
@@ -111,7 +114,7 @@ if not os.path.exists(dir):
 
 # Fetch the input for the test
 if not os.path.isfile(dir+'model_to_test_against_z2.239_0'):
-    zip = urllib.urlretrieve('https://github.com/arhstevens/DarkSageTest/archive/master.zip')
+    zip = urlretrieve('https://github.com/arhstevens/DarkSageTest/archive/master.zip')
     subprocess.call(['unzip', '-j', zip[0], '-d', dir])
     subprocess.call(['rm', zip[0]])
 
