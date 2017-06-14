@@ -6,7 +6,9 @@
 #include <signal.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#ifdef MPI
 #include <mpi.h>
+#endif
 #include <assert.h>
 
 #include "core_allvars.h"
