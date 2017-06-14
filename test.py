@@ -146,12 +146,20 @@ figname = 'SMF_test.png'
 plt.savefig(dir+figname, bbox_inches='tight')
 
 # Compare output from installed Dark Sage to fetched data
+success = True
 for field in G_out.dtype.names:
     if not bool(np.allclose(G_out[field], G_test[field])):
-        print('Uh oh! The Dark Sage output did not match what was expected!')
-        print('This can happen if {0}test.py or any of the Dark Sage codebase was modified from the main repository.'.format(dir))
-        print('If you recently updated your local repository for Dark Sage, try deleting the `{0}\' directory and running this again.'.format(dir))
-        print('See {0} to check if the difference is significant.'.format(dir+figname))
-        sys.exit(1)
+        success = False
+        diff_abs = np.diff(G_out[field], G_test[field])
+        diff_rel = diff_abs / G_test[field]
+        print('Field {0} differed by max(abs,rel)={1,2}, mean(abs,rel)={3,4}, min(abs,rel)={5,6}'.format(field,np.max(diff_abs),np.max(diff_rel),np.mean(diff_abs),np.mean(diff_rel),np.min(diff_abs),np.min(diff_rel)))
 
-print('Success! Dark Sage output matches what is expected!')
+# Declare success or not
+if success:
+    print('Success! Dark Sage output matches what is expected!')
+else:
+    print('Uh oh! The Dark Sage output did not match what was expected!')
+    print('This can happen if {0}test.py or any of the Dark Sage codebase was modified from the main repository.'.format(dir))
+    print('If you recently updated your local repository for Dark Sage, try deleting the `{0}\' directory and running this again.'.format(dir))
+    print('See {0} to check if the difference is significant.'.format(dir+figname))
+    sys.exit(1)
