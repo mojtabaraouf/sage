@@ -6,6 +6,7 @@ This script should run straight out of the box with "python test.py"
 
 from __future__ import print_function
 import os
+import sys
 try: # Python 2
     from urllib import urlretrieve
 except ImportError: # Python 3
@@ -14,7 +15,7 @@ import filecmp
 import subprocess
 import numpy as np
 import matplotlib
-matplotlib.use('agg')
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 def galdtype():
@@ -93,13 +94,11 @@ def galdtype():
 
 def read_darksage(fname):
     Galdesc = galdtype()
-    fin = open(fname, 'rb') # Open the file
-    Ntrees = np.fromfile(fin,np.dtype(np.int32),1)  # Read number of trees in file
-    NtotGals = np.fromfile(fin,np.dtype(np.int32),1)[0]  # Read number of gals in file.
-    GalsPerTree = np.fromfile(fin, np.dtype((np.int32, Ntrees)),1) # Read the number of gals in each tree
-    G = np.fromfile(fin, Galdesc, NtotGals) # Read all the galaxy data
-    G = G.view(np.recarray) # Convert into a record array
-    fin.close()
+    with open(fname, 'rb') as fin:
+        Ntrees = np.fromfile(fin,np.dtype(np.int32),1)  # Read number of trees in file
+        NtotGals = np.fromfile(fin,np.dtype(np.int32),1)[0]  # Read number of gals in file.
+        GalsPerTree = np.fromfile(fin, np.dtype((np.int32, Ntrees)),1) # Read the number of gals in each tree
+        G = np.fromfile(fin, Galdesc, NtotGals) # Read all the galaxy data
     return G
 
 
@@ -138,8 +137,8 @@ warnings.filterwarnings("ignore")
 plt.figure()
 h = 0.73
 mmin, mmax = 8.0, 12.0
-plt.hist(np.log10(G_test.StellarMass*1e10/h), bins=np.arange(mmin,mmax,0.2), histtype='step', lw=2, color='k', label='Expected', log=True)
-plt.hist(np.log10(G_out.StellarMass*1e10/h), bins=np.arange(mmin,mmax,0.2), histtype='step', lw=2, color='b', ls='dashed', label='Result', log=True)
+plt.hist(np.log10(G_test['StellarMass']*1e10/h), bins=np.arange(mmin,mmax,0.2), histtype='step', lw=2, color='k', label='Expected', log=True)
+plt.hist(np.log10(G_out['StellarMass']*1e10/h), bins=np.arange(mmin,mmax,0.2), histtype='step', lw=2, color='b', ls='dashed', label='Result', log=True)
 plt.xlabel('log Stellar Mass [solar]')
 plt.ylabel('Number of galaxies')
 plt.legend(loc='best', frameon=False)
@@ -147,11 +146,12 @@ figname = 'SMF_test.png'
 plt.savefig(dir+figname, bbox_inches='tight')
 
 # Compare output from installed Dark Sage to fetched data
-if filecmp.cmp(dir+'model_to_test_against_z2.239_0', dir+'model_z2.239_0'):
-    print('Success! Dark Sage output matches what is expected!')
-else:
-    print('Uh oh! The Dark Sage output did not match what was expected!')
-    print ('This can happen if {0}test.py or any of the Dark Sage codebase was modified from the main repository.'.format(dir))
-    print('If you recently updated your local repository for Dark Sage, try deleting the `{0}\' directory and running this again.'.format(dir))
-    print('See {0} to check if the difference is significant.'.format(dir+figname))
+for field in G_out.dtype.names:
+    if not bool(np.allclose(G_out[field], G_test[field])):
+        print('Uh oh! The Dark Sage output did not match what was expected!')
+        print('This can happen if {0}test.py or any of the Dark Sage codebase was modified from the main repository.'.format(dir))
+        print('If you recently updated your local repository for Dark Sage, try deleting the `{0}\' directory and running this again.'.format(dir))
+        print('See {0} to check if the difference is significant.'.format(dir+figname))
+        sys.exit(1)
 
+print('Success! Dark Sage output matches what is expected!')
