@@ -63,7 +63,7 @@ matrix:
 
 
 install:
-  - make -r 
+  - make -r CC=$COMPILER
 
 script:
   - python test.py
