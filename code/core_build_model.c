@@ -287,6 +287,7 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
 {
   int p, i, step, centralgal, merger_centralgal, currenthalo, offset;
   double infallingGas, coolingGas, deltaT, time, galaxyBaryons, currentMvir, DiscGasSum, dt;
+  double max_hotstrip;
 
   centralgal = Gal[0].CentralGal;
   if(Gal[centralgal].Type != 0 || Gal[centralgal].HaloNr != halonr)
@@ -316,6 +317,11 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
     for(p = 0; p < ngal; p++)
     {
 	  DiscGasSum = get_disc_gas(p);
+	  assert(DiscGasSum <= 1.001*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.001);
+	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
+	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
+
+	  if(step==0 || HotStripOn<2) max_hotstrip = Gal[p].HotGas / STEPS;
         
       // don't treat galaxies that have already merged 
       if(Gal[p].mergeType > 0)
@@ -331,8 +337,8 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
       // for central galaxy only
       if(p == centralgal)
         add_infall_to_hot(centralgal, infallingGas / STEPS);
-      else if(HotStripOn>0 && Gal[p].Type == 1 && Gal[p].HotGas > 0.0)
-        strip_from_satellite(halonr, centralgal, p);
+      else if(HotStripOn>0 && Gal[p].Type == 1 && Gal[p].HotGas > 0.0 && max_hotstrip>0.0)
+            max_hotstrip = strip_from_satellite(halonr, centralgal, p, max_hotstrip);
 
       if(ReIncorporationFactor > 0.0)
         reincorporate_gas(p, dt);
@@ -343,7 +349,7 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
         
       // determine cooling gas given halo properties
       // Preventing cooling when there's no angular momentum, as the code isn't built to handle that.  This only cropped up for Vishnu haloes with 2 particles, which clearly weren't interesting/physical.  Haloes always have some spin otherwise.
-      if(!(Gal[p].SpinHot[0]==0 & Gal[p].SpinHot[1]==0 && Gal[p].SpinHot[2]==0))
+      if(!(Gal[p].SpinHot[0]==0 && Gal[p].SpinHot[1]==0 && Gal[p].SpinHot[2]==0))
         {
           coolingGas = cooling_recipe(p, dt);
           Gal[p].AccretedGasMass += coolingGas;

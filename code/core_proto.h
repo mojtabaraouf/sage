@@ -73,7 +73,7 @@ double cube(double x);
 double exp_f(double x);
 //
 
-void strip_from_satellite(int halonr, int centralgal, int gal);
+double strip_from_satellite(int halonr, int centralgal, int gal, double max_strippedGas);
 void disrupt_satellite_to_ICS(int centralgal, int gal);
 void quasar_mode_wind(int p, float BHaccrete, int centralgal);
 
