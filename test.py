@@ -122,12 +122,12 @@ if not os.path.isfile(dir+'model_to_test_against_z2.239_0'):
     subprocess.call(['unzip', '-j', zip[0], '-d', dir])
     subprocess.call(['rm', zip[0]])
 
-## Delete any old data produced by this script
-#if os.path.isfile(dir+'model_z2.239_0'):
-#    subprocess.call(['rm', dir+'model_z2.239_0'])
-#
-## Run Dark Sage
-#subprocess.call(['./darksage', dir+'test.par'])
+# Delete any old data produced by this script
+if os.path.isfile(dir+'model_z2.239_0'):
+    subprocess.call(['rm', dir+'model_z2.239_0'])
+
+# Run Dark Sage
+subprocess.call(['./darksage', dir+'test.par'])
 
 
 # Read produced and fetched Dark Sage output
