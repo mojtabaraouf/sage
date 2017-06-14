@@ -150,7 +150,7 @@ success = True
 for field in G_out.dtype.names:
     if not bool(np.allclose(G_out[field], G_test[field])):
         success = False
-        diff_abs = np.diff(G_out[field], G_test[field])
+        diff_abs = G_out[field] - G_test[field]
         diff_rel = diff_abs / G_test[field]
         print('Field {0} differed by max(abs,rel)={1,2}, mean(abs,rel)={3,4}, min(abs,rel)={5,6}'.format(field,np.max(diff_abs),np.max(diff_rel),np.mean(diff_abs),np.mean(diff_rel),np.min(diff_abs),np.min(diff_rel)))
 
