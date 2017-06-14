@@ -18,6 +18,11 @@ import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
+try:
+    xrange
+except NameError:
+    xrange = range
+
 def galdtype():
     floattype = np.float32
     Galdesc_full = [
@@ -117,12 +122,12 @@ if not os.path.isfile(dir+'model_to_test_against_z2.239_0'):
     subprocess.call(['unzip', '-j', zip[0], '-d', dir])
     subprocess.call(['rm', zip[0]])
 
-# Delete any old data produced by this script
-if os.path.isfile(dir+'model_z2.239_0'):
-    subprocess.call(['rm', dir+'model_z2.239_0'])
-
-# Run Dark Sage
-subprocess.call(['./darksage', dir+'test.par'])
+## Delete any old data produced by this script
+#if os.path.isfile(dir+'model_z2.239_0'):
+#    subprocess.call(['rm', dir+'model_z2.239_0'])
+#
+## Run Dark Sage
+#subprocess.call(['./darksage', dir+'test.par'])
 
 
 # Read produced and fetched Dark Sage output
@@ -152,7 +157,8 @@ for field in G_out.dtype.names:
         success = False
         diff_abs = G_out[field] - G_test[field]
         diff_rel = diff_abs / G_test[field]
-        print('Field {0} differed by max(abs,rel)={1,2}, mean(abs,rel)={3,4}, min(abs,rel)={5,6}'.format(field,np.max(diff_abs),np.max(diff_rel),np.mean(diff_abs),np.mean(diff_rel),np.min(diff_abs),np.min(diff_rel)))
+        diff_rel = diff_rel[np.isfinite(diff_rel)] # Get rid of divide-by-0 entries
+        print('Field {0} differed by max(abs,rel)=({1},{2}), mean(abs,rel)=({3},{4}), min(abs,rel)=({5},{6})'.format(field,np.max(diff_abs),np.max(diff_rel),np.mean(diff_abs),np.mean(diff_rel),np.min(diff_abs),np.min(diff_rel)))
 
 # Declare success or not
 if success:
