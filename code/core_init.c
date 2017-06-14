@@ -122,8 +122,9 @@ double time_to_present(double z)
 
 
 
-double integrand_time_to_present(double a)
+double integrand_time_to_present(double a, void * params)
 {
+  (void) params;
   return 1 / sqrt(Omega / a + (1 - Omega - OmegaLambda) + OmegaLambda * a * a);
 }
 

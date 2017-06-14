@@ -91,7 +91,7 @@ double get_metaldependent_cooling_rate(double logTemp, double logZ);
 double get_rate(int tab, double logTemp);
 
 double time_to_present(double z);
-double integrand_time_to_present(double a);
+double integrand_time_to_present(double a, void * params);
 
 double metallicity_dependent_star_formation(int p);
 double Z_dependent_SF(float lower_limit, float upper_limit, float Sigma_c0, float Xi, float gamma);

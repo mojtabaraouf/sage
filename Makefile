@@ -1,26 +1,28 @@
 EXEC   = darksage
 
-OBJS   = 	./code/main.o \
-		./code/core_read_parameter_file.o \
-		./code/core_init.o \
-		./code/core_io_tree.o \
-		./code/core_cool_func.o \
-		./code/core_build_model.o \
-		./code/core_save.o \
-		./code/core_mymalloc.o \
-		./code/core_allvars.o \
-		./code/model_infall.o \
-		./code/model_cooling.o \
-		./code/model_starformation_and_feedback.o \
-		./code/model_disk_instability.o \
-		./code/model_reincorporation.o \
-		./code/model_mergers.o \
-		./code/model_misc.o 
+SRCS   = 	./code/main.c \
+		./code/core_read_parameter_file.c \
+		./code/core_init.c \
+		./code/core_io_tree.c \
+		./code/core_cool_func.c \
+		./code/core_build_model.c \
+		./code/core_save.c \
+		./code/core_mymalloc.c \
+		./code/core_allvars.c \
+		./code/model_infall.c \
+		./code/model_cooling.c \
+		./code/model_starformation_and_feedback.c \
+		./code/model_disk_instability.c \
+		./code/model_reincorporation.c \
+		./code/model_mergers.c \
+		./code/model_misc.c 
 
 INCL   =	./code/core_allvars.h  \
 			./code/core_proto.h  \
 			./code/core_simulation.h  \
 			./Makefile
+
+OBJS  := $(SRCS:.c=.o)
 
 #USE-MPI=yes
 #OPT += -DMINIMIZE_IO
@@ -29,17 +31,34 @@ INCL   =	./code/core_allvars.h  \
 # SYSTYPE = "green"
 # SYSTYPE = "gstar"
 
-ifndef CC
-CC       =   gcc            # sets the C-compiler (default)
+UNAME := $(shell uname)
 
-#ifdef USE-MPI
-#OPT += -DMPI  #  This creates an MPI version that can be used to process files in parallel
-#CC = mpicc  # sets the C-compiler
-#else
-#CC = cc  # sets the C-compiler
-#endif
+CC :=
 
+## Set the C compiler if not set
+ifeq ($(CC),)
+  ## Make clang the default compiler on Mac
+  ## But first check for clang-omp, use that if available
+  ## clang/clang-omp is default on OSX
+  ifeq ($(UNAME), Darwin)
+    CC := clang
+  else
+    ## gcc is default on linux
+    CC := gcc
+  endif
 endif
+
+ifeq ($(CC),)
+  $(error Error: Could not set compiler. Please either set "CC" in "Makefile" or via the command-line, "make CC=yourcompiler")
+endif
+
+
+ifdef USE-MPI
+OPT += -DMPI  #  This creates an MPI version that can be used to process files in parallel
+CC = mpicc  # sets the C-compiler
+endif
+
+
 
 OPTIMIZE = -O2 -Wall -Wextra -Wshadow   # optimization and warning flags (default)
 
@@ -84,16 +103,19 @@ endif
 #endif
 
 
-LIBS   =   -g -lm  $(GSL_LIBS) -lgsl -lgslcblas
+LIBS   :=   -lm  $(GSL_LIBS)
 
-CFLAGS =   -g $(OPTIONS) $(OPT) $(OPTIMIZE) $(GSL_INCL)
+CFLAGS :=   -g $(OPTIONS) $(OPT) $(OPTIMIZE) $(GSL_INCL)
 
 default: all
 
 $(EXEC): $(OBJS) 
-	$(CC) $(OPTIMIZE) $(OBJS) $(LIBS)   -o  $(EXEC) -g
+#$(CC) $(OPTIMIZE) $(OBJS) $(LIBS)   -o  $(EXEC) -g
+	$(CC) $(OBJS) $(LIBS) -o $@
 
-$(OBJS): $(INCL) 
+%.o: %.c %.h
+	$(CC) $(CFLAGS) -c $< -o $@
+
 
 clean:
 	rm -f $(OBJS)
