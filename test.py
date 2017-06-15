@@ -118,6 +118,8 @@ def read_darksage(fname):
 dir = 'test/'
 if not os.path.exists(dir):
     os.makedirs(dir)
+SMfigname = dir+'SMF_test.png'
+figdir = dir+'differences/'
 
 # Fetch the input for the test
 if not os.path.isfile(dir+'model_to_test_against_z2.239_0'):
@@ -128,7 +130,10 @@ if not os.path.isfile(dir+'model_to_test_against_z2.239_0'):
 # Delete any old data produced by this script
 if os.path.isfile(dir+'model_z2.239_0'):
     subprocess.call(['rm', dir+'model_z2.239_0'])
-subprocess.call(['rm', dir+'*.png'])
+if os.path.exists(figdir):
+    subprocess.call(['rm', '-rf', figdir])
+if os.path.isfile(SMfigname):
+    subprocess.call(['rm', SMfigname])
 
 # Run Dark Sage
 subprocess.call(['./darksage', dir+'test.par'])
@@ -160,6 +165,7 @@ for field in halo_fields:
         print('Please report this issue if you cannot find a fast solution.')
         sys.exit(1)
 
+# Travis test will pass if this point is reached
 
 # Reduce galaxies to those that are reasonably well resolved
 f = (G_test['LenMax']>=50)
@@ -182,8 +188,7 @@ plt.xlabel('log Stellar Mass [solar]')
 plt.ylabel('Number of galaxies')
 plt.axis([mmin, mmax, 1, 1e3])
 plt.legend(loc='best', frameon=False)
-SMfigname = 'SMF_test.png'
-plt.savefig(dir+SMfigname, bbox_inches='tight')
+plt.savefig(SMfigname, bbox_inches='tight')
 
 # Compare galaxy properties from installed Dark Sage to fetched data
 great_success = True
@@ -200,8 +205,10 @@ for field in fields_to_check:
     # If there are too many galaxies with differences, plot where those differences are
     if frac_bad>=0.01:
         great_success = False
+        if not os.path.exists(figdir):
+            os.makedirs(figdir)
         field_test, field_out = G_test[field][ff], G_out[field][ff]
-        figname = dir+'differences_'+field+'.png'
+        figname = figdir+field+'.png'
         plt.clf()
         plt.scatter(field_test[diff_rel<0.01], diff_rel[diff_rel<0.01], c='k')
         plt.scatter(field_test[diff_rel>=0.01], diff_rel[diff_rel>=0.01], c='r')
@@ -210,12 +217,12 @@ for field in fields_to_check:
         plt.savefig(figname, bbox_inches='tight')
         print('Some differences in {0} of galaxies was found -- see {1}'.format(field,figname))
 
-# Declare success or not
+# Declare concerns
 if great_success:
     print('\nSuccess! Dark Sage output matches what is expected!')
 else:
     print('\nDark Sage galaxy properties differed more than they ideally should, see above.')
     print('Small differences are expected based on your C compiler.')
     print('This will also happen if {0}test.py or any of the Dark Sage codebase was modified from the main repository.'.format(dir))
-    print('If you recently pulled updates for Dark Sage, try deleting the `{0}\' directory and running this again.'.format(dir))
-    print('See {0} and above fields to check if the differences is significant.'.format(dir+SMfigname))
+    print('If you recently pulled updates for Dark Sage, try `rm -rf {0}\' then running this again.'.format(dir))
+    print('See {0} and above fields to check if the differences is significant.'.format(SMfigname))

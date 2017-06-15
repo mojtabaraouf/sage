@@ -323,7 +323,7 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
 	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
 
-	  if(step==0 || HotStripOn<2) max_hotstrip = Gal[p].HotGas / STEPS;
+	  if(step==0 || HotStripOn<3) max_hotstrip = Gal[p].HotGas / STEPS;
         
       // don't treat galaxies that have already merged 
       if(Gal[p].mergeType > 0)
