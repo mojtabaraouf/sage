@@ -13,7 +13,6 @@ try: # Python 2
 except ImportError: # Python 3
     from urllib.request import urlretrieve
 
-import filecmp
 import subprocess
 import numpy as np
 
@@ -54,8 +53,8 @@ def galdtype():
         ('DiscRadii'                    , (floattype, 31)),
         ('ColdGas'                      , floattype),
         ('StellarMass'                  , floattype),
-        ('ClassicalBulgeMass'           , floattype),
-        ('SecularBulgeMass'             , floattype),
+        ('MergerBulgeMass'              , floattype),
+        ('InstabilityBulgeMass'         , floattype),
         ('HotGas'                       , floattype),
         ('EjectedMass'                  , floattype),
         ('BlackHoleMass'                , floattype),
@@ -64,7 +63,7 @@ def galdtype():
         ('DiscStars'                    , (floattype, 30)),
         ('SpinStars'                    , (floattype, 3)),
         ('SpinGas'                      , (floattype, 3)),
-        ('SpinClassicalBulge'           , (floattype, 3)),
+        ('SpinMergerBulge'              , (floattype, 3)),
         ('StarsInSitu'                  , floattype),
         ('StarsInstability'             , floattype),
         ('StarsMergeBurst'              , floattype),
@@ -73,8 +72,8 @@ def galdtype():
         ('DiscSFR'                      , (floattype, 30)),
         ('MetalsColdGas'                , floattype),
         ('MetalsStellarMass'            , floattype),
-        ('ClassicalMetalsBulgeMass'     , floattype),
-        ('SecularMetalsBulgeMass'       , floattype),
+        ('MetalsMergerBulgeMass'        , floattype),
+        ('MetalsInstabilityBulgeMass'   , floattype),
         ('MetalsHotGas'                 , floattype),
         ('MetalsEjectedMass'            , floattype),
         ('MetalsIntraClusterStars'      , floattype),
@@ -161,11 +160,11 @@ for field in halo_fields:
     if not bool(np.allclose(G_out[field], G_test[field])):
         print('\nUh oh! The Dark Sage output did not match what was expected!')
         print('The properties that don\'t match should not be affected by your compiler.')
-        print('This error was sprung by the property {0}.'.format(field))
+        print('This error was sprung by the property {0}, but is likely not limited to it.'.format(field))
         print('Please report this issue if you cannot find a fast solution.')
         sys.exit(1)
 
-# Travis test will pass if this point is reached
+# Travis test should pass if this point is reached
 
 # Reduce galaxies to those that are reasonably well resolved
 f = (G_test['LenMax']>=50)
@@ -196,33 +195,35 @@ fields_to_check = np.array(G_out.dtype.names) # returns all fields
 for field in halo_fields+['mergeType']: # reduce fields to relevant galaxy evolution ones
     fields_to_check = np.delete(fields_to_check, np.where(fields_to_check==field)[0])
 for field in fields_to_check:
-    diff_abs = abs(G_out[field] - G_test[field])
-    diff_rel = diff_abs / G_test[field]
-    ff = np.isfinite(diff_rel)
-    diff_rel = diff_rel[ff] # Get rid of divide-by-0 entries
-    frac_bad = (1.0*len(diff_rel[diff_rel>=0.01])) / (1.0*len(diff_rel))
+    cut = (G_test[field]>np.percentile(G_test[field],2)) * np.isfinite(G_test[field]) * (G_test[field]>0) # cut out the lowest values, as these are the most likely to cause scientifically inconsequential problems
+    field_test, field_out = G_test[field][cut], G_out[field][cut]
+    diff_abs = abs(field_out - field_test)
+    diff_rel = diff_abs / field_test
+    frac_bad = (1.0*len(diff_rel[diff_rel>=0.02])) / (1.0*len(diff_rel)) # fraction with 2% of greater difference
 
-    # If there are too many galaxies with differences, plot where those differences are
-    if frac_bad>=0.01:
+    # If there are too many (>2%) galaxies with differences, plot where those differences are
+    if frac_bad>=0.02:
         great_success = False
         if not os.path.exists(figdir):
             os.makedirs(figdir)
-        field_test, field_out = G_test[field][ff], G_out[field][ff]
         figname = figdir+field+'.png'
         plt.clf()
         plt.scatter(field_test[diff_rel<0.01], diff_rel[diff_rel<0.01], c='k')
         plt.scatter(field_test[diff_rel>=0.01], diff_rel[diff_rel>=0.01], c='r')
-        plt.xlabel(field+' -- test output')
-        plt.ylabel('Fractional difference to your output')
+        plt.xlabel(field+' -- test output [internal units]')
+        plt.ylabel('Fractional difference to your output ('+str(round(100*frac_bad,2))+'% red)')
+        if(np.log10(np.max(field_test))>np.log10(np.min(field_test))+1): plt.xscale('log')
+        plt.xlim(np.min(field_test), np.max(field_test))
+        plt.ylim(-0.1,2)
         plt.savefig(figname, bbox_inches='tight')
-        print('Some differences in {0} of galaxies was found -- see {1}'.format(field,figname))
+        #print('Some differences in {0} of galaxies were found -- see {1}'.format(field,figname))
 
 # Declare concerns
 if great_success:
-    print('\nSuccess! Dark Sage output matches what is expected!')
+    print('\nSuccess! Dark Sage output matches what is expected!\n')
 else:
-    print('\nDark Sage galaxy properties differed more than they ideally should, see above.')
-    print('Small differences are expected based on your C compiler.')
+    print('\nDark Sage galaxy properties differed more than they ideally should.')
+    print('This might be due to your C compiler being different to that used for the test case.')
     print('This will also happen if {0}test.py or any of the Dark Sage codebase was modified from the main repository.'.format(dir))
-    print('If you recently pulled updates for Dark Sage, try `rm -rf {0}\' then running this again.'.format(dir))
-    print('See {0} and above fields to check if the differences is significant.'.format(SMfigname))
+    print('If you recently pulled updates for Dark Sage, try `rm -rf {0}\' then run this again.'.format(dir))
+    print('See {0} and plots in {1} to check if the differences are significant.\n'.format(SMfigname, figdir))
