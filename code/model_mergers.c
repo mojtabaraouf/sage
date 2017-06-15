@@ -706,7 +706,10 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
         if(SupernovaRecipeOn == 1)
         {
             Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / sqr(CM_PER_MPC/1e6 / UnitLength_in_cm);
-            reheated_mass = FeedbackReheatingEpsilon * stars * pow(Sigma_0gas / (Gal[merger_centralgal].DiscGas[k]/area), FeedbackExponent);
+//            if(FeedbackExponent!=1.0)
+                reheated_mass = FeedbackReheatingEpsilon * stars * pow(Sigma_0gas / (Gal[merger_centralgal].DiscGas[k]/area), FeedbackExponent);
+//            else
+//                reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[merger_centralgal].DiscGas[k]/area);
         }
         else if(SupernovaRecipeOn == 2)
             reheated_mass = FeedbackReheatingEpsilon * stars;

@@ -7,20 +7,23 @@ This script should run straight out of the box with "python test.py"
 from __future__ import print_function
 import os
 import sys
+
 try: # Python 2
     from urllib import urlretrieve
 except ImportError: # Python 3
     from urllib.request import urlretrieve
+
 import filecmp
 import subprocess
 import numpy as np
+
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 try:
     xrange
-except NameError:
+except NameError: # Python 3
     xrange = range
 
 def galdtype():
@@ -81,7 +84,7 @@ def galdtype():
         ('SfrBulge'                     , floattype),
         ('SfrDiskZ'                     , floattype),
         ('SfrBulgeZ'                    , floattype),
-        ('DiskScaleRadius'              , floattype),
+        ('CoolingScaleRadius'           , floattype),
         ('Cooling'                      , floattype),
         ('Heating'                      , floattype),
         ('LastMajorMerger'              , floattype),
@@ -125,47 +128,94 @@ if not os.path.isfile(dir+'model_to_test_against_z2.239_0'):
 # Delete any old data produced by this script
 if os.path.isfile(dir+'model_z2.239_0'):
     subprocess.call(['rm', dir+'model_z2.239_0'])
+subprocess.call(['rm', dir+'*.png'])
 
 # Run Dark Sage
 subprocess.call(['./darksage', dir+'test.par'])
 
+# Check the produced and fetched data are the same size
+size_test = os.path.getsize(dir+'model_to_test_against_z2.239_0')
+size_out = os.path.getsize(dir+'model_z2.239_0')
+if size_test!=size_out:
+    print('\nUh oh! The Dark Sage output did not match what was expected!')
+    print('The size of your output file is different.')
+    print('Please report this issue if you cannot find a fast solution.')
+    sys.exit(1)
 
 # Read produced and fetched Dark Sage output
 G_test = read_darksage(dir+'model_to_test_against_z2.239_0')
 G_out = read_darksage(dir+'model_z2.239_0')
 
+# Check fields that are not modified by Dark Sage, and hence should be identical across machines and compilers
+halo_fields = ['Type', 'GalaxyIndex', 'HaloIndex', 'SimulationHaloIndex',
+               'TreeIndex', 'SnapNum', 'CentralGalaxyIndex', 'CentralMvir',
+               'mergeIntoID', 'mergeIntoSnapNum', 'dT', 'Pos', 'Vel', 'Spin',
+               'Len', 'LenMax', 'Mvir', 'Rvir', 'Vvir', 'Vmax', 'VelDisp',
+               'CoolingScaleRadius', 'infallMvir', 'infallVvir', 'infallVmax']
+for field in halo_fields:
+    if not bool(np.allclose(G_out[field], G_test[field])):
+        print('\nUh oh! The Dark Sage output did not match what was expected!')
+        print('The properties that don\'t match should not be affected by your compiler.')
+        print('This error was sprung by the property {0}.'.format(field))
+        print('Please report this issue if you cannot find a fast solution.')
+        sys.exit(1)
+
+
+# Reduce galaxies to those that are reasonably well resolved
+f = (G_test['LenMax']>=50)
+G_test, G_out = G_test[f], G_out[f]
+
 # Switch off unhelpful warnings
 import warnings
 warnings.filterwarnings("ignore")
 
-# Build a histogram of stellar masses to gauge if differences are physical or numerical
-plt.figure()
+# Build a histogram of stellar masses as a sanity check
+fig = plt.figure()
+plt.clf()
+fig.subplots_adjust(left=0, bottom=0)
+plt.subplot(111)
 h = 0.73
 mmin, mmax = 8.0, 12.0
 plt.hist(np.log10(G_test['StellarMass']*1e10/h), bins=np.arange(mmin,mmax,0.2), histtype='step', lw=2, color='k', label='Expected', log=True)
 plt.hist(np.log10(G_out['StellarMass']*1e10/h), bins=np.arange(mmin,mmax,0.2), histtype='step', lw=2, color='b', ls='dashed', label='Result', log=True)
 plt.xlabel('log Stellar Mass [solar]')
 plt.ylabel('Number of galaxies')
+plt.axis([mmin, mmax, 1, 1e3])
 plt.legend(loc='best', frameon=False)
-figname = 'SMF_test.png'
-plt.savefig(dir+figname, bbox_inches='tight')
+SMfigname = 'SMF_test.png'
+plt.savefig(dir+SMfigname, bbox_inches='tight')
 
-# Compare output from installed Dark Sage to fetched data
-success = True
-for field in G_out.dtype.names:
-    if not bool(np.allclose(G_out[field], G_test[field])):
-        success = False
-        diff_abs = G_out[field] - G_test[field]
-        diff_rel = diff_abs / G_test[field]
-        diff_rel = diff_rel[np.isfinite(diff_rel)] # Get rid of divide-by-0 entries
-        print('Field {0} differed by max(abs,rel)=({1},{2}), mean(abs,rel)=({3},{4}), min(abs,rel)=({5},{6})'.format(field,np.max(diff_abs),np.max(diff_rel),np.mean(diff_abs),np.mean(diff_rel),np.min(diff_abs),np.min(diff_rel)))
+# Compare galaxy properties from installed Dark Sage to fetched data
+great_success = True
+fields_to_check = np.array(G_out.dtype.names) # returns all fields
+for field in halo_fields+['mergeType']: # reduce fields to relevant galaxy evolution ones
+    fields_to_check = np.delete(fields_to_check, np.where(fields_to_check==field)[0])
+for field in fields_to_check:
+    diff_abs = abs(G_out[field] - G_test[field])
+    diff_rel = diff_abs / G_test[field]
+    ff = np.isfinite(diff_rel)
+    diff_rel = diff_rel[ff] # Get rid of divide-by-0 entries
+    frac_bad = (1.0*len(diff_rel[diff_rel>=0.01])) / (1.0*len(diff_rel))
+
+    # If there are too many galaxies with differences, plot where those differences are
+    if frac_bad>=0.01:
+        great_success = False
+        field_test, field_out = G_test[field][ff], G_out[field][ff]
+        figname = dir+'differences_'+field+'.png'
+        plt.clf()
+        plt.scatter(field_test[diff_rel<0.01], diff_rel[diff_rel<0.01], c='k')
+        plt.scatter(field_test[diff_rel>=0.01], diff_rel[diff_rel>=0.01], c='r')
+        plt.xlabel(field+' -- test output')
+        plt.ylabel('Fractional difference to your output')
+        plt.savefig(figname, bbox_inches='tight')
+        print('Some differences in {0} of galaxies was found -- see {1}'.format(field,figname))
 
 # Declare success or not
-if success:
-    print('Success! Dark Sage output matches what is expected!')
+if great_success:
+    print('\nSuccess! Dark Sage output matches what is expected!')
 else:
-    print('Uh oh! The Dark Sage output did not match what was expected!')
-    print('This can happen if {0}test.py or any of the Dark Sage codebase was modified from the main repository.'.format(dir))
-    print('If you recently updated your local repository for Dark Sage, try deleting the `{0}\' directory and running this again.'.format(dir))
-    print('See {0} to check if the difference is significant.'.format(dir+figname))
-    sys.exit(1)
+    print('\nDark Sage galaxy properties differed more than they ideally should, see above.')
+    print('Small differences are expected based on your C compiler.')
+    print('This will also happen if {0}test.py or any of the Dark Sage codebase was modified from the main repository.'.format(dir))
+    print('If you recently pulled updates for Dark Sage, try deleting the `{0}\' directory and running this again.'.format(dir))
+    print('See {0} and above fields to check if the differences is significant.'.format(dir+SMfigname))

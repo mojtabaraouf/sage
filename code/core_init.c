@@ -47,11 +47,11 @@ void set_units(void)
 
   UnitTime_in_s = UnitLength_in_cm / UnitVelocity_in_cm_per_s;
   UnitTime_in_Megayears = UnitTime_in_s / SEC_PER_MEGAYEAR;
-  G = GRAVITY / pow(UnitLength_in_cm, 3) * UnitMass_in_g * pow(UnitTime_in_s, 2);
-  UnitDensity_in_cgs = UnitMass_in_g / pow(UnitLength_in_cm, 3);
-  UnitPressure_in_cgs = UnitMass_in_g / UnitLength_in_cm / pow(UnitTime_in_s, 2);
+  G = GRAVITY / cube(UnitLength_in_cm) * UnitMass_in_g * sqr(UnitTime_in_s);
+  UnitDensity_in_cgs = UnitMass_in_g / cube(UnitLength_in_cm);
+  UnitPressure_in_cgs = UnitMass_in_g / UnitLength_in_cm / sqr(UnitTime_in_s);
   UnitCoolingRate_in_cgs = UnitPressure_in_cgs / UnitTime_in_s;
-  UnitEnergy_in_cgs = UnitMass_in_g * pow(UnitLength_in_cm, 2) / pow(UnitTime_in_s, 2);
+  UnitEnergy_in_cgs = UnitMass_in_g * sqr(UnitLength_in_cm) / sqr(UnitTime_in_s);
 
   EnergySNcode = EnergySN / UnitEnergy_in_cgs * Hubble_h;
   EtaSNcode = EtaSN * (UnitMass_in_g / SOLAR_MASS) / Hubble_h;

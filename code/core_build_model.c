@@ -153,7 +153,7 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
           if(Halo[halonr].Len > Gal[ngal].LenMax) Gal[ngal].LenMax = Halo[halonr].Len;
           Gal[ngal].Len = Halo[halonr].Len;
           Gal[ngal].Vmax = Halo[halonr].Vmax;
-            assert(Gal[ngal].LenMax>=Gal[ngal].Len);
+          assert(Gal[ngal].LenMax>=Gal[ngal].Len);
 
           Gal[ngal].deltaMvir = get_virial_mass(halonr, ngal) - Gal[ngal].Mvir;
 
@@ -187,7 +187,7 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
               
             Gal[ngal].DiskScaleRadius = get_disk_radius(halonr, ngal); // Only update the scale radius for centrals.  Satellites' spin will be too variable and untrustworthy for new cooling.
               
-            SpinMag = pow(pow(Halo[halonr].Spin[0], 2.0) + pow(Halo[halonr].Spin[1], 2.0) + pow(Halo[halonr].Spin[2], 2.0), 0.5);
+            SpinMag = sqrt(sqr(Halo[halonr].Spin[0]) + sqr(Halo[halonr].Spin[1]) + sqr(Halo[halonr].Spin[2]));
             if(SpinMag>0)
             {
                 for(j = 0; j < 3; j++) // Also only update the spin direction of the hot gas for centrals

@@ -103,8 +103,11 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
 	{
         if(SupernovaRecipeOn == 1)
         {
-            Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / sqr(CM_PER_MPC/1e6 / UnitLength_in_cm);
-            reheated_mass = FeedbackReheatingEpsilon * stars * pow(Sigma_0gas / (Gal[p].DiscGas[i]/area), FeedbackExponent);
+            Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / sqr(CM_PER_MPC/1e6 / UnitLength_in_cm);            
+            if(FeedbackExponent!=1.0)
+                reheated_mass = FeedbackReheatingEpsilon * stars * pow(Sigma_0gas / (Gal[p].DiscGas[i]/area), FeedbackExponent);
+            else
+                reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[p].DiscGas[i]/area);
         }
         else if(SupernovaRecipeOn == 2)
             reheated_mass = FeedbackReheatingEpsilon * stars;
