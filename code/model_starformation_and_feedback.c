@@ -12,18 +12,17 @@
 
 void starformation_and_feedback(int p, int centralgal, double dt, int step)
 {
-    double strdot, stars, reheated_mass, ejected_mass, fac, metallicity, stars_sum, area, SFE_H2, f_H2_const, Sigma_0gas, DiscGasSum, DiscStarsSum, DiscPre, ColdPre, StarChannelSum;
-    double r_inner, r_outer;
-    double reff, tdyn, cold_crit, strdotfull, H2sum; // For SFprescription==3
+  double strdot, stars, reheated_mass, ejected_mass, fac, metallicity, stars_sum, area, SFE_H2, f_H2_const, Sigma_0gas, DiscGasSum, DiscStarsSum, DiscPre, ColdPre;
+  double r_inner, r_outer;
+  double reff, tdyn, cold_crit, strdotfull, H2sum; // For SFprescription==3
 
   double NewStars[N_BINS], NewStarsMetals[N_BINS];
   int i;
 
-    double StarsPre = Gal[p].StellarMass;
-    StarChannelSum = get_channel_stars(p);
-    assert(Gal[p].StellarMass >= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)/1.01 && Gal[p].StellarMass <= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)*1.01);
+  double StarsPre = Gal[p].StellarMass;
+  check_channel_stars(p);
 
-    double ejected_sum = 0.0;
+  double ejected_sum = 0.0;
     
   // Checks that the deconstructed disc is being treated properly and not generating NaNs
   DiscGasSum = get_disc_gas(p);
@@ -213,9 +212,8 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
     
   if(Gal[p].StellarMass >= MIN_STARS_FOR_SN)
     {
-      StarChannelSum = get_channel_stars(p);
+      check_channel_stars(p);
       assert(Gal[p].StellarMass >= (StarsPre + NewStarSum)/1.01 && Gal[p].StellarMass <= (StarsPre + NewStarSum)*1.01);
-      assert(Gal[p].StellarMass >= StarChannelSum/1.01 && Gal[p].StellarMass <= StarChannelSum*1.01);
   }
 
 

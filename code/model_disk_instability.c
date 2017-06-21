@@ -15,7 +15,7 @@ void check_disk_instability(int p, int centralgal, double dt, int step)
 	double Q_star, Q_gas, V_rot, Q_gas_min, Q_star_min, Q_tot, W, Q_stable;
 	double unstable_gas, unstable_stars, metallicity, stars, stars_sum, gas_sink;
     double r_inner, r_outer, r_av, Kappa, sigma_R, c_s;
-	double NewStars[N_BINS], NewStarsMetals[N_BINS], SNgas[N_BINS], angle, DiscGasSum, DiscStarSum, StarChannelSum;
+	double NewStars[N_BINS], NewStarsMetals[N_BINS], SNgas[N_BINS], angle, DiscGasSum, DiscStarSum;
     double old_spin[3], SNgas_copy[N_BINS], SNgas_proj[N_BINS], cos_angle;
 	int i, s;
     int first, first_gas, first_star;
@@ -23,11 +23,11 @@ void check_disk_instability(int p, int centralgal, double dt, int step)
     double star_init = Gal[p].StellarMass;
     
     DiscStarSum = get_disc_stars(p);
-    StarChannelSum = get_channel_stars(p);
-    assert(Gal[p].StellarMass >= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)/1.01 && Gal[p].StellarMass <= (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst)*1.01);
-    
     DiscGasSum = get_disc_gas(p);
-    assert(Gal[p].ColdGas >= DiscGasSum/1.01 && Gal[p].ColdGas <= DiscGasSum*1.01);
+    check_channel_stars(p);
+    
+    if(DiscStarSum==0.0 && DiscGasSum==0.0)
+        return;
     
     c_s = 1.1e6 / UnitVelocity_in_cm_per_s; // Speed of sound assumed for cold gas, now set to be the same as vel disp of gas at 11 km/s
     
@@ -56,6 +56,7 @@ void check_disk_instability(int p, int centralgal, double dt, int step)
     first_gas = 1;
     first_star = 1;
     
+    // Deal with gas instabilities
 	for(i=N_BINS-1; i>=0; i--)
 	{
         r_inner = Gal[p].DiscRadii[i];
@@ -72,11 +73,11 @@ void check_disk_instability(int p, int centralgal, double dt, int step)
         
         sigma_R = 0.5*Gal[p].Vvir*exp_f(-r_av/2.0/Gal[p].DiskScaleRadius);
 
-        Q_gas = c_s * Kappa * (r_outer*r_outer - r_inner*r_inner) / G / Gal[p].DiscGas[i];
+        Q_gas = c_s * Kappa * (sqr(r_outer) - sqr(r_inner)) / G / Gal[p].DiscGas[i];
         
         if(Gal[p].DiscStars[i]>0.0 && angle<=ThetaThresh)
         {
-            Q_star = Kappa * sigma_R * 0.935 * (r_outer*r_outer - r_inner*r_inner) / G / Gal[p].DiscStars[i];
+            Q_star = Kappa * sigma_R * 0.935 * (sqr(r_outer) - sqr(r_inner)) / G / Gal[p].DiscStars[i];
             
             W = 2.0*sigma_R*c_s / (sigma_R*sigma_R + c_s*c_s);
             if(Q_gas >= Q_star)
@@ -90,13 +91,14 @@ void check_disk_instability(int p, int centralgal, double dt, int step)
             Q_stable = QTotMin + W; // This would be the quantity to make both Q_s and Q_g if they're both lower than this.
             if(Q_gas<Q_stable && Q_star<Q_stable)
                 Q_gas_min = Q_stable;
-            else if(Q_gas>=Q_stable && Q_star<Q_stable)
+            else if(Q_gas<Q_stable && Q_star>=Q_stable)
+                Q_gas_min = 1.0 / (1.0/QTotMin - W/Q_star);
+            else //if(Q_gas>=Q_stable && Q_star<Q_stable)
             {
                 Q_gas_min = QTotMin; // Somehow needed this to prevent triggering assert below, despite 'continue' on the next line
                 continue; // The stars' responsibility to sort out the instability
             }
-            else if(Q_gas<Q_stable && Q_star>=Q_stable)
-                Q_gas_min = 1.0 / (1.0/QTotMin - W/Q_star);
+        
         }
         else
             Q_gas_min = QTotMin;
@@ -187,7 +189,7 @@ void check_disk_instability(int p, int centralgal, double dt, int step)
         Gal[p].StarsInstability += NewStarsSum;
         
         assert(NewStarsSum<=1.001*stars_sum);
-        StarChannelSum = get_channel_stars(p);
+        check_channel_stars(p);
    	}
     else
     {
@@ -213,8 +215,8 @@ void check_disk_instability(int p, int centralgal, double dt, int step)
         
         if(Gal[p].DiscGas[i]-SNgas[i]>0.0 && angle<=ThetaThresh)
         {
-            Q_star = Kappa * sigma_R * 0.935 * (r_outer*r_outer - r_inner*r_inner) / G / (Gal[p].DiscStars[i]+SNgas_proj[i]);
-            Q_gas = c_s * Kappa * (r_outer*r_outer - r_inner*r_inner) / G / (Gal[p].DiscGas[i]-SNgas[i]);
+            Q_star = Kappa * sigma_R * 0.935 * (sqr(r_outer) - sqr(r_inner)) / G / (Gal[p].DiscStars[i]+SNgas_proj[i]);
+            Q_gas = c_s * Kappa * (sqr(r_outer) - sqr(r_inner)) / G / (Gal[p].DiscGas[i]-SNgas[i]);
             
             W = 2.0*sigma_R*c_s / (sigma_R*sigma_R + c_s*c_s);
             if(Q_gas >= Q_star)
@@ -233,7 +235,7 @@ void check_disk_instability(int p, int centralgal, double dt, int step)
         }
         else
         {
-            Q_star = Kappa * sigma_R * 0.935 * (r_outer*r_outer - r_inner*r_inner) / G / Gal[p].DiscStars[i];
+            Q_star = Kappa * sigma_R * 0.935 * (sqr(r_outer) - sqr(r_inner)) / G / Gal[p].DiscStars[i];
             Q_star_min = QTotMin;
         }
         

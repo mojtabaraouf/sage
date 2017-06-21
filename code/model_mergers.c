@@ -40,14 +40,9 @@ double estimate_merging_time(int sat_halo, int mother_halo, int ngal)
 
 void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, double time, double dt, int step)
 {
-  double mi, ma, mass_ratio, central_bulge_fraction;
+  double mi, ma, mass_ratio;
   double disc_mass_ratio[N_BINS], PostRetroGas[N_BINS];
-  double DiscStarsSum, StarChannelSum;
-  int i, s;
-
-  // These lines are really just to ensure everything is in order before merging
-  DiscStarsSum = get_disc_stars(merger_centralgal);
-  DiscStarsSum = get_disc_stars(p);
+  int i;
     
   for(i=0; i<N_BINS; i++)
     disc_mass_ratio[i] = 0.0;
@@ -75,13 +70,6 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 	mass_ratio = 0.0;
 	printf("Had to correct mass_ratio < 0.0");
   }
-	
-	if(Gal[merger_centralgal].StellarMass > 0.0)
-		central_bulge_fraction = Gal[merger_centralgal].ClassicalBulgeMass / Gal[merger_centralgal].StellarMass;
-	else
-		central_bulge_fraction = 0.0;
-
-  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0 && Gal[centralgal].HotGas == Gal[centralgal].HotGas && Gal[merger_centralgal].HotGas == Gal[merger_centralgal].HotGas);
 
   add_galaxies_together(merger_centralgal, p, mass_ratio, disc_mass_ratio, PostRetroGas);
   
@@ -95,7 +83,7 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 	quasar_mode_wind(p, BHaccrete, centralgal);
 
   // Check whether any retrograde gas is left over
-  double unstable_gas, metallicity, stars, net_stars, j_bin;
+  double unstable_gas, metallicity, stars, net_stars;
   for(i=N_BINS-1; i>=0; i--)
   {
 	metallicity = get_metallicity(Gal[merger_centralgal].DiscGas[i], Gal[merger_centralgal].DiscGasMetals[i]);
@@ -115,20 +103,12 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
         Gal[merger_centralgal].MetalsStellarMass += metallicity * net_stars;
         Gal[merger_centralgal].StarsMergeBurst += net_stars;
         Gal[merger_centralgal].SfrBulge[step] += stars / dt;
-        StarChannelSum = get_channel_stars(merger_centralgal);
+        check_channel_stars(merger_centralgal);
         
         // Add the new stars from the retrograde starburst to the classical bulge
-        j_bin = (DiscBinEdge[i]+DiscBinEdge[i+1])/2;
+        // No longer carry any net AM into it
         if(net_stars>0)
         {
-            for(s=0; s<3; s++)
-            {
-                // Need to know magnitude of j of newstars, not just direction
-                Gal[merger_centralgal].SpinClassicalBulge[s] = (Gal[merger_centralgal].SpinClassicalBulge[s]*Gal[merger_centralgal].ClassicalBulgeMass + Gal[merger_centralgal].SpinGas[s]*net_stars*j_bin)/(Gal[merger_centralgal].ClassicalBulgeMass+net_stars);
-                if(!(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY))
-                    Gal[merger_centralgal].SpinClassicalBulge[s] = 0.0;
-            }
-            
             Gal[merger_centralgal].ClassicalBulgeMass += net_stars;
             Gal[merger_centralgal].ClassicalMetalsBulgeMass += metallicity * net_stars;
         }
@@ -325,7 +305,7 @@ void quasar_mode_wind(int p, float BHaccrete, int centralgal)
 void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ratio, double *PostRetroGas)
 {
   int step, i, s;
-  double DiscGasSum, CentralGasOrig, ExpFac, StarChannelSum;
+  double DiscGasSum, CentralGasOrig, ExpFac;
     ExpFac = AA[Gal[t].SnapNum]; // Expansion factor needed for determining physical distances for calculating j
     
 	CentralGasOrig = get_disc_gas(t);
@@ -535,10 +515,9 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
       
       for(s=0; s<3; s++)
       {
-          assert(Gal[t].SpinClassicalBulge[s] == Gal[t].SpinClassicalBulge[s] && Gal[t].SpinClassicalBulge[s] != INFINITY);
-          Gal[t].SpinClassicalBulge[s] = (Gal[t].SecularBulgeMass*Gal[t].SpinSecularBulge[s] + Gal[p].SecularBulgeMass*Gal[p].SpinSecularBulge[s] + Gal[t].ClassicalBulgeMass*Gal[t].SpinClassicalBulge[s] + Gal[p].ClassicalBulgeMass*Gal[p].SpinClassicalBulge[s] + get_disc_ang_mom(p,1)*Gal[p].SpinStars[s] + get_disc_ang_mom(t,1)*Gal[t].SpinStars[s]) / (Gal[p].StellarMass+Gal[t].StellarMass);
-          if(!(Gal[t].SpinClassicalBulge[s] == Gal[t].SpinClassicalBulge[s] && Gal[t].SpinClassicalBulge[s] != INFINITY))
-              Gal[t].SpinClassicalBulge[s] = 0.0;
+          Gal[t].SpinClassicalBulge[s] = (Gal[t].ClassicalBulgeMass*Gal[t].SpinClassicalBulge[s] + Gal[p].ClassicalBulgeMass*Gal[p].SpinClassicalBulge[s] + get_disc_ang_mom(p,1)*Gal[p].SpinStars[s] + get_disc_ang_mom(t,1)*Gal[t].SpinStars[s] + j_p[s]*m_p + j_t[s]*m_t) / (Gal[p].StellarMass+Gal[t].StellarMass);
+          if(!(Gal[t].SpinClassicalBulge[s] == Gal[t].SpinClassicalBulge[s] && Gal[t].SpinClassicalBulge[s] != INFINITY && Gal[t].SpinClassicalBulge[s] != -INFINITY))
+              Gal[t].SpinClassicalBulge[s] = 0.0; // This is necessary to catch issues with this field
       }
   }
 
@@ -556,8 +535,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
   Gal[t].ClassicalBulgeMass += Gal[p].StellarMass;
   Gal[t].ClassicalMetalsBulgeMass += Gal[p].MetalsStellarMass;
     
-  StarChannelSum = get_channel_stars(t);
-  assert(Gal[t].StellarMass >= (Gal[t].StarsInSitu+Gal[t].StarsInstability+Gal[t].StarsMergeBurst)/1.01 && Gal[t].StellarMass <= (Gal[t].StarsInSitu+Gal[t].StarsInstability+Gal[t].StarsMergeBurst)*1.01);
+  check_channel_stars(t);
 
     
   Gal[t].HotGas += Gal[p].HotGas;
@@ -652,7 +630,7 @@ void disrupt_satellite_to_ICS(int centralgal, int gal)
 void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_centralgal, int centralgal, double dt, int mode, int step)
 {
  double stars, reheated_mass, ejected_mass, fac, metallicity, CentralVvir, eburst, Sigma_0gas, area, stars_sum, metals_stars, stars_angmom;
- double r_inner, r_outer, StarChannelSum, j_bin;
+ double r_inner, r_outer, j_bin;
  //double NewStars[N_BINS], NewStarsMetals[N_BINS];
  int k, s;
 
@@ -694,10 +672,8 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
       stars = Gal[merger_centralgal].DiscGas[k];
 	
 	// this bursting results in SN feedback on the cold/hot gas 
-    if(SupernovaRecipeOn>0 && Gal[merger_centralgal].DiscGas[k] > 0.0 && stars>=MIN_STARS_FOR_SN)//1e-9)
+    if(SupernovaRecipeOn>0 && Gal[merger_centralgal].DiscGas[k] > 0.0 && stars>=MIN_STARS_FOR_SN)
 	{
-//	  if(stars>MIN_STARS_FOR_SN)
-//	  {
         r_inner = Gal[merger_centralgal].DiscRadii[k];
         r_outer = Gal[merger_centralgal].DiscRadii[k+1];
           
@@ -706,13 +682,15 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
         if(SupernovaRecipeOn == 1)
         {
             Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / sqr(CM_PER_MPC/1e6 / UnitLength_in_cm);
-//            if(FeedbackExponent!=1.0)
+            if(FeedbackExponent!=1.0)
                 reheated_mass = FeedbackReheatingEpsilon * stars * pow(Sigma_0gas / (Gal[merger_centralgal].DiscGas[k]/area), FeedbackExponent);
-//            else
-//                reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[merger_centralgal].DiscGas[k]/area);
+            else
+                reheated_mass = FeedbackReheatingEpsilon * stars * Sigma_0gas / (Gal[merger_centralgal].DiscGas[k]/area);
         }
         else if(SupernovaRecipeOn == 2)
             reheated_mass = FeedbackReheatingEpsilon * stars;
+        else
+            reheated_mass = 0.0;
 		
 		// can't use more cold gas than is available! so balance SF and feedback
 	    if((stars + reheated_mass) > Gal[merger_centralgal].DiscGas[k] && (stars + reheated_mass) > 0.0)
@@ -734,7 +712,6 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
 	}
     else
 	{
-	  //stars=0.0;
       reheated_mass = 0.0;
 	  ejected_mass = 0.0;
 	}
@@ -742,7 +719,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
       ejected_sum += ejected_mass;
       
 	if(reheated_mass!=reheated_mass || reheated_mass<0.0)
-		printf("reheated_mass, stars, fac, DiscGas -- %e\t%e\t%e\t%e\n", reheated_mass, stars, fac, Gal[merger_centralgal].DiscGas[k]);	
+		printf("reheated_mass, stars, DiscGas -- %e\t%e\t%e\n", reheated_mass, stars, Gal[merger_centralgal].DiscGas[k]);
 	assert(reheated_mass >= 0.0);
       
 	metallicity = get_metallicity(Gal[merger_centralgal].DiscGas[k], Gal[merger_centralgal].DiscGasMetals[k]);
@@ -773,7 +750,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
 	assert(Gal[merger_centralgal].DiscGasMetals[k]<=Gal[merger_centralgal].DiscGas[k]);
 	assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 	
-      j_bin = (DiscBinEdge[k]+DiscBinEdge[k+1])/2;
+    j_bin = (DiscBinEdge[k]+DiscBinEdge[k+1])*0.5;
     if(stars>=MIN_STARS_FOR_SN)
     {
         stars_sum += (1 - RecycleFraction) * stars;
@@ -798,7 +775,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
      for(s=0; s<3; s++)
      {
          Gal[merger_centralgal].SpinClassicalBulge[s] = (Gal[merger_centralgal].SpinClassicalBulge[s]*Gal[merger_centralgal].ClassicalBulgeMass + Gal[merger_centralgal].SpinGas[s]*stars_angmom) / (Gal[merger_centralgal].ClassicalBulgeMass+stars_sum);
-         assert(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY);
+         assert(Gal[merger_centralgal].SpinClassicalBulge[s] == Gal[merger_centralgal].SpinClassicalBulge[s] && Gal[merger_centralgal].SpinClassicalBulge[s] != INFINITY && Gal[merger_centralgal].SpinClassicalBulge[s] != -INFINITY);
      }
       
      // Now adding all new stars directly to the bulge
@@ -811,7 +788,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
   Gal[merger_centralgal].SfrBulge[step] += stars_sum / dt; // This can probably be handled better.  It's a bit complicated though (as to whether it's Sfr in the bulge or disc)
   Gal[merger_centralgal].StarsMergeBurst += stars_sum;
      
-  StarChannelSum = get_channel_stars(merger_centralgal);
+  check_channel_stars(merger_centralgal);
  }
 }
 

@@ -65,7 +65,7 @@ double get_disc_ang_mom(int halonr, int type);
 void precess_gas(int p, double dt);
 void update_HI_H2(int p);
 void update_disc_radii(int p);
-double get_channel_stars(int p);
+void check_channel_stars(int p);
 void check_ejected(int p);
 void ram_pressure_stripping(int centralgal, int gal);
 double sqr(double x);

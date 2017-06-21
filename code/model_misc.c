@@ -359,7 +359,7 @@ double get_disc_stars(int p)
     return DiscStarSum;
 }
 
-double get_channel_stars(int p)
+void check_channel_stars(int p)
 {
     double ChannelFrac;
     
@@ -377,8 +377,6 @@ double get_channel_stars(int p)
         Gal[p].StarsInstability = 0.0;
         Gal[p].StarsMergeBurst = 0.0;
     }
-    
-    return Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst;
 }
 
 double get_disc_ang_mom(int p, int type)
