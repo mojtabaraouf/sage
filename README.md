@@ -9,14 +9,14 @@ DARK SAGE will run on any N-body simulation whose trees are organised in a suppo
 
 The code-base, written in C, should function as is, provided the required dependencies are installed.  You just need a C compiler and to point to installed GSL libraries before typing 'make'.  Once installed, please run the test script with 'python test.py' to make sure everything is working correctly.
 
-To run DARK SAGE in serial, you need only point to a parameter file:
-./darksage {path}/{parameter file name}
-e.g.:
+To run DARK SAGE in serial, you need only point to a parameter file:  
+./darksage {path}/{parameter file name}  
+e.g.:  
 ./darksage input/millennium.par
 
-DARK SAGE can be run with MPI, but only in an improper hacky way at the moment.  If you wish to try this, you shouldn't need to change anything in the Makefile if it's already running in serial.  Each processor will work on a separate merger tree file.  Simply run as:
-mpirun -np {number of processors} ./darksage {path}/{parameter file name}
-e.g.:
+DARK SAGE can be run with MPI, but only in an improper hacky way at the moment.  If you wish to try this, you shouldn't need to change anything in the Makefile if it's already running in serial.  Each processor will work on a separate merger tree file.  Simply run as:  
+mpirun -np {number of processors} ./darksage {path}/{parameter file name}  
+e.g.:  
 mpirun -np 8 ./darksage input/millennium.par
 
 Queries, comments, and concerns can be emailed to Adam Stevens: astevens@swin.edu.au

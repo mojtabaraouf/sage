@@ -77,7 +77,7 @@ void construct_galaxies(int halonr, int tree)
 
 int join_galaxies_of_progenitors(int halonr, int ngalstart)
 {
-  int ngal, prog, mother_halo=-1, i, j, first_occupied, lenmax, lenoccmax, centralgal;
+  int ngal, prog, i, j, first_occupied, lenmax, lenoccmax, centralgal;
   double previousMvir, previousVvir, previousVmax, SpinMag;
   int step;
 
@@ -98,7 +98,6 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
     if(Halo[prog].Len > lenmax)
     {
       lenmax = Halo[prog].Len;
-      mother_halo = prog;
     }
     if(lenoccmax != -1 && Halo[prog].Len > lenoccmax && HaloAux[prog].NGalaxies > 0)
     {
@@ -339,6 +338,8 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
       // for central galaxy only
       if(p == centralgal)
         add_infall_to_hot(centralgal, infallingGas / STEPS);
+        
+      // hot-gas stripping of satellites
       else if(HotStripOn>0 && Gal[p].Type == 1 && Gal[p].HotGas > 0.0 && max_hotstrip>0.0)
             max_hotstrip = strip_from_satellite(halonr, centralgal, p, max_hotstrip);
 
