@@ -425,7 +425,6 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
 
   // extra miscellaneous stuff 
   deltaT = Age[Gal[0].SnapNum] - Age[Halo[halonr].SnapNum];
-  Gal[centralgal].TotalSatelliteBaryons = 0.0;
   for(p = 0; p < ngal; p++)
   {
     Gal[p].Cooling /= deltaT;
@@ -437,9 +436,6 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
         if(Gal[p].Type==0) update_disc_radii(p);
         update_HI_H2(p);
     }
-
-    if(p != centralgal)
-		Gal[centralgal].TotalSatelliteBaryons += (Gal[p].StellarMass + Gal[p].BlackHoleMass + Gal[p].ColdGas + Gal[p].HotGas);
   }
 
 

@@ -24,12 +24,11 @@ INCL   =	./code/core_allvars.h  \
 
 OBJS  := $(SRCS:.c=.o)
 
+
+# Neither of these options currently work!  Further development required.  Do not uncomment unless you intend on doing that development yourself.  See README for using MPI.
 #USE-MPI=yes
 #OPT += -DMINIMIZE_IO
 
-#SYSTYPE = "mac"
-# SYSTYPE = "green"
-# SYSTYPE = "gstar"
 
 UNAME := $(shell uname)
 
@@ -79,28 +78,6 @@ GSL_INCL := $(shell gsl-config --cflags)
 GSL_LIBDIR := $(shell gsl-config --prefix)/lib
 GSL_LIBS   := $(shell gsl-config --libs) -Xlinker -rpath -Xlinker $(GSL_LIBDIR)
 endif
-
-
-
-#ifeq ($(SYSTYPE),"mac")
-#CC       =  mpicc
-#GSL_INCL = -I/opt/local/include
-#GSL_LIBS = -L/opt/local/lib
-#endif
-
-#ifeq ($(SYSTYPE),"green")
-#CC       = /usr/local/gnu/x86_64/openmpi-1.4/bin/mpicc
-#OPTIMIZE = -O3 -Wall
-#GSL_INCL = -I/usr/local/gnu/x86_64/gsl/include
-#GSL_LIBS = -L/usr/local/gnu/x86_64/gsl/lib
-#endif
-
-#ifeq ($(SYSTYPE),"gstar")
-#CC       = /usr/local/x86_64/gnu/openmpi-1.4.5/bin/mpicc
-#OPTIMIZE = -O3 -Wall
-#GSL_INCL = -I/usr/local/x86_64/gnu/gsl-1.9/include
-#GSL_LIBS = -L/usr/local/x86_64/gnu/gsl-1.9/lib
-#endif
 
 
 LIBS   :=   -lm  $(GSL_LIBS)

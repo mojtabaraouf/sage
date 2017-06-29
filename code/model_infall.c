@@ -16,15 +16,15 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
   double tot_stellarMass, tot_BHMass, tot_coldMass, tot_hotMass, tot_hotMetals, tot_ejected, tot_ejectedMetals;
   double tot_ICS, tot_ICSMetals;
   double infallingMass, reionization_modifier, DiscGasSum;
-  double newSatBaryons, tot_satBaryons;
 
+  // take care of any potential numerical issues regarding hot and cold gas
   DiscGasSum = get_disc_gas(centralgal);
   assert(DiscGasSum <= 1.001*Gal[centralgal].ColdGas && DiscGasSum >= Gal[centralgal].ColdGas/1.001);
   assert(Gal[centralgal].HotGas == Gal[centralgal].HotGas && Gal[centralgal].HotGas >= 0);
   assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 
   // need to add up all the baryonic mass asociated with the full halo 
-  tot_stellarMass = tot_coldMass = tot_hotMass = tot_hotMetals = tot_ejected = tot_BHMass = tot_ejectedMetals = tot_ICS = tot_ICSMetals = tot_satBaryons = 0.0;
+  tot_stellarMass = tot_coldMass = tot_hotMass = tot_hotMetals = tot_ejected = tot_BHMass = tot_ejectedMetals = tot_ICS = tot_ICSMetals = 0.0;
 
   for(i = 0; i < ngal; i++)      // Loop over all galaxies in the FoF-halo 
   {
@@ -38,10 +38,6 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
     tot_ICS += Gal[i].ICS;
     tot_ICSMetals += Gal[i].MetalsICS;
 
-		// record the current baryons in satellites only
-    if(i != centralgal)
-			tot_satBaryons += Gal[i].StellarMass + Gal[i].BlackHoleMass + Gal[i].ColdGas + Gal[i].HotGas;
-
     // satellite ejected gas goes to central ejected reservior
     if(i != centralgal)
       Gal[i].EjectedMass = Gal[i].MetalsEjectedMass = 0.0;
@@ -51,23 +47,19 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
       Gal[i].ICS = Gal[i].MetalsICS = 0.0; 
   }
 
-	// the existing baryons that have fallen in with substructure since the last timestep
-	newSatBaryons = tot_satBaryons - Gal[centralgal].TotalSatelliteBaryons;
-
   // include reionization if necessary 
   if(ReionizationOn)
     reionization_modifier = do_reionization(centralgal, Zcurr);
   else
     reionization_modifier = 1.0;
 
-  infallingMass =
-    reionization_modifier * BaryonFrac * Gal[centralgal].Mvir - (tot_stellarMass + tot_coldMass + tot_hotMass + tot_ejected + tot_BHMass + tot_ICS);
-    //reionization_modifier * BaryonFrac * Gal[centralgal].deltaMvir - newSatBaryons;
+  infallingMass = reionization_modifier * BaryonFrac * Gal[centralgal].Mvir - (tot_stellarMass + tot_coldMass + tot_hotMass + tot_ejected + tot_BHMass + tot_ICS);
 
   // the central galaxy keeps all the ejected mass
   Gal[centralgal].EjectedMass = tot_ejected;
   Gal[centralgal].MetalsEjectedMass = tot_ejectedMetals;
 
+  // take care of any potential numerical issues regarding ejected mass
   if(Gal[centralgal].MetalsEjectedMass > Gal[centralgal].EjectedMass)
     Gal[centralgal].MetalsEjectedMass = Gal[centralgal].EjectedMass;
   if(Gal[centralgal].EjectedMass < 0.0)
@@ -79,6 +71,7 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
   Gal[centralgal].ICS = tot_ICS;
   Gal[centralgal].MetalsICS = tot_ICSMetals;
 
+  // take care of any potential numerical issues regarding intracluster stars
   if(Gal[centralgal].MetalsICS > Gal[centralgal].ICS)
     Gal[centralgal].MetalsICS = Gal[centralgal].ICS;
   if(Gal[centralgal].ICS < 0.0)
@@ -86,10 +79,6 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
   if(Gal[centralgal].MetalsICS < 0.0)
     Gal[centralgal].MetalsICS = 0.0;
 
-  DiscGasSum = get_disc_gas(centralgal);
-  assert(DiscGasSum <= 1.001*Gal[centralgal].ColdGas && DiscGasSum >= Gal[centralgal].ColdGas/1.001);
-  assert(Gal[centralgal].HotGas == Gal[centralgal].HotGas && Gal[centralgal].HotGas >= 0);
-  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
   return infallingMass;
 }
 
@@ -99,8 +88,9 @@ double strip_from_satellite(int halonr, int centralgal, int gal, double max_stri
 {
   double reionization_modifier, strippedGas, strippedGasMetals, metallicity;
   assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
-
-    //( reionization_modifier * BaryonFrac * Gal[gal].deltaMvir ) / STEPS;
+    
+  // Intialise
+  strippedGas = 0.0;
     
   if(HotStripOn==1)
   {
@@ -264,9 +254,9 @@ double strip_from_satellite(int halonr, int centralgal, int gal, double max_stri
               printf("Stripped gas is = %e\n", strippedGas);
       }
   }
-
-    assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
-    return strippedGas;
+    
+  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
+  return strippedGas;
 }
 
 

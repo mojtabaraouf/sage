@@ -236,7 +236,6 @@ struct GALAXY
   double LastMajorMerger;
   double LastMinorMerger;
   double OutflowRate;
-  double TotalSatelliteBaryons;
 
   //infall properties
   double infallMvir;

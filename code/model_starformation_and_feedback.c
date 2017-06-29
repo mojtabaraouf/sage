@@ -36,6 +36,7 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
 
   // Initialise variables
   strdot = 0.0;
+  strdotfull = 0.0;
   stars_sum = 0.0;
 
   Gal[p].SfrDiskColdGas[step] = Gal[p].ColdGas;
@@ -50,8 +51,6 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
       cold_crit = 0.19 * Gal[p].Vvir * reff;
       if(Gal[p].ColdGas > cold_crit && tdyn > 0.0)
           strdotfull = SfrEfficiency * (Gal[p].ColdGas - cold_crit) / tdyn;
-      else
-          strdotfull = 0.0;
       
       H2sum = 0.0;
       for(i=N_BINS-1; i>=0; i--) H2sum += Gal[p].DiscH2[i];

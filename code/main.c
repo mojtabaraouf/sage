@@ -117,7 +117,7 @@ int main(int argc, char **argv)
     ProCount = 0;
 #ifdef MPI
   // A small delay so that processors don't use the same file
-    printf("Small delay for processors\n");
+//    printf("Small delay for processors\n");
   time(&start);
   do
     time(&current);
