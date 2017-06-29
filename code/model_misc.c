@@ -91,6 +91,7 @@ void init_galaxy(int p, int halonr)
     Gal[p].AccretedGasMass = 0.0;
     Gal[p].EjectedSNGasMass = 0.0;
     Gal[p].EjectedQuasarGasMass = 0.0;
+    Gal[p].MaxStrippedGas = 0.0;
     
     Gal[p].TotInstabEvents = 0;
     Gal[p].TotInstabEventsGas = 0;

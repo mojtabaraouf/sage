@@ -196,6 +196,7 @@ struct GALAXY
     double AccretedGasMass;
     double EjectedSNGasMass;
     double EjectedQuasarGasMass;
+    double MaxStrippedGas;
     
   // Instability tracking
   int TotInstabEvents;
