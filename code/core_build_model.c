@@ -288,7 +288,6 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
 {
   int p, i, step, centralgal, merger_centralgal, currenthalo, offset;
   double infallingGas, coolingGas, deltaT, time, galaxyBaryons, currentMvir, DiscGasSum, dt;
-  double max_hotstrip;
 
   centralgal = Gal[0].CentralGal;
   if(Gal[centralgal].Type != 0 || Gal[centralgal].HaloNr != halonr)
@@ -322,7 +321,7 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
 	  assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
 	  assert(Gal[p].MetalsColdGas <= Gal[p].ColdGas);
 
-	  if(step==0 || HotStripOn<3) max_hotstrip = Gal[p].HotGas / STEPS;
+	  if(step==0 || HotStripOn<3) Gal[p].MaxStrippedGas = Gal[p].HotGas / STEPS;
         
       // don't treat galaxies that have already merged 
       if(Gal[p].mergeType > 0)
@@ -340,8 +339,8 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
         add_infall_to_hot(centralgal, infallingGas / STEPS);
         
       // hot-gas stripping of satellites
-      else if(HotStripOn>0 && Gal[p].Type == 1 && Gal[p].HotGas > 0.0 && max_hotstrip>0.0)
-            max_hotstrip = strip_from_satellite(halonr, centralgal, p, max_hotstrip);
+      else if(HotStripOn>0 && Gal[p].Type == 1 && Gal[p].HotGas > 0.0 && Gal[p].MaxStrippedGas>0.0)
+            Gal[p].MaxStrippedGas = strip_from_satellite(halonr, centralgal, p, Gal[p].MaxStrippedGas);
 
       if(ReIncorporationFactor > 0.0)
         reincorporate_gas(p, dt);
