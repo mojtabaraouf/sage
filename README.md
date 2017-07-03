@@ -19,4 +19,4 @@ DARK SAGE can be run with MPI, but only in an improper hacky way at the moment. 
 e.g.:  
 `mpirun -np 8 ./darksage input/millennium.par`
 
-Queries, comments, and concerns can be emailed to Adam Stevens: astevens@swin.edu.au
+Queries, comments, and concerns can be emailed to Adam Stevens: adam.stevens@uwa.edu.au
