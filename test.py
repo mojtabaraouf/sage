@@ -153,7 +153,7 @@ G_out = read_darksage(dir+'model_z2.239_0')
 # Check fields that are not modified by Dark Sage, and hence should be identical across machines and compilers
 halo_fields = ['Type', 'GalaxyIndex', 'HaloIndex', 'SimulationHaloIndex',
                'TreeIndex', 'SnapNum', 'CentralGalaxyIndex', 'CentralMvir',
-               'mergeIntoID', 'mergeIntoSnapNum', 'dT', 'Pos', 'Vel', 'Spin',
+               'dT', 'Pos', 'Vel', 'Spin',
                'Len', 'LenMax', 'Mvir', 'Rvir', 'Vvir', 'Vmax', 'VelDisp',
                'CoolingScaleRadius', 'infallMvir', 'infallVvir', 'infallVmax']
 for field in halo_fields:
@@ -192,7 +192,7 @@ plt.savefig(SMfigname, bbox_inches='tight')
 # Compare galaxy properties from installed Dark Sage to fetched data
 great_success = True
 fields_to_check = np.array(G_out.dtype.names) # returns all fields
-for field in halo_fields+['mergeType']: # reduce fields to relevant galaxy evolution ones
+for field in halo_fields+['mergeType', 'mergeIntoID', 'mergeIntoSnapNum']: # reduce fields to relevant galaxy evolution ones
     fields_to_check = np.delete(fields_to_check, np.where(fields_to_check==field)[0])
 for field in fields_to_check:
     cut = (G_test[field]>np.percentile(G_test[field],2)) * np.isfinite(G_test[field]) * (G_test[field]>0) # cut out the lowest values, as these are the most likely to cause scientifically inconsequential problems

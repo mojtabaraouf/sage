@@ -15,8 +15,10 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
   int i;
   double tot_stellarMass, tot_BHMass, tot_coldMass, tot_hotMass, tot_hotMetals, tot_ejected, tot_ejectedMetals;
   double tot_ICS, tot_ICSMetals;
-  double infallingMass, reionization_modifier, DiscGasSum;
+  double infallingMass, reionization_modifier, DiscGasSum, Rsat, ExpFac;
 
+  ExpFac = AA[Gal[centralgal].SnapNum]; // Expansion factor
+    
   // take care of any potential numerical issues regarding hot and cold gas
   DiscGasSum = get_disc_gas(centralgal);
   assert(DiscGasSum <= 1.001*Gal[centralgal].ColdGas && DiscGasSum >= Gal[centralgal].ColdGas/1.001);
@@ -28,11 +30,18 @@ double infall_recipe(int centralgal, int ngal, double Zcurr)
 
   for(i = 0; i < ngal; i++)      // Loop over all galaxies in the FoF-halo 
   {
-    tot_stellarMass += Gal[i].StellarMass;
-    tot_BHMass += Gal[i].BlackHoleMass;
-    tot_coldMass += Gal[i].ColdGas;
-    tot_hotMass += Gal[i].HotGas;
-    tot_hotMetals += Gal[i].MetalsHotGas;
+    Rsat = sqrt(sqr(Gal[i].Pos[0]-Gal[centralgal].Pos[0]) + sqr(Gal[i].Pos[1]-Gal[centralgal].Pos[1]) + sqr(Gal[i].Pos[2]-Gal[centralgal].Pos[2])) * ExpFac;
+      
+    // "Total baryons" is only concerned within Rvir
+    if(Rsat <= Gal[centralgal].Rvir)
+    {
+      tot_stellarMass += Gal[i].StellarMass;
+      tot_BHMass += Gal[i].BlackHoleMass;
+      tot_coldMass += Gal[i].ColdGas;
+      tot_hotMass += Gal[i].HotGas;
+      tot_hotMetals += Gal[i].MetalsHotGas;
+    }
+      
     tot_ejected += Gal[i].EjectedMass;
     tot_ejectedMetals += Gal[i].MetalsEjectedMass;
     tot_ICS += Gal[i].ICS;
