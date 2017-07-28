@@ -59,7 +59,7 @@ endif
 
 
 
-OPTIMIZE = -O2 -Wall -Wextra -Wshadow   # optimization and warning flags (default)
+#OPTIMIZE = -O2 -Wall -Wextra -Wshadow   # optimization and warning flags (default)
 
 # GSL automatic detection
 GSL_FOUND := $(shell gsl-config --version 2>/dev/null)
@@ -82,7 +82,8 @@ endif
 
 LIBS   :=   -lm  $(GSL_LIBS)
 
-CFLAGS :=   -g $(OPTIONS) $(OPT) $(OPTIMIZE) $(GSL_INCL)
+#CFLAGS :=   -g $(OPTIONS) $(OPT) $(OPTIMIZE) $(GSL_INCL)
+CFLAGS :=   -g $(OPTIONS) $(OPT) $(GSL_INCL)
 
 default: all
 
