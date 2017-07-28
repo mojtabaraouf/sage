@@ -4,7 +4,7 @@ sudo: false
 notifications:
   email:
     recipients:
-      - astevens@swin.edu.au
+      - adam.stevens@uwa.edu.au
     on_success: change
     on_failure: always
 

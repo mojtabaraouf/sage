@@ -150,6 +150,12 @@ if size_test!=size_out:
 G_test = read_darksage(dir+'model_to_test_against_z2.239_0')
 G_out = read_darksage(dir+'model_z2.239_0')
 
+# Check that the same number of galaxies is present
+if len(G_test)!=len(G_out):
+    print('\nUh oh! The Dark Sage output did not match what was expected!')
+    print('The number of galaxies is different to what was expected!')
+    sys.exit(1)
+
 # Check fields that are not modified by Dark Sage, and hence should be identical across machines and compilers
 halo_fields = ['Type', 'GalaxyIndex', 'HaloIndex', 'SimulationHaloIndex',
                'TreeIndex', 'SnapNum', 'CentralGalaxyIndex', 'CentralMvir',
