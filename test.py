@@ -163,7 +163,7 @@ halo_fields = ['Type', 'GalaxyIndex', 'HaloIndex', 'SimulationHaloIndex',
                'Len', 'LenMax', 'Mvir', 'Rvir', 'Vvir', 'Vmax', 'VelDisp',
                'CoolingScaleRadius', 'infallMvir', 'infallVvir', 'infallVmax']
 for field in halo_fields:
-    if not bool(np.allclose(G_out[field], G_test[field])):
+    if not bool(np.allclose(G_out[field], G_test[field])): # NEED TO MAKE THIS AN EXACT-MATCH CHECK FOR INTS
         print('\nUh oh! The Dark Sage output did not match what was expected!')
         print('The properties that don\'t match should not be affected by your compiler.')
         print('This error was sprung by the property {0}, but is likely not limited to it.'.format(field))
@@ -187,8 +187,10 @@ fig.subplots_adjust(left=0, bottom=0)
 plt.subplot(111)
 h = 0.73
 mmin, mmax = 8.0, 12.0
-plt.hist(np.log10(G_test['StellarMass']*1e10/h), bins=np.arange(mmin,mmax,0.2), histtype='step', lw=2, color='k', label='Expected', log=True)
-plt.hist(np.log10(G_out['StellarMass']*1e10/h), bins=np.arange(mmin,mmax,0.2), histtype='step', lw=2, color='b', ls='dashed', label='Result', log=True)
+SM_test, SM_out = G_test['StellarMass']*1e10/h, G_out['StellarMass']*1e10/h # Stellar masses in solar masses
+SM_test, SM_out = SM_test[SM_test>0], SM_out[SM_out>0] # Get rid of zeroes before taking log
+plt.hist(np.log10(SM_test), bins=np.arange(mmin,mmax,0.2), histtype='step', lw=2, color='k', label='Expected', log=True)
+plt.hist(np.log10(SM_out), bins=np.arange(mmin,mmax,0.2), histtype='step', lw=2, color='b', ls='dashed', label='Result', log=True)
 plt.xlabel('log Stellar Mass [solar]')
 plt.ylabel('Number of galaxies')
 plt.axis([mmin, mmax, 1, 1e3])
