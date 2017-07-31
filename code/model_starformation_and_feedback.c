@@ -23,6 +23,7 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
   check_channel_stars(p);
 
   double ejected_sum = 0.0;
+  reheated_mass = 0.0; // initialise
     
   // Checks that the deconstructed disc is being treated properly and not generating NaNs
   DiscGasSum = get_disc_gas(p);
@@ -171,7 +172,7 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
 	  reheated_mass = Gal[p].DiscGas[i];
 
 	// These checks ensure numerical uncertainties don't blow up	
-    assert(abs(Gal[p].ColdGas-ColdPre) <= 1.01*abs(Gal[p].DiscGas[i]-DiscPre) && abs(Gal[p].ColdGas-ColdPre) >= 0.999*abs(Gal[p].DiscGas[i]-DiscPre) && (Gal[p].ColdGas-ColdPre)*(Gal[p].DiscGas[i]-DiscPre)>=0.0);
+    assert(fabs(Gal[p].ColdGas-ColdPre) <= 1.01*fabs(Gal[p].DiscGas[i]-DiscPre) && fabs(Gal[p].ColdGas-ColdPre) >= 0.999*fabs(Gal[p].DiscGas[i]-DiscPre) && (Gal[p].ColdGas-ColdPre)*(Gal[p].DiscGas[i]-DiscPre)>=0.0);
  
 	DiscPre = Gal[p].DiscGas[i];
 	ColdPre = Gal[p].ColdGas;
@@ -182,7 +183,7 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
     assert(reheated_mass==reheated_mass && reheated_mass!=INFINITY);
     update_from_feedback(p, centralgal, reheated_mass, metallicity, i);
 
-	assert(abs(Gal[p].ColdGas-ColdPre) <= 1.01*abs(Gal[p].DiscGas[i]-DiscPre) && abs(Gal[p].ColdGas-ColdPre) >= 0.999*abs(Gal[p].DiscGas[i]-DiscPre) && (Gal[p].ColdGas-ColdPre)*(Gal[p].DiscGas[i]-DiscPre)>=0.0);
+	assert(fabs(Gal[p].ColdGas-ColdPre) <= 1.01*fabs(Gal[p].DiscGas[i]-DiscPre) && fabs(Gal[p].ColdGas-ColdPre) >= 0.999*fabs(Gal[p].DiscGas[i]-DiscPre) && (Gal[p].ColdGas-ColdPre)*(Gal[p].DiscGas[i]-DiscPre)>=0.0);
 
 	// Inject new metals from SN II
 	if(SupernovaRecipeOn > 0 && stars>=MIN_STARS_FOR_SN)

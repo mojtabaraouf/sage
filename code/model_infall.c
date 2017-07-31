@@ -210,6 +210,7 @@ double strip_from_satellite(int halonr, int centralgal, int gal, double max_stri
           
           left = 0.0;
           right = Gal[gal].Rvir;
+          r_try = Gal[gal].Rvir; // initialise to suppress warning
           for(ii=0; ii<100; ii++)
           {
               r_try = (left+right)/2.0;
@@ -231,7 +232,7 @@ double strip_from_satellite(int halonr, int centralgal, int gal, double max_stri
                   }
               }
               Pgrav = G * M_int * Gal[gal].HotGas / (8.0 * cube(r_try) * Gal[gal].Rvir);
-              dif = abs(Pram-Pgrav)/Pram;
+              dif = fabs(Pram-Pgrav)/Pram;
               if(dif <= 1e-3)
                   break;
               else if(Pgrav>Pram)
@@ -415,7 +416,7 @@ double do_reionization(int gal, double Zcurr)
 
 void add_infall_to_hot(int centralgal, double infallingGas)
 {
-  float metallicity;
+  double metallicity;
 
   assert(Gal[centralgal].HotGas == Gal[centralgal].HotGas && Gal[centralgal].HotGas >= 0);
   assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
