@@ -163,22 +163,18 @@ halo_fields = ['Type', 'GalaxyIndex', 'HaloIndex', 'SimulationHaloIndex',
                'Len', 'LenMax', 'Mvir', 'Rvir', 'Vvir', 'Vmax', 'VelDisp',
                'CoolingScaleRadius', 'infallMvir', 'infallVvir', 'infallVmax']
 for field in halo_fields:
-    if not bool(np.allclose(G_out[field], G_test[field])): # NEED TO MAKE THIS AN EXACT-MATCH CHECK FOR INTS
+    if G_out[field].dtype=='float':
+        success = bool(np.allclose(G_out[field], G_test[field]))
+    else:
+        success = np.array_equal(G_out[field], G_test[field])
+    if not success:
         print('\nUh oh! The Dark Sage output did not match what was expected!')
         print('The properties that don\'t match should not be affected by your compiler.')
         print('This error was sprung by the property {0}, but is likely not limited to it.'.format(field))
         print('Please report this issue if you cannot find a fast solution.')
         sys.exit(1)
 
-# Travis test should pass if this point is reached
-
-# Reduce galaxies to those that are reasonably well resolved
-f = (G_test['LenMax']>=50)
-G_test, G_out = G_test[f], G_out[f]
-
-# Switch off unhelpful warnings
-import warnings
-warnings.filterwarnings("ignore")
+#== Travis test should pass if this point is reached ==#
 
 # Build a histogram of stellar masses as a sanity check
 fig = plt.figure()
@@ -203,7 +199,7 @@ fields_to_check = np.array(G_out.dtype.names) # returns all fields
 for field in halo_fields+['mergeType', 'mergeIntoID', 'mergeIntoSnapNum']: # reduce fields to relevant galaxy evolution ones
     fields_to_check = np.delete(fields_to_check, np.where(fields_to_check==field)[0])
 for field in fields_to_check:
-    cut = (G_test[field]>np.percentile(G_test[field],2)) * np.isfinite(G_test[field]) * (G_test[field]>0) # cut out the lowest values, as these are the most likely to cause scientifically inconsequential problems
+    cut = np.isfinite(G_test[field]) * (G_test[field]>0)
     field_test, field_out = G_test[field][cut], G_out[field][cut]
     diff_abs = abs(field_out - field_test)
     diff_rel = diff_abs / field_test
@@ -216,8 +212,8 @@ for field in fields_to_check:
             os.makedirs(figdir)
         figname = figdir+field+'.png'
         plt.clf()
-        plt.scatter(field_test[diff_rel<0.01], diff_rel[diff_rel<0.01], c='k')
-        plt.scatter(field_test[diff_rel>=0.01], diff_rel[diff_rel>=0.01], c='r')
+        plt.scatter(field_test[diff_rel<0.02], diff_rel[diff_rel<0.02], c='k')
+        plt.scatter(field_test[diff_rel>=0.02], diff_rel[diff_rel>=0.02], c='r')
         plt.xlabel(field+' -- test output [internal units]')
         plt.ylabel('Fractional difference to your output ('+str(round(100*frac_bad,2))+'% red)')
         if(np.log10(np.max(field_test))>np.log10(np.min(field_test))+1): plt.xscale('log')

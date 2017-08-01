@@ -7,7 +7,7 @@ DARK SAGE is a semi-analytic model of galaxy formation, focussed on detailing th
 
 DARK SAGE will run on any N-body simulation whose trees are organised in a supported format and contain a minimum set of basic halo properties.  Galaxy formation models built using DARK SAGE on the Millennium simulation can be downloaded at the [Theoretical Astrophysical Observatory (TAO)](https://tao.asvo.org.au/).
 
-The code-base, written in C, should function as is, provided the required dependencies are installed.  You just need a C compiler and to point to installed GSL libraries before typing 'make'.  Once installed, please run the test script with 'python test.py' to make sure everything is working correctly.
+The code-base, written in C, should function as is, provided you have GSL installed. Simply install with `make`.  Once installed, please run the test script with `python test.py` to make sure everything is working correctly.
 
 To run DARK SAGE in serial, you need only point to a parameter file:  
 `./darksage {path}/{parameter file name}`  
