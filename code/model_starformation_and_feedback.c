@@ -29,6 +29,7 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
   DiscGasSum = get_disc_gas(p);
   DiscStarsSum = get_disc_stars(p);
   assert(DiscGasSum <= 1.01*Gal[p].ColdGas && DiscGasSum >= Gal[p].ColdGas/1.01);
+  assert(DiscStarsSum <= 1.01*Gal[p].StellarMass);
   assert(Gal[p].HotGas == Gal[p].HotGas && Gal[p].HotGas >= 0);
   assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 

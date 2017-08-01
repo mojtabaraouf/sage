@@ -389,6 +389,7 @@ void evolve_galaxies(int halonr, int ngal)	// note: halonr is here the FOF-backg
         }
 
         deltaT = Age[Gal[p].SnapNum] - Age[Halo[halonr].SnapNum];
+        dt = (deltaT / STEPS);
         Gal[p].MergTime -= dt;
         
         // only consider mergers or disruption for halo-to-baryonic mass ratios below the threshold
