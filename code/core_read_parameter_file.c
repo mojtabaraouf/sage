@@ -81,6 +81,14 @@ void read_parameter_file(char *fname)
   addr[nt] = &ReIncorporationFactor;
   id[nt++] = DOUBLE;
 
+  strcpy(tag[nt], "CoolingScaleSlope");
+  addr[nt] = &CoolingScaleSlope;
+  id[nt++] = DOUBLE;
+
+  strcpy(tag[nt], "CoolingScaleConst");
+  addr[nt] = &CoolingScaleConst;
+  id[nt++] = DOUBLE;
+
   strcpy(tag[nt], "UnitVelocity_in_cm_per_s");
   addr[nt] = &UnitVelocity_in_cm_per_s;
   id[nt++] = DOUBLE;
@@ -139,6 +147,10 @@ void read_parameter_file(char *fname)
     
     strcpy(tag[nt], "ReincorpotationModel");
     addr[nt] = &ReincorpotationModel;
+    id[nt++] = INT;
+
+    strcpy(tag[nt], "CoolingExponentialRadiusOn");
+    addr[nt] = &CoolingExponentialRadiusOn;
     id[nt++] = INT;
     
   strcpy(tag[nt], "BaryonFrac");

@@ -313,12 +313,15 @@ extern int    RamPressureOn;
 extern int    HotStripOn;
 extern int    HeatedToCentral;
 extern int    ReincorpotationModel;
+extern int    CoolingExponentialRadiusOn;
 
 // recipe parameters 
 extern double RecycleFraction;
 extern double Yield;
 extern double FracZleaveDisk;
 extern double ReIncorporationFactor;
+extern double CoolingScaleSlope;
+extern double CoolingScaleConst;
 extern double ThreshMajorMerger;
 extern double BaryonFrac;
 extern double SfrEfficiency;

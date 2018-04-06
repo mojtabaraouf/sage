@@ -37,15 +37,14 @@ double cooling_recipe(int gal, double dt)
     {
       // infall dominated regime 
       coolingGas = Gal[gal].HotGas / (Gal[gal].Rvir / Gal[gal].Vvir) * dt;
-      Gal[gal].CoolScaleRadius = pow(10, 0.23*log10(1.414*Gal[gal].DiskScaleRadius/Gal[gal].Rvir) - 0.67-0.18) * Gal[gal].Rvir; // Stevens et al. (2017)
     }
     else
     {
       // hot phase regime 
       coolingGas = (Gal[gal].HotGas / Gal[gal].Rvir) * (rcool / (2.0 * tcool)) * dt;
-      Gal[gal].CoolScaleRadius = 1.0*Gal[gal].DiskScaleRadius;
     }
-//    Gal[gal].CoolScaleRadius = 1.0*Gal[gal].DiskScaleRadius;
+      
+    Gal[gal].CoolScaleRadius = pow(10, -CoolingScaleSlope*log10(1.414*Gal[gal].DiskScaleRadius/Gal[gal].Rvir) - CoolingScaleConst) * Gal[gal].DiskScaleRadius; // Stevens et al. (2017)
       
     if(coolingGas > Gal[gal].HotGas)
       coolingGas = Gal[gal].HotGas;
@@ -302,17 +301,17 @@ void cool_gas_onto_galaxy(int p, double coolingGas)
     {
 	  for(i=0; i<N_BINS; i++)
       {
-          if(Gal[p].DiskScaleRadius==Gal[p].CoolScaleRadius)
-          {
-              jfrac1 = DiscBinEdge[i] / (Gal[p].Vvir * Gal[p].DiskScaleRadius);
-              jfrac2 = DiscBinEdge[i+1] / (Gal[p].Vvir * Gal[p].DiskScaleRadius);
-              coolingGasBin = coolingGas * ((jfrac1+1.0)*exp(-jfrac1) - (jfrac2+1.0)*exp(-jfrac2));
-          }
-          else
+          if(CoolingExponentialRadiusOn)
           {
               rfrac1 = Gal[p].DiscRadii[i] / Gal[p].CoolScaleRadius;
               rfrac2 = Gal[p].DiscRadii[i+1] / Gal[p].CoolScaleRadius;
               coolingGasBin = coolingGas * ((rfrac1+1.0)*exp(-rfrac1) - (rfrac2+1.0)*exp(-rfrac2));
+          }
+          else
+          {
+              jfrac1 = DiscBinEdge[i] / (Gal[p].Vvir * Gal[p].CoolScaleRadius);
+              jfrac2 = DiscBinEdge[i+1] / (Gal[p].Vvir * Gal[p].CoolScaleRadius);
+              coolingGasBin = coolingGas * ((jfrac1+1.0)*exp(-jfrac1) - (jfrac2+1.0)*exp(-jfrac2));
           }
           
 		if(coolingGasBin + coolingGasBinSum > coolingGas || i==N_BINS-1)

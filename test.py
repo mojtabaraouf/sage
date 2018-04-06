@@ -84,6 +84,7 @@ def galdtype():
         ('SfrDiskZ'                     , floattype),
         ('SfrBulgeZ'                    , floattype),
         ('CoolingScaleRadius'           , floattype),
+        ('StellarDiscScaleRadius'       , floattype),
         ('Cooling'                      , floattype),
         ('Heating'                      , floattype),
         ('LastMajorMerger'              , floattype),

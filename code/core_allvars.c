@@ -63,6 +63,7 @@ int RamPressureOn;
 int HotStripOn;
 int HeatedToCentral;
 int ReincorpotationModel;
+int CoolingExponentialRadiusOn;
 
 // binning information
 double FirstBin;
@@ -73,6 +74,8 @@ double RecycleFraction;
 double Yield;
 double FracZleaveDisk;
 double ReIncorporationFactor;
+double CoolingScaleSlope;
+double CoolingScaleConst;
 double ThreshMajorMerger;
 double BaryonFrac;
 double SfrEfficiency;
