@@ -549,6 +549,7 @@ void combine_stellar_discs(int p, double NewStars[N_BINS], double NewStarsMetals
 		if(Gal[p].DiscStarsMetals[i] > Gal[p].DiscStars[i]) printf("DiscStars, Metals = %e, %e\n", Gal[p].DiscStars[i], Gal[p].DiscStarsMetals[i]);
 		assert(Gal[p].DiscStarsMetals[i] <= Gal[p].DiscStars[i]);}
 
+    update_stellardisc_scaleradius(p);
 }
 
 
@@ -645,7 +646,7 @@ void update_HI_H2(int p)
             {
                 if(angle <= ThetaThresh)
                 {
-                    f_sigma =  1.1e6/UnitVelocity_in_cm_per_s / (0.5*Gal[p].Vvir*exp(-(Gal[p].DiscRadii[i]+Gal[p].DiscRadii[i+1])/4.0/Gal[p].DiskScaleRadius)); // Ratio of gas vel dispersion to stars', assuming gas is always 11 km/s
+                    f_sigma =  1.1e6/UnitVelocity_in_cm_per_s / (0.5*Gal[p].Vvir*exp(-(Gal[p].DiscRadii[i]+Gal[p].DiscRadii[i+1])/4.0/Gal[p].StellarDiscScaleRadius)); // Ratio of gas vel dispersion to stars', assuming gas is always 11 km/s
                     Pressure = 0.5*M_PI*G * Gal[p].DiscGas[i] * (Gal[p].DiscGas[i] + f_sigma*Gal[p].DiscStars[i]) / sqr(area);
                 }
                 else

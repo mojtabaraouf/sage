@@ -131,6 +131,8 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
 
   if(DiskInstabilityOn>0)
   	check_disk_instability(merger_centralgal, centralgal, dt, step);
+  else
+    update_stellardisc_scaleradius(p); // will already be done within check_disk_instability otherwise
 }
 
 

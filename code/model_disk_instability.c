@@ -71,7 +71,7 @@ void check_disk_instability(int p, int centralgal, double dt, int step)
         else
             Kappa = sqrt(2.0*DiscBinEdge[i+1]/cube(r_outer) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
         
-        sigma_R = 0.5*Gal[p].Vvir*exp_f(-r_av/2.0/Gal[p].DiskScaleRadius);
+        sigma_R = 0.5*Gal[p].Vvir*exp_f(-r_av/2.0/Gal[p].StellarDiscScaleRadius);
 
         Q_gas = c_s * Kappa * (sqr(r_outer) - sqr(r_inner)) / G / Gal[p].DiscGas[i];
         
@@ -211,7 +211,7 @@ void check_disk_instability(int p, int centralgal, double dt, int step)
         else
             Kappa = sqrt(2.0*DiscBinEdge[i+1]/cube(r_outer) * (DiscBinEdge[i+1]-DiscBinEdge[i])/(r_outer-r_inner));
         
-        sigma_R = 0.5*Gal[p].Vvir*exp_f(-r_av/2.0/Gal[p].DiskScaleRadius);
+        sigma_R = 0.5*Gal[p].Vvir*exp_f(-r_av/2.0/Gal[p].StellarDiscScaleRadius);
         
         if(Gal[p].DiscGas[i]-SNgas[i]>0.0 && angle<=ThetaThresh)
         {
@@ -273,7 +273,7 @@ void check_disk_instability(int p, int centralgal, double dt, int step)
                     Gal[p].DiscStarsMetals[i-1] += metallicity * unstable_stars;
                     assert(Gal[p].DiscStarsMetals[i-1] <= Gal[p].DiscStars[i-1]);
                 }
-                else if(r_inner > 0.2*Gal[p].DiskScaleRadius || DiskInstabilityOn<2) // Conserve angular momentum while moving stars to restore stability
+                else if(r_inner > 0.2*Gal[p].StellarDiscScaleRadius || DiskInstabilityOn<2) // Conserve angular momentum while moving stars to restore stability
                 {
                     j_gain = (DiscBinEdge[i+2]-DiscBinEdge[i])/2.0;
                     if(i!=0)
@@ -320,6 +320,8 @@ void check_disk_instability(int p, int centralgal, double dt, int step)
 	}
     
     //if(Gal[p].Type==0) update_disc_radii(p);
+    update_stellardisc_scaleradius(p);
+    
 }
 
 double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, double metallicity, int centralgal, double r_inner, double r_outer)

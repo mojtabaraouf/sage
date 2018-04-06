@@ -128,6 +128,7 @@ void init_galaxy(int p, int halonr)
     }
     
     Gal[p].DiskScaleRadius = get_disk_radius(halonr, p);
+    Gal[p].StellarDiscScaleRadius = 1.0*Gal[p].DiskScaleRadius;
     Gal[p].CoolScaleRadius = 1.0*Gal[p].DiskScaleRadius;
     Gal[p].MergTime = 999.9;
     Gal[p].Cooling = 0.0;
@@ -424,6 +425,8 @@ void update_disc_radii(int p)
     double a_CB, M_CB_inf, a_SB, M_SB_inf, a_ICS, M_ICS_inf;
     double f_support, BTT, v_max;
     
+    update_stellardisc_scaleradius(p); // need this at the start, as disc scale radii are part of this calculation
+
     tol = 1e-3;
     j_max = 100;
     
@@ -448,7 +451,7 @@ void update_disc_radii(int p)
     // ===========================================================
     
     // Determine distribution for bulge and ICS ==================
-    a_SB = 0.2 * Gal[p].DiskScaleRadius / (1.0 + sqrt(0.5)); // Fisher & Drory (2008)
+    a_SB = 0.2 * Gal[p].StellarDiscScaleRadius / (1.0 + sqrt(0.5)); // Fisher & Drory (2008)
     M_SB_inf = Gal[p].SecularBulgeMass * sqr((Gal[p].Rvir+a_SB)/Gal[p].Rvir);
     
     a_CB = pow(10.0, (log10(Gal[p].ClassicalBulgeMass*UnitMass_in_g/SOLAR_MASS/Hubble_h)-10.21)/1.13) * (CM_PER_MPC/1e3) / UnitLength_in_cm * Hubble_h; // Sofue 2015
@@ -457,10 +460,12 @@ void update_disc_radii(int p)
     a_ICS = 0.0;
     if(Gal[p].ClassicalBulgeMass>0.0)
         a_ICS = 13.0 * a_CB; // Gonzalez et al (2005)
-    else if(Gal[p].DiskScaleRadius>0.0)
+    else if(a_SB>0.0)
         a_ICS = 13.0 * a_SB; // Feeding Fisher & Drory (2008) relation into Gonzalez et al (2005)
     else if(Gal[p].ICS > 0.0)
-        printf("Issue with ICS size\n");
+    {
+        printf("Issue with ICS size, ICS = %e\n", Gal[p].ICS);
+    }
     M_ICS_inf = Gal[p].ICS * sqr((Gal[p].Rvir+a_ICS)/Gal[p].Rvir);
     // ===========================================================
     
@@ -484,7 +489,7 @@ void update_disc_radii(int p)
         double two_inv_Vvir = 2.0/Gal[p].Vvir;
         double inv_r_2 = 1.0/r_2;
         double hot_fraction = Gal[p].HotGas/Gal[p].Rvir;
-        double exponent_support = -3.0*(1.0-BTT)/Gal[p].DiskScaleRadius;
+        double exponent_support = -3.0*(1.0-BTT)/Gal[p].StellarDiscScaleRadius;
         
         for(i=1; i<N_BINS+1; i++)
         {
@@ -534,5 +539,38 @@ void update_disc_radii(int p)
             Gal[p].DiscRadii[i] = r_try;
             left = r_try;
         }
+    }
+    
+    update_stellardisc_scaleradius(p);
+}
+
+
+void update_stellardisc_scaleradius(int p)
+{
+    int i;
+    double SMcum_norm[N_BINS+1];
+    double DiscStarSum = get_disc_stars(p);
+    
+    SMcum_norm[0] = 0.0;
+    // Can't update the disc size if there are no stars in the disc
+    if(DiscStarSum>0.0)
+    {
+        for(i=1; i<N_BINS+1; i++)
+        {
+            if(i==0)
+                SMcum_norm[i] = (Gal[p].DiscStars[i-1]/DiscStarSum);
+            else
+                SMcum_norm[i] = (Gal[p].DiscStars[i-1]/DiscStarSum) + SMcum_norm[i-1];
+            if(SMcum_norm[i] >= 0.5)
+                break;
+        }
+        
+        Gal[p].StellarDiscScaleRadius = (Gal[p].DiscRadii[i]*(0.5-SMcum_norm[i-1]) + Gal[p].DiscRadii[i-1]*(SMcum_norm[i]-0.5)) / (SMcum_norm[i]-SMcum_norm[i-1]) / 1.67835; // factor of 1.67835 scales half-mass to exponential scale radius.  Of course, the stellar disc won't be a perfect exponential, so there's room to modify this
+    }
+    
+    if(Gal[p].StellarDiscScaleRadius<=0.0)
+    {
+        printf("BUG: StellarDiscScaleRadius reassigned from %e to DiskScale Radius\n", Gal[p].StellarDiscScaleRadius);
+        Gal[p].StellarDiscScaleRadius = 1.0 * Gal[p].DiskScaleRadius; // Some functions still need a number for the scale radius even if there aren't any stars actually in the disc.
     }
 }
