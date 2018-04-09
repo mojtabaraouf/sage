@@ -163,7 +163,7 @@ halo_fields = ['Type', 'GalaxyIndex', 'HaloIndex', 'SimulationHaloIndex',
                'TreeIndex', 'SnapNum', 'CentralGalaxyIndex', 'CentralMvir',
                'dT', 'Pos', 'Vel', 'Spin',
                'Len', 'LenMax', 'Mvir', 'Rvir', 'Vvir', 'Vmax', 'VelDisp',
-               'MMWScaleRadius', 'CoolingScaleRadius', 
+               'MMWScaleRadius', 
                'infallMvir', 'infallVvir', 'infallVmax']
 for field in halo_fields:
     if G_out[field].dtype=='float':
