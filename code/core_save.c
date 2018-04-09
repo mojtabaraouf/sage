@@ -219,6 +219,8 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
   }
 
   o->DiskScaleRadius = g->DiskScaleRadius;
+  o->CoolScaleRadius = g->CoolScaleRadius;
+  o->StellarDiscScaleRadius = g->StellarDiscScaleRadius;
 
   if (g->Cooling > 0.0)
     o->Cooling = log10(g->Cooling * UnitEnergy_in_cgs / UnitTime_in_s);

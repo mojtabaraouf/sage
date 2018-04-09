@@ -125,9 +125,12 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
 	      stars = MIN_STARS_FOR_SN;
 		  reheated_mass = Gal[p].DiscGas[i] - stars; // Used to have (1-RecycleFraction)* in front of stars here, but changed philosophy
 	    }
+        
+        if(reheated_mass < MIN_STARFORMATION)
+        reheated_mass = 0.0; // Limit doesn't have to be the same as MIN_STARFORMATION, but needs to be something reasonable
 	
 	    ejected_mass = (FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) / (Gal[centralgal].Vvir * Gal[centralgal].Vvir) - FeedbackReheatingEpsilon) * stars;
-	    if(ejected_mass < 0.0)
+	    if(ejected_mass < MIN_STARFORMATION)
 	        ejected_mass = 0.0;
 	
 		assert(stars+reheated_mass < 1.01*Gal[p].DiscGas[i]);
@@ -173,6 +176,7 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
 	  reheated_mass = Gal[p].DiscGas[i];
 
 	// These checks ensure numerical uncertainties don't blow up	
+
     assert(fabs(Gal[p].ColdGas-ColdPre) <= 1.01*fabs(Gal[p].DiscGas[i]-DiscPre) && fabs(Gal[p].ColdGas-ColdPre) >= 0.999*fabs(Gal[p].DiscGas[i]-DiscPre) && (Gal[p].ColdGas-ColdPre)*(Gal[p].DiscGas[i]-DiscPre)>=0.0);
  
 	DiscPre = Gal[p].DiscGas[i];
@@ -182,9 +186,10 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
 	metallicity = get_metallicity(Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
 	assert(Gal[p].DiscGasMetals[i] <= Gal[p].DiscGas[i]);
     assert(reheated_mass==reheated_mass && reheated_mass!=INFINITY);
-    update_from_feedback(p, centralgal, reheated_mass, metallicity, i);
+    if(reheated_mass > 0.0)
+      update_from_feedback(p, centralgal, reheated_mass, metallicity, i);
 
-	assert(fabs(Gal[p].ColdGas-ColdPre) <= 1.01*fabs(Gal[p].DiscGas[i]-DiscPre) && fabs(Gal[p].ColdGas-ColdPre) >= 0.999*fabs(Gal[p].DiscGas[i]-DiscPre) && (Gal[p].ColdGas-ColdPre)*(Gal[p].DiscGas[i]-DiscPre)>=0.0);
+      assert(fabs(Gal[p].ColdGas-ColdPre) <= 1.01*fabs(Gal[p].DiscGas[i]-DiscPre) && fabs(Gal[p].ColdGas-ColdPre) >= 0.999*fabs(Gal[p].DiscGas[i]-DiscPre) && (Gal[p].ColdGas-ColdPre)*(Gal[p].DiscGas[i]-DiscPre)>=0.0);
 
 	// Inject new metals from SN II
 	if(SupernovaRecipeOn > 0 && stars>=MIN_STARS_FOR_SN)

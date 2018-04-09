@@ -83,6 +83,7 @@ def galdtype():
         ('SfrBulge'                     , floattype),
         ('SfrDiskZ'                     , floattype),
         ('SfrBulgeZ'                    , floattype),
+        ('MMWScaleRadius'               , floattype),
         ('CoolingScaleRadius'           , floattype),
         ('StellarDiscScaleRadius'       , floattype),
         ('Cooling'                      , floattype),
@@ -162,7 +163,8 @@ halo_fields = ['Type', 'GalaxyIndex', 'HaloIndex', 'SimulationHaloIndex',
                'TreeIndex', 'SnapNum', 'CentralGalaxyIndex', 'CentralMvir',
                'dT', 'Pos', 'Vel', 'Spin',
                'Len', 'LenMax', 'Mvir', 'Rvir', 'Vvir', 'Vmax', 'VelDisp',
-               'CoolingScaleRadius', 'infallMvir', 'infallVvir', 'infallVmax']
+               'MMWScaleRadius', 'CoolingScaleRadius', 
+               'infallMvir', 'infallVvir', 'infallVmax']
 for field in halo_fields:
     if G_out[field].dtype=='float':
         success = bool(np.allclose(G_out[field], G_test[field]))

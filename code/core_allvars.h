@@ -126,6 +126,7 @@ struct GALAXY_OUTPUT
   
   // misc 
   float DiskScaleRadius;
+  float CoolScaleRadius;
   float StellarDiscScaleRadius;
   float Cooling;
   float Heating;

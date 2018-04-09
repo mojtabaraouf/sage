@@ -394,6 +394,9 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
             {
                 Sigma_0gas = FeedbackGasSigma * (SOLAR_MASS / UnitMass_in_g) / sqr(CM_PER_MPC/1e6 / UnitLength_in_cm);
                 reheated_mass = FeedbackReheatingEpsilon * stars * pow(Sigma_0gas / (Gal[p].DiscGas[i]/area), FeedbackExponent);
+                
+                if(reheated_mass < MIN_STARFORMATION)
+                reheated_mass = 0.0;
             }
             else if(SupernovaRecipeOn == 2)
                 reheated_mass = FeedbackReheatingEpsilon * stars;
@@ -430,7 +433,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 			else
 			{
                 ejected_mass = (FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) / (V_rot * V_rot) - FeedbackReheatingEpsilon) * stars;
-			    if(ejected_mass < 0.0)
+			    if(ejected_mass < MIN_STARFORMATION)
 			        ejected_mass = 0.0;
 			}
 		}
