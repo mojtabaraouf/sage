@@ -547,7 +547,7 @@ void update_disc_radii(int p)
 
 void update_stellardisc_scaleradius(int p)
 {
-    int i;
+    int i, j;
     double SMcum_norm[N_BINS+1];
     double DiscStarSum = get_disc_stars(p);
     
@@ -564,8 +564,20 @@ void update_stellardisc_scaleradius(int p)
             if(SMcum_norm[i] >= 0.5)
                 break;
         }
+
+        for(j=i; j<N_BINS+1; j++)
+        {
+            SMcum_norm[j] = (Gal[p].DiscStars[j-1]/DiscStarSum) + SMcum_norm[j-1];
+            if(SMcum_norm[j] >= 0.9)
+                break;
+        }
+
+        // These are exponential scale radii that correspond to the actual r50 and r90 values of the disc
+        double Rscale50 = (Gal[p].DiscRadii[i]*(0.5-SMcum_norm[i-1]) + Gal[p].DiscRadii[i-1]*(SMcum_norm[i]-0.5)) / (SMcum_norm[i]-SMcum_norm[i-1]) * 0.59581;
+        double Rscale90 = (Gal[p].DiscRadii[j]*(0.9-SMcum_norm[j-1]) + Gal[p].DiscRadii[j-1]*(SMcum_norm[j]-0.9)) / (SMcum_norm[j]-SMcum_norm[j-1]) * 0.25709;
         
-        Gal[p].StellarDiscScaleRadius = (Gal[p].DiscRadii[i]*(0.5-SMcum_norm[i-1]) + Gal[p].DiscRadii[i-1]*(SMcum_norm[i]-0.5)) / (SMcum_norm[i]-SMcum_norm[i-1]) / 1.67835; // factor of 1.67835 scales half-mass to exponential scale radius.  Of course, the stellar disc won't be a perfect exponential, so there's room to modify this
+        // Take the average of those scale radii for the disc's actual value.
+        Gal[p].StellarDiscScaleRadius = 0.5*(Rscale50+Rscale90); 
     }
     
     if(Gal[p].StellarDiscScaleRadius<=0.0)

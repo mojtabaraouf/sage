@@ -37,14 +37,15 @@ double cooling_recipe(int gal, double dt)
     {
       // infall dominated regime 
       coolingGas = Gal[gal].HotGas / (Gal[gal].Rvir / Gal[gal].Vvir) * dt;
+      Gal[gal].CoolScaleRadius = 1.0*Gal[gal].DiskScaleRadius;
     }
     else
     {
       // hot phase regime 
       coolingGas = (Gal[gal].HotGas / Gal[gal].Rvir) * (rcool / (2.0 * tcool)) * dt;
+      Gal[gal].CoolScaleRadius = pow(10, CoolingScaleSlope*log10(1.414*Gal[gal].DiskScaleRadius/Gal[gal].Rvir) - CoolingScaleConst) * Gal[gal].Rvir; // Stevens et al. (2017)
     }
       
-    Gal[gal].CoolScaleRadius = pow(10, CoolingScaleSlope*log10(1.414*Gal[gal].DiskScaleRadius/Gal[gal].Rvir) - CoolingScaleConst) * Gal[gal].Rvir; // Stevens et al. (2017)
       
     if(coolingGas > Gal[gal].HotGas)
       coolingGas = Gal[gal].HotGas;

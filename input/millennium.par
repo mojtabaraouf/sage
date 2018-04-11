@@ -24,8 +24,9 @@ NumOutputs        12   ; sets the desired number of galaxy outputs; use -1 for a
 %------------------------------------------
 
 TreeName					    trees_063		; assumes the trees are named TreeName.n where n is the snapshot number
-SimulationDir               ../../../trees/Millennium/treedata
-FileWithSnapList			../../../trees/Millennium/millennium.a_list
+%SimulationDir               /Volumes/AdamDrive/Research/treefiles/millennium/full
+SimulationDir               /Volumes/AdamDrive/Research/treefiles/millennium/millennium_mini/treedata
+FileWithSnapList			/Volumes/AdamDrive/Research/treefiles/millennium/millennium_mini/millennium.a_list
 LastSnapShotNr				63
 
 Omega				0.25
@@ -77,11 +78,11 @@ FeedbackEjectionEfficiency  0.4
 ReIncorporationFactor		0.15    ; For ReincorpotationModel=0
 
 CoolingScaleSlope           0.23    ; cf. eq. 18 of Stevens et al. (2017)
-CoolingScaleConst           0.85
+CoolingScaleConst           1.0
 
-RadioModeEfficiency         0.01
+RadioModeEfficiency         0.03
 QuasarModeEfficiency        0.005
-BlackHoleGrowthRate         0.15
+BlackHoleGrowthRate         0.1
 
 H2FractionFactor            1.0    ;Controls the normalisation of the H2/HI calculation if H2prescription=0. (1/h^2 for Fu+10)
 H2FractionExponent          0.92   ;Also controls the H2/HI ratio calculation. (0.92 for Fu+10).
