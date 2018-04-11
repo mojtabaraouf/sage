@@ -80,18 +80,20 @@ ReIncorporationFactor		0.15    ; For ReincorpotationModel=0
 CoolingScaleSlope           0.23    ; cf. eq. 18 of Stevens et al. (2017)
 CoolingScaleConst           1.0
 
-RadioModeEfficiency         0.03
+RadioModeEfficiency         0.025
 QuasarModeEfficiency        0.005
 BlackHoleGrowthRate         0.1
 
 H2FractionFactor            1.0    ;Controls the normalisation of the H2/HI calculation if H2prescription=0. (1/h^2 for Fu+10)
 H2FractionExponent          0.92   ;Also controls the H2/HI ratio calculation. (0.92 for Fu+10).
 
-ClumpFactor                 3.0     ; Controls the clump factor which affects H2/HI for H2prescription=1. (1.0 for Fu+13)
+ClumpFactor                 2.0     ; Controls the clump factor which affects H2/HI for H2prescription=1. (1.0 for Fu+13)
 ClumpExponent               0.3     ; Controls the clump factor which affects H2/HI for H2prescription=1. (0.7 for Fu+13)
 
+RadiusWeight                2.0     ; the relative weighting of r90 to r50 in calculating the stellar disc scale radius
+
 QTotMin                     1.0    ;threshold Toomre Q value for instabilities
-GasSinkRate                 0.4
+GasSinkRate                 0.5
 ThetaThresh                 10.0   ;threshold angle for gas and stellar discs to be coplanar
 
 DegPerTdyn                  5.0    ;degrees the gas disc precesses to come in line with stars per dynamical time

@@ -337,6 +337,7 @@ extern double H2FractionFactor;
 extern double H2FractionExponent;
 extern double ClumpFactor;
 extern double ClumpExponent;
+extern double RadiusWeight;
 extern double QTotMin;
 extern double GasSinkRate;
 extern double ThetaThresh;

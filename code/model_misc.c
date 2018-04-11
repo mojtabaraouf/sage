@@ -576,8 +576,8 @@ void update_stellardisc_scaleradius(int p)
         double Rscale50 = (Gal[p].DiscRadii[i]*(0.5-SMcum_norm[i-1]) + Gal[p].DiscRadii[i-1]*(SMcum_norm[i]-0.5)) / (SMcum_norm[i]-SMcum_norm[i-1]) * 0.59581;
         double Rscale90 = (Gal[p].DiscRadii[j]*(0.9-SMcum_norm[j-1]) + Gal[p].DiscRadii[j-1]*(SMcum_norm[j]-0.9)) / (SMcum_norm[j]-SMcum_norm[j-1]) * 0.25709;
         
-        // Take the average of those scale radii for the disc's actual value.
-        Gal[p].StellarDiscScaleRadius = 0.5*(Rscale50+Rscale90); 
+        // Take a weighted average of those scale radii for the disc's actual value.
+        Gal[p].StellarDiscScaleRadius = (Rscale50 + RadiusWeight*Rscale90) / (RadiusWeight+1.0); 
     }
     
     if(Gal[p].StellarDiscScaleRadius<=0.0)

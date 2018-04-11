@@ -90,6 +90,7 @@ double H2FractionFactor;
 double H2FractionExponent;
 double ClumpFactor;
 double ClumpExponent;
+double RadiusWeight;
 double QTotMin;
 double GasSinkRate;
 double ThetaThresh;
