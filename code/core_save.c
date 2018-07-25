@@ -24,7 +24,7 @@ void save_galaxies(int filenr, int tree)
 #endif
     int i, n;
     struct GALAXY_OUTPUT galaxy_output;
-    memset(galaxy_output, 0, sizeof(struct GALAXY_OUTPUT));
+    memset(&galaxy_output, 0, sizeof(struct GALAXY_OUTPUT));
     int OutputGalCount[MAXSNAPS], *OutputGalOrder;
     
     OutputGalOrder = (int*)malloc( NumGals*sizeof(int) );
