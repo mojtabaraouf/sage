@@ -130,6 +130,7 @@ void init_galaxy(int p, int halonr)
     
     Gal[p].DiskScaleRadius = get_disk_radius(halonr, p);
     Gal[p].StellarDiscScaleRadius = 1.0*Gal[p].DiskScaleRadius;
+    Gal[p].GasDiscScaleRadius = 1.0*Gal[p].DiskScaleRadius;
     Gal[p].CoolScaleRadius = 1.0*Gal[p].DiskScaleRadius;
     Gal[p].MergTime = 999.9;
     Gal[p].Cooling = 0.0;
@@ -427,6 +428,7 @@ void update_disc_radii(int p)
     double f_support, BTT, v_max;
     
     update_stellardisc_scaleradius(p); // need this at the start, as disc scale radii are part of this calculation
+    update_gasdisc_scaleradius(p);
 
     tol = 1e-3;
     j_max = 100;
@@ -585,5 +587,48 @@ void update_stellardisc_scaleradius(int p)
     {
         printf("BUG: StellarDiscScaleRadius reassigned from %e to DiskScale Radius\n", Gal[p].StellarDiscScaleRadius);
         Gal[p].StellarDiscScaleRadius = 1.0 * Gal[p].DiskScaleRadius; // Some functions still need a number for the scale radius even if there aren't any stars actually in the disc.
+    }
+}
+
+
+void update_gasdisc_scaleradius(int p)
+{
+    int i, j;
+    double GMcum_norm[N_BINS+1];
+    double DiscGasSum = get_disc_gas(p);
+    
+    GMcum_norm[0] = 0.0;
+    // Can't update the disc size if there are no stars in the disc
+    if(DiscGasSum>0.0)
+    {
+        for(i=1; i<N_BINS+1; i++)
+        {
+            if(i==0)
+            GMcum_norm[i] = (Gal[p].DiscGas[i-1]/DiscGasSum);
+            else
+            GMcum_norm[i] = (Gal[p].DiscGas[i-1]/DiscGasSum) + GMcum_norm[i-1];
+            if(GMcum_norm[i] >= 0.5)
+            break;
+        }
+        
+        for(j=i; j<N_BINS+1; j++)
+        {
+            GMcum_norm[j] = (Gal[p].DiscGas[j-1]/DiscGasSum) + GMcum_norm[j-1];
+            if(GMcum_norm[j] >= 0.9)
+                break;
+        }
+        
+        // These are exponential scale radii that correspond to the actual r50 and r90 values of the disc
+        double Rscale50 = (Gal[p].DiscRadii[i]*(0.5-GMcum_norm[i-1]) + Gal[p].DiscRadii[i-1]*(GMcum_norm[i]-0.5)) / (GMcum_norm[i]-GMcum_norm[i-1]) * 0.59581;
+        double Rscale90 = (Gal[p].DiscRadii[j]*(0.9-GMcum_norm[j-1]) + Gal[p].DiscRadii[j-1]*(GMcum_norm[j]-0.9)) / (GMcum_norm[j]-GMcum_norm[j-1]) * 0.25709;
+        
+        // Take a weighted average of those scale radii for the disc's actual value.
+        Gal[p].GasDiscScaleRadius = (Rscale50 + RadiusWeight*Rscale90) / (RadiusWeight+1.0); 
+    }
+    
+    if(Gal[p].GasDiscScaleRadius<=0.0)
+    {
+        printf("BUG: GasDiscScaleRadius reassigned from %e to DiskScale Radius\n", Gal[p].GasDiscScaleRadius);
+        Gal[p].GasDiscScaleRadius = 1.0 * Gal[p].DiskScaleRadius; // Some functions still need a number for the scale radius even if there isn't any gas actually in the disc.
     }
 }

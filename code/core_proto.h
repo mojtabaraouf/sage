@@ -72,6 +72,7 @@ double sqr(double x);
 double cube(double x);
 double exp_f(double x);
 void update_stellardisc_scaleradius(int p);
+void update_gasdisc_scaleradius(int p);
 //
 
 double strip_from_satellite(int halonr, int centralgal, int gal, double max_strippedGas);

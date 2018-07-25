@@ -132,6 +132,7 @@ struct GALAXY_OUTPUT
   float DiskScaleRadius;
   float CoolScaleRadius;
   float StellarDiscScaleRadius;
+  float GasDiscScaleRadius;
   float Cooling;
   float Heating;
   float LastMajorMerger;
@@ -245,6 +246,7 @@ struct GALAXY
   double DiskScaleRadius;
   double CoolScaleRadius;
   double StellarDiscScaleRadius;
+  double GasDiscScaleRadius;
   double MergTime;
   double Cooling;
   double Heating;

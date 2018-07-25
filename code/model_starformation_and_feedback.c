@@ -91,7 +91,7 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
     else
         strdot = 0.0;
 
-	stars = strdot * dt;
+    stars = strdot * dt;
 	
 	if(stars < MIN_STARFORMATION)
 	  stars = 0.0;
