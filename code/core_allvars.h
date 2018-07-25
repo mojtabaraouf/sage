@@ -84,7 +84,7 @@ struct GALAXY_OUTPUT
   float SpinGas[3];
 //  float SpinSecularBulge[3];
   float SpinClassicalBulge[3];
-  float StarsInSitu;
+  float StarsFromH2;
   float StarsInstability;
   float StarsMergeBurst;
   float DiscHI[N_BINS];
@@ -119,10 +119,14 @@ struct GALAXY_OUTPUT
   float DiscStarsMetals[N_BINS];
 
   // to calculate magnitudes
-  float SfrDisk;
-  float SfrBulge;
+  float SfrFromH2;
+  float SfrInstab;
+  float SfrMerge;
   float SfrDiskZ;
   float SfrBulgeZ;
+//  float SfZ_H2;
+//  float SfZ_Instab;
+//  float SfZ_Merge;
   
   // misc 
   float DiskScaleRadius;
@@ -186,7 +190,7 @@ struct GALAXY
   double SpinSecularBulge[3];
   double SpinClassicalBulge[3];
   double SpinHot[3];
-  double StarsInSitu;
+  double StarsFromH2;
   double StarsInstability;
   double StarsMergeBurst;
   double DiscHI[N_BINS];
@@ -222,12 +226,20 @@ struct GALAXY
   double DiscStarsMetals[N_BINS];
 
   // to calculate magnitudes
-  double SfrDisk[STEPS];
-  double SfrBulge[STEPS];
+    
+  double SfrFromH2[STEPS];
+  double SfrInstab[STEPS];
+  double SfrMerge[STEPS];
   double SfrDiskColdGas[STEPS];
   double SfrDiskColdGasMetals[STEPS];
   double SfrBulgeColdGas[STEPS];
   double SfrBulgeColdGasMetals[STEPS];
+//  double Sf_H2_ColdGas[STEPS];
+//  double Sf_Instab_ColdGas[STEPS];
+//  double Sf_Merge_ColdGas[STEPS];
+//  double Sf_H2_ColdGasMetals[STEPS];
+//  double Sf_Instab_ColdGasMetals[STEPS];
+//  double Sf_Merge_ColdGasMetals[STEPS];
 
   // misc 
   double DiskScaleRadius;

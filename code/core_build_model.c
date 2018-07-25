@@ -170,7 +170,8 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
 
           for(step = 0; step < STEPS; step++)
           {
-            Gal[ngal].SfrDisk[step] = Gal[ngal].SfrBulge[step] = 0.0;
+//            Gal[ngal].SfrDisk[step] = Gal[ngal].SfrBulge[step]  = 0.0;
+            Gal[ngal].SfrFromH2[step] = Gal[ngal].SfrInstab[step] = Gal[ngal].SfrMerge[step] = 0.0;
             Gal[ngal].SfrDiskColdGas[step] = Gal[ngal].SfrDiskColdGasMetals[step] = 0.0;
             Gal[ngal].SfrBulgeColdGas[step] = Gal[ngal].SfrBulgeColdGasMetals[step] = 0.0;
           }
