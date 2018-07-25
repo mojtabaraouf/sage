@@ -76,7 +76,7 @@ void init_galaxy(int p, int halonr)
     Gal[p].BlackHoleMass = 0.0;
     Gal[p].ICS = 0.0;
     
-    Gal[p].StarsInSitu = 0.0;
+    Gal[p].StarsFromH2 = 0.0;
     Gal[p].StarsInstability = 0.0;
     Gal[p].StarsMergeBurst = 0.0;
     
@@ -119,12 +119,13 @@ void init_galaxy(int p, int halonr)
     
     for(step = 0; step < STEPS; step++)
     {
-        Gal[p].SfrDisk[step] = 0.0;
-        Gal[p].SfrBulge[step] = 0.0;
-        Gal[p].SfrDiskColdGas[step] = 0.0;
-        Gal[p].SfrDiskColdGasMetals[step] = 0.0;
-        Gal[p].SfrBulgeColdGas[step] = 0.0;
-        Gal[p].SfrBulgeColdGasMetals[step] = 0.0;
+        Gal[p].SfrFromH2[step] = 0.0;
+        Gal[p].SfrInstab[step] = 0.0;
+        Gal[p].SfrMerge[step] = 0.0;
+//        Gal[p].SfrDiskColdGas[step] = 0.0;
+//        Gal[p].SfrDiskColdGasMetals[step] = 0.0;
+//        Gal[p].SfrBulgeColdGas[step] = 0.0;
+//        Gal[p].SfrBulgeColdGasMetals[step] = 0.0;
     }
     
     Gal[p].DiskScaleRadius = get_disk_radius(halonr, p);
@@ -366,15 +367,15 @@ void check_channel_stars(int p)
     
     if(Gal[p].StellarMass>0.0)
     {
-        ChannelFrac = Gal[p].StellarMass / (Gal[p].StarsInSitu+Gal[p].StarsInstability+Gal[p].StarsMergeBurst);
+        ChannelFrac = Gal[p].StellarMass / (Gal[p].StarsFromH2+Gal[p].StarsInstability+Gal[p].StarsMergeBurst);
 //        if(ChannelFrac>1.01 || ChannelFrac<0.99) printf("1. ChannelFrac, StellarMass = %e, %e\n", ChannelFrac, Gal[p].StellarMass);
-        Gal[p].StarsInSitu *= ChannelFrac;
+        Gal[p].StarsFromH2 *= ChannelFrac;
         Gal[p].StarsInstability *= ChannelFrac;
         Gal[p].StarsMergeBurst *= ChannelFrac;
     }
     else
     {
-        Gal[p].StarsInSitu = 0.0;
+        Gal[p].StarsFromH2 = 0.0;
         Gal[p].StarsInstability = 0.0;
         Gal[p].StarsMergeBurst = 0.0;
     }

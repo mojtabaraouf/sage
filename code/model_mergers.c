@@ -102,7 +102,7 @@ void deal_with_galaxy_merger(int p, int merger_centralgal, int centralgal, doubl
         Gal[merger_centralgal].StellarMass += net_stars;
         Gal[merger_centralgal].MetalsStellarMass += metallicity * net_stars;
         Gal[merger_centralgal].StarsMergeBurst += net_stars;
-        Gal[merger_centralgal].SfrBulge[step] += stars / dt;
+        Gal[merger_centralgal].SfrMerge[step] += stars / dt;
         check_channel_stars(merger_centralgal);
         
         // Add the new stars from the retrograde starburst to the classical bulge
@@ -524,7 +524,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
   }
 
 
-  Gal[t].StarsInSitu += Gal[p].StarsInSitu;
+  Gal[t].StarsFromH2 += Gal[p].StarsFromH2;
   Gal[t].StarsInstability += Gal[p].StarsInstability;
   Gal[t].StarsMergeBurst += Gal[p].StarsMergeBurst;
     
@@ -556,7 +556,7 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 
   for(step = 0; step < STEPS; step++)
   {
-    Gal[t].SfrBulge[step] += Gal[p].SfrDisk[step] + Gal[p].SfrBulge[step];
+//    Gal[t].SfrBulge[step] += Gal[p].SfrDisk[step] + Gal[p].SfrBulge[step];
     Gal[t].SfrBulgeColdGas[step] += Gal[p].SfrDiskColdGas[step] + Gal[p].SfrBulgeColdGas[step];
     Gal[t].SfrBulgeColdGasMetals[step] += Gal[p].SfrDiskColdGasMetals[step] + Gal[p].SfrBulgeColdGasMetals[step];
   }
@@ -598,10 +598,10 @@ void stars_to_bulge(int t)
   // update the star formation rate 
   for(step = 0; step < STEPS; step++)
   {
-    Gal[t].SfrBulge[step] += Gal[t].SfrDisk[step];
+//    Gal[t].SfrBulge[step] += Gal[t].SfrDisk[step];
     Gal[t].SfrBulgeColdGas[step] += Gal[t].SfrDiskColdGas[step];
     Gal[t].SfrBulgeColdGasMetals[step] += Gal[t].SfrDiskColdGasMetals[step];
-    Gal[t].SfrDisk[step] = 0.0;
+//    Gal[t].SfrDisk[step] = 0.0;
     Gal[t].SfrDiskColdGas[step] = 0.0;
     Gal[t].SfrDiskColdGasMetals[step] = 0.0;
   }
@@ -787,7 +787,7 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
      Gal[merger_centralgal].ClassicalMetalsBulgeMass += metals_stars_sum;
   }
 
-  Gal[merger_centralgal].SfrBulge[step] += stars_sum / dt; // This can probably be handled better.  It's a bit complicated though (as to whether it's Sfr in the bulge or disc)
+  Gal[merger_centralgal].SfrMerge[step] += stars_sum / dt;
   Gal[merger_centralgal].StarsMergeBurst += stars_sum;
      
   check_channel_stars(merger_centralgal);

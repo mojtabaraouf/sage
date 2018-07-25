@@ -33,8 +33,4 @@ code/core_build_model_REMOTE_75026.c
 code/core_build_model_REMOTE_92425.c
 code/core_save.c.orig
 code/model_misc_old.c
-test/millennium.a_list
-test/model_to_test_against_z2.239_0
-test/model_z2.239_0
-test/test.par
-test/trees_063.0
+test

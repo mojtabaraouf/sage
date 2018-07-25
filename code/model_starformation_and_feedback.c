@@ -42,7 +42,7 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
   stars_sum = 0.0;
 
   Gal[p].SfrDiskColdGas[step] = Gal[p].ColdGas;
-  Gal[p].SfrDiskColdGasMetals[step] = Gal[p].MetalsColdGas; // Do I ever use these or even know what they represent?
+  Gal[p].SfrDiskColdGasMetals[step] = Gal[p].MetalsColdGas; // I believe TAO wants these fields.  Otherwise irrelevant
     
   update_HI_H2(p);
     
@@ -213,8 +213,8 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
     combine_stellar_discs(p, NewStars, NewStarsMetals);
 
   // Update the star formation rate 
-  Gal[p].SfrDisk[step] += stars_sum / dt;
-  Gal[p].StarsInSitu += NewStarSum;
+  Gal[p].SfrFromH2[step] += stars_sum / dt;
+  Gal[p].StarsFromH2 += NewStarSum;
     
   if(Gal[p].StellarMass >= MIN_STARS_FOR_SN)
     {

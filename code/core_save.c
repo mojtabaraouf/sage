@@ -164,7 +164,7 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
   o->MetalsEjectedMass = g->MetalsEjectedMass;
   o->MetalsICS = g->MetalsICS;
     
-  o->StarsInSitu = g->StarsInSitu;
+  o->StarsFromH2 = g->StarsFromH2;
   o->StarsInstability = g->StarsInstability;
   o->StarsMergeBurst = g->StarsMergeBurst;
     
@@ -201,16 +201,18 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
 //      o->TotSinkStar[j] = g->TotSinkStar[j];
   }
 
-  o->SfrDisk = 0.0;
-  o->SfrBulge = 0.0;
+  o->SfrFromH2 = 0.0;
+  o->SfrInstab = 0.0;
+  o->SfrMerge = 0.0;
   o->SfrDiskZ = 0.0;
   o->SfrBulgeZ = 0.0;
   
   // NOTE: in Msun/yr 
   for(step = 0; step < STEPS; step++)
   {
-    o->SfrDisk += g->SfrDisk[step] * UnitMass_in_g / UnitTime_in_s * SEC_PER_YEAR / SOLAR_MASS / STEPS;
-    o->SfrBulge += g->SfrBulge[step] * UnitMass_in_g / UnitTime_in_s * SEC_PER_YEAR / SOLAR_MASS / STEPS;
+    o->SfrFromH2 += g->SfrFromH2[step] * UnitMass_in_g / UnitTime_in_s * SEC_PER_YEAR / SOLAR_MASS / STEPS;
+    o->SfrInstab += g->SfrInstab[step] * UnitMass_in_g / UnitTime_in_s * SEC_PER_YEAR / SOLAR_MASS / STEPS;
+    o->SfrMerge += g->SfrMerge[step] * UnitMass_in_g / UnitTime_in_s * SEC_PER_YEAR / SOLAR_MASS / STEPS;
     
     if(g->SfrDiskColdGas[step] > 0.0)
       o->SfrDiskZ += g->SfrDiskColdGasMetals[step] / g->SfrDiskColdGas[step] / STEPS;

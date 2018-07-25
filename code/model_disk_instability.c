@@ -185,7 +185,7 @@ void check_disk_instability(int p, int centralgal, double dt, int step)
         cos_angle = Gal[p].SpinStars[0]*old_spin[0] + Gal[p].SpinStars[1]*old_spin[1] + Gal[p].SpinStars[2]*old_spin[2];
         project_disc(SNgas_copy, cos_angle, p, SNgas_proj);
         
-		Gal[p].SfrDisk[step] += stars_sum / dt; // Some of these stars may quickly be transferred to the bulge, so simply updating SfrDisk might be crude
+		Gal[p].SfrInstab[step] += stars_sum / dt;
         Gal[p].StarsInstability += NewStarsSum;
         
         assert(NewStarsSum<=1.001*stars_sum);
