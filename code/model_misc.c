@@ -430,7 +430,6 @@ void update_disc_radii(int p)
 {
     // Calculate the radius corresponding to an annulus edge for a given galaxy.  Calculation is iterative given a generic rotation curve format.
     int i, k;
-//    double left, right, tol, r_try, j_try, dif, v_try;
     double M_D, M_int, M_DM, M_CB, M_SB, M_ICS, M_hot;
     double z, a, b, c_DM, c, r_2, X, M_DM_tot, rho_const;
     double a_CB, M_CB_inf, a_SB, M_SB_inf, a_ICS, M_ICS_inf;
@@ -439,9 +438,6 @@ void update_disc_radii(int p)
     
     update_stellardisc_scaleradius(p); // need this at the start, as disc scale radii are part of this calculation
     update_gasdisc_scaleradius(p);
-
-//    tol = 1e-3;
-//    j_max = 100;
     
     // Determine the distribution of dark matter in the halo =====
     M_DM_tot = Gal[p].Mvir - Gal[p].HotGas - Gal[p].ColdGas - Gal[p].StellarMass - Gal[p].ICS - Gal[p].BlackHoleMass; // One may want to include Ejected Gas in this too
@@ -501,7 +497,6 @@ void update_disc_radii(int p)
     
     if(Gal[p].Mvir>0.0 && BTT<1.0)
     {
-//        const double two_inv_Vvir = 2.0/Gal[p].Vvir;
         const double inv_r_2 = 1.0/r_2;
         const double hot_fraction = Gal[p].HotGas/Gal[p].Rvir;
         const double exponent_support = -3.0*(1.0-BTT)/Gal[p].StellarDiscScaleRadius;
