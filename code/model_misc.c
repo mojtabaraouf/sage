@@ -4,6 +4,8 @@
 #include <math.h>
 #include <time.h>
 #include <gsl/gsl_rng.h>
+#include <gsl/gsl_errno.h>
+#include <gsl/gsl_spline.h>
 #include <assert.h>
 
 #include "core_allvars.h"
@@ -417,24 +419,33 @@ void check_ejected(int p)
 }
 
 
+static inline double v2_disc_cterm(const double x, const double c)
+{
+    const double cx = c*x;
+    const double inv_cx = 1.0/cx;
+    return (c + 4.8*c*exp(-0.35*cx - 3.5*inv_cx)) / (cx + inv_cx*inv_cx + 2*sqrt(inv_cx));
+}
+
 void update_disc_radii(int p)
 {
     // Calculate the radius corresponding to an annulus edge for a given galaxy.  Calculation is iterative given a generic rotation curve format.
-    int i, j, j_max;
-    double left, right, tol, r_try, j_try, dif, v_try;
+    int i, k;
+//    double left, right, tol, r_try, j_try, dif, v_try;
     double M_D, M_int, M_DM, M_CB, M_SB, M_ICS, M_hot;
     double z, a, b, c_DM, c, r_2, X, M_DM_tot, rho_const;
     double a_CB, M_CB_inf, a_SB, M_SB_inf, a_ICS, M_ICS_inf;
     double f_support, BTT, v_max;
+    double v2_spherical, v2_sdisc, v2_gdisc;
     
     update_stellardisc_scaleradius(p); // need this at the start, as disc scale radii are part of this calculation
     update_gasdisc_scaleradius(p);
 
-    tol = 1e-3;
-    j_max = 100;
+//    tol = 1e-3;
+//    j_max = 100;
     
     // Determine the distribution of dark matter in the halo =====
     M_DM_tot = Gal[p].Mvir - Gal[p].HotGas - Gal[p].ColdGas - Gal[p].StellarMass - Gal[p].ICS - Gal[p].BlackHoleMass; // One may want to include Ejected Gas in this too
+    double baryon_fraction = (Gal[p].HotGas + Gal[p].ColdGas + Gal[p].StellarMass + Gal[p].ICS + Gal[p].BlackHoleMass) / Gal[p].Mvir;
     
     if(M_DM_tot < 0.0) M_DM_tot = 0.0;
     
@@ -451,6 +462,7 @@ void update_disc_radii(int p)
         c = 1.0*c_DM; // Should only happen for satellite-satellite mergers, where X cannot be trusted
     r_2 = Gal[p].Rvir / c; // Di Cintio et al 2014b
     rho_const = M_DM_tot / (log((Gal[p].Rvir+r_2)/r_2) - Gal[p].Rvir/(Gal[p].Rvir+r_2));
+    assert(rho_const>=0.0);
     // ===========================================================
     
     // Determine distribution for bulge and ICS ==================
@@ -473,7 +485,7 @@ void update_disc_radii(int p)
     // ===========================================================
     
     M_D = 0.0;
-    left = 0.0;
+//    left = 0.0;
     
     BTT = (Gal[p].ClassicalBulgeMass+Gal[p].SecularBulgeMass)/(Gal[p].StellarMass+Gal[p].ColdGas);
 
@@ -489,62 +501,188 @@ void update_disc_radii(int p)
     
     if(Gal[p].Mvir>0.0 && BTT<1.0)
     {
-        double two_inv_Vvir = 2.0/Gal[p].Vvir;
-        double inv_r_2 = 1.0/r_2;
-        double hot_fraction = Gal[p].HotGas/Gal[p].Rvir;
-        double exponent_support = -3.0*(1.0-BTT)/Gal[p].StellarDiscScaleRadius;
+//        const double two_inv_Vvir = 2.0/Gal[p].Vvir;
+        const double inv_r_2 = 1.0/r_2;
+        const double hot_fraction = Gal[p].HotGas/Gal[p].Rvir;
+        const double exponent_support = -3.0*(1.0-BTT)/Gal[p].StellarDiscScaleRadius;
+        const int NUM_R_BINS=51;
         
-        for(i=1; i<N_BINS+1; i++)
+        // set up array of radii and j from which to interpolate
+        double analytic_j[NUM_R_BINS], analytic_r[NUM_R_BINS];
+        analytic_j[0] = 0.0;
+        analytic_r[0] = 0.0;
+        double r_jmax = 10.0*DiscBinEdge[N_BINS]/Gal[p].Vvir;
+        if(baryon_fraction>1.0) r_jmax *= (100*baryon_fraction);
+        double r = r_jmax;
+        const double inv_ExponentBin = 1.0/ExponentBin;
+        const double c_sdisc = Gal[p].Rvir / Gal[p].StellarDiscScaleRadius;
+        const double c_gdisc = Gal[p].Rvir / Gal[p].GasDiscScaleRadius;
+        const double GM_sdisc_r = G * (Gal[p].StellarMass - Gal[p].ClassicalBulgeMass - Gal[p].SecularBulgeMass) / Gal[p].Rvir;
+        const double GM_gdisc_r = G * Gal[p].ColdGas / Gal[p].Rvir;
+        double vrot, rrat;
+        M_DM = 1.0; // random initialisation for to trigger if statement
+        for(i=NUM_R_BINS-1; i>0; i--)
         {
-            right = DiscBinEdge[i] * two_inv_Vvir;
-            if(right<Gal[p].Rvir) right = Gal[p].Rvir;
-            if(right<8.0*left) right = 8.0*left;
-            M_D += Gal[p].DiscStars[i-1] + Gal[p].DiscGas[i-1];
+            analytic_r[i] = r;
             
-            double inv_DiscBinEdge = 1.0/DiscBinEdge[i];
-            
-            for(j=0; j<j_max; j++)
+            // M_DM profile can momentarily dip negative at centre. Just setting all DM to be zero from that point inward
+            rrat = r/r_2;
+            if(rrat<1e-6)
             {
-                r_try = (left+right)*0.5;
-                
-                if(Gal[p].Mvir>0.0)
-                    M_DM = rho_const * (log((r_try+r_2)*inv_r_2) - r_try/(r_try+r_2));
-                else
-                    M_DM = 0.0;
-                M_SB = M_SB_inf * sqr(r_try/(r_try + a_SB));
-                M_CB = M_CB_inf * sqr(r_try/(r_try + a_CB));
-                M_ICS = M_ICS_inf * sqr(r_try/(r_try + a_ICS));
-                M_hot = hot_fraction * r_try;
-                M_int = M_DM + M_D + M_CB + M_SB + M_ICS + M_hot + Gal[p].BlackHoleMass;
-                
-                
-                f_support = 1.0 - exp_f(exponent_support*r_try); // Fraction of support in rotation
-                v_try = sqrt(G*M_int*f_support/r_try);
-                if(v_try<v_max || v_max <= 0)
-                    j_try = r_try*v_try;
-                else
-                    j_try = r_try*v_max;
-                dif = j_try*inv_DiscBinEdge - 1.0;
-                
-                if(j==j_max-1) printf("Iterations maxed out in update_disc_radii\n");
-                
-                // Found correct r (within tolerance)
-                if(fabs(dif) <= tol || (right-left)/right <= tol)
-                    break;
-                
-                // Reset boundaries for next guess
-                if(dif>0)
-                    right = r_try;
-                else
-                    left = r_try;
+                i += 1;
+                break; // numerical resolution isn't good enough for float operations here   
             }
-            assert(r_try==r_try && r_try!=INFINITY);
-            Gal[p].DiscRadii[i] = r_try;
-            left = r_try;
+            if(M_DM>0.0)
+                M_DM = rho_const * (log(rrat+1) - rrat/(rrat+1));
+            else 
+                M_DM = 0.0;
+            M_SB = M_SB_inf * sqr(r/(r + a_SB));
+            M_CB = M_CB_inf * sqr(r/(r + a_CB));
+            M_ICS = M_ICS_inf * sqr(r/(r + a_ICS));
+            M_hot = hot_fraction * r;
+            M_int = M_DM + M_CB + M_SB + M_ICS + M_hot + Gal[p].BlackHoleMass;
+
+            v2_spherical = G * M_int / r;
+            v2_sdisc = GM_sdisc_r * v2_disc_cterm(r, c_sdisc);
+            v2_gdisc = GM_gdisc_r * v2_disc_cterm(r, c_gdisc);
+            
+            f_support = 1.0 - exp(exponent_support*r); // Fraction of support in rotation
+            vrot = sqrt(f_support * (v2_spherical+v2_sdisc+v2_gdisc));
+       
+            analytic_j[i] = vrot * r;
+            if((i<NUM_R_BINS-1) && !(analytic_j[i]<analytic_j[i+1]))
+            {
+                printf("i, analytic_j[i], analytic_j[i+1] = %i, %e, %e\n", i, analytic_j[i], analytic_j[i+1]);
+                printf("BTT = %e,   M_DM = %e,  M_SB = %e,   M_ICS = %e,   M_hot = %e,   v2_spherical = %e,   f_support = %e\n", BTT, M_DM, M_SB, M_ICS, M_hot, v2_spherical, f_support);
+                double r_prev = r*ExponentBin;
+                printf("r[i], r[i+1] = %e, %e\n", r, r_prev);
+                printf("rho_const, r_2, Rvir = %e, %e, %e\n", rho_const, r_2, Gal[p].Rvir);
+                printf("M_DM[i], M_DM[i+1] = %e, %e\n", M_DM, rho_const * (log((r_prev+r_2)*inv_r_2) - r_prev/(r_prev+r_2)));
+                printf("M_SB[i], M_SB[i+1] = %e, %e\n", M_SB,  M_SB_inf * sqr(r_prev/(r_prev + a_SB)));
+                printf("M_CB[i], M_CB[i+1] = %e, %e\n", M_CB,  M_CB_inf * sqr(r_prev/(r_prev + a_CB)));
+                printf("M_ICS[i], M_ICS[i+1] = %e, %e\n", M_ICS,  M_ICS_inf * sqr(r_prev/(r_prev + a_ICS)));
+                printf("M_hot[i], M_hot[i+1] = %e, %e\n", M_hot, hot_fraction*r_prev);
+                printf("v2_sdisc[i], v2_sdisc[i+1] = %e, %e\n", v2_sdisc, GM_sdisc_r*v2_disc_cterm(r_prev, c_sdisc));
+                printf("v2_gdisc[i], v2_gdisc[i+1] = %e, %e\n", v2_gdisc, GM_gdisc_r*v2_disc_cterm(r_prev, c_gdisc));
+            } 
+            if(i<NUM_R_BINS-1) assert(analytic_j[i]<analytic_j[i+1]);
+            if((i==NUM_R_BINS-1) && analytic_j[i]<DiscBinEdge[N_BINS]) 
+            {
+                fprintf(stderr, "analytic_r[i] \t analytic_j[i] = %12.6e \t %12.6e\n", analytic_r[i], analytic_j[i]);
+                fprintf(stderr,"Rvir = %14.8e   GasScale = %14.8e   StellarScale = %14.8e   MMWScale = %14.8e\n",
+                        Gal[p].Rvir, Gal[p].GasDiscScaleRadius, Gal[p].StellarDiscScaleRadius, Gal[p].DiskScaleRadius);
+                fprintf(stderr,"Mvir = %14.8e   StellarMass = %14.8e   ColdGasMass = %14.8e   BTT = %14.8e   fsupport = %14.8e\n",
+                        Gal[p].Mvir, Gal[p].StellarMass, Gal[p].ColdGas, BTT, f_support);
+                fprintf(stderr,"Vvir = %14.8e   v_from_j = %14.8e\n",
+                        Gal[p].Vvir, vrot);
+            }
+            r *= inv_ExponentBin;
+   
         }
+        
+        gsl_interp_accel *acc = gsl_interp_accel_alloc();
+
+        if(i>0) // reducing bins to avoid numerical issues with oversampling centre
+        {
+            const int NUM_R_BINS_REDUCED = NUM_R_BINS - i;
+            double analytic_j_reduced[NUM_R_BINS_REDUCED], analytic_r_reduced[NUM_R_BINS_REDUCED];
+            for(k=0; k<NUM_R_BINS_REDUCED; k++)
+            {
+                analytic_j_reduced[k] = analytic_j[k+i];
+                analytic_r_reduced[k] = analytic_r[k+i];
+            }
+            gsl_spline *spline = gsl_spline_alloc(gsl_interp_cspline, NUM_R_BINS_REDUCED);
+            gsl_spline_init(spline, analytic_j_reduced, analytic_r_reduced, NUM_R_BINS_REDUCED);
+            
+            for(k=1; k<N_BINS+1; k++)
+            {
+                assert(DiscBinEdge[k] >= analytic_j_reduced[0]);
+                assert(DiscBinEdge[k] <= analytic_j_reduced[NUM_R_BINS_REDUCED-1]);
+                Gal[p].DiscRadii[k] = gsl_spline_eval(spline, DiscBinEdge[k], acc);
+            }
+
+            gsl_spline_free (spline);
+            gsl_interp_accel_free (acc);
+
+        }
+        else
+        {
+            gsl_spline *spline = gsl_spline_alloc(gsl_interp_cspline, NUM_R_BINS);
+            gsl_spline_init(spline, analytic_j, analytic_r, NUM_R_BINS);
+            
+            for(k=1; k<N_BINS+1; k++)
+            {
+                assert(DiscBinEdge[k] >= analytic_j[0]);
+                assert(DiscBinEdge[k] <= analytic_j[NUM_R_BINS-1]);
+                Gal[p].DiscRadii[k] = gsl_spline_eval(spline, DiscBinEdge[k], acc);
+            }
+
+            gsl_spline_free (spline);
+            gsl_interp_accel_free (acc);
+
+        }
+        
+
+
+//        fprintf(stderr, "Min analyitc j = %12.6e \t Min DiscBinEdge %12.6e\n\n", analytic_j[0], DiscBinEdge[1]);
+//        fprintf(stderr, "Max analyitc j = %12.6e \t Max DiscBinEdge %12.6e\n\n", analytic_j[NUM_R_BINS-1], DiscBinEdge[N_BINS]);
+
+
+        
+//            printf("i, Radii = %i, %e\n", i, Gal[p].DiscRadii[i]);
+            
+//            right = DiscBinEdge[i] * two_inv_Vvir;
+//            if(right<Gal[p].Rvir) right = Gal[p].Rvir;
+//            if(right<8.0*left) right = 8.0*left;
+//            M_D += Gal[p].DiscStars[i-1] + Gal[p].DiscGas[i-1];
+//            
+//            double inv_DiscBinEdge = 1.0/DiscBinEdge[i];
+            
+//            for(j=0; j<j_max; j++)
+//            {
+//                r_try = (left+right)*0.5;
+//                
+//                if(Gal[p].Mvir>0.0)
+//                    M_DM = rho_const * (log((r_try+r_2)*inv_r_2) - r_try/(r_try+r_2));
+//                else
+//                    M_DM = 0.0;
+//                M_SB = M_SB_inf * sqr(r_try/(r_try + a_SB));
+//                M_CB = M_CB_inf * sqr(r_try/(r_try + a_CB));
+//                M_ICS = M_ICS_inf * sqr(r_try/(r_try + a_ICS));
+//                M_hot = hot_fraction * r_try;
+//                M_int = M_DM + M_D + M_CB + M_SB + M_ICS + M_hot + Gal[p].BlackHoleMass;
+//                
+//                
+//                f_support = 1.0 - exp_f(exponent_support*r_try); // Fraction of support in rotation
+//                v_try = sqrt(G*M_int*f_support/r_try);
+//                if(v_try<v_max || v_max <= 0)
+//                    j_try = r_try*v_try;
+//                else
+//                    j_try = r_try*v_max;
+//                dif = j_try*inv_DiscBinEdge - 1.0;
+//                
+//                if(j==j_max-1) printf("Iterations maxed out in update_disc_radii\n");
+//                
+//                // Found correct r (within tolerance)
+//                if(fabs(dif) <= tol || (right-left)/right <= tol)
+//                    break;
+//                
+//                // Reset boundaries for next guess
+//                if(dif>0)
+//                    right = r_try;
+//                else
+//                    left = r_try;
+//            }
+//            assert(r_try==r_try && r_try!=INFINITY);
+//            Gal[p].DiscRadii[i] = r_try;
+//            left = r_try;
+
     }
     
+        
+
     update_stellardisc_scaleradius(p);
+    // if other functionality is added for gas disc scale radius, update it here too
 }
 
 

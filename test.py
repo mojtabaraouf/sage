@@ -139,7 +139,13 @@ if os.path.isfile(SMfigname):
     subprocess.call(['rm', SMfigname])
 
 # Run Dark Sage
-subprocess.call(['./darksage', dir+'test.par'])
+outcome = subprocess.call(['./darksage', dir+'test.par'])
+
+# Check status of subprocess call -> if error, terminate testing now
+if outcome != 0:
+    print('Dark Sage crashed!')
+    print('Please report this issue if you cannot find a fast solution.')
+    sys.exit(1)
 
 # Check the produced and fetched data are the same size
 size_test = os.path.getsize(dir+'model_to_test_against_z2.239_0')
@@ -147,6 +153,7 @@ size_out = os.path.getsize(dir+'model_z2.239_0')
 if size_test!=size_out:
     print('\nUh oh! The Dark Sage output did not match what was expected!')
     print('The size of your output file is different.')
+    print('Check for updates to Dark Sage on Github, try `rm -rf {0}\' then run this again.'.format(dir))
     print('Please report this issue if you cannot find a fast solution.')
     sys.exit(1)
 

@@ -3,7 +3,7 @@
 %------------------------------------------
 
 FileNameGalaxies       model
-OutputDir               output/
+OutputDir               output/results/
 %OutputDir              /Volumes/AdamDrive/Research/SAGE_disc_runs/554
 %OutputDir               /Users/adam/DarkSage_runs/549_newSFRout
 
