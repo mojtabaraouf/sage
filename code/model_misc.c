@@ -566,17 +566,20 @@ void update_disc_radii(int p)
                 printf("v2_gdisc[i], v2_gdisc[i+1] = %e, %e\n", v2_gdisc, GM_gdisc_r*v2_disc_cterm(r_prev, c_gdisc));
             } 
             if(i<NUM_R_BINS-1) assert(analytic_j[i]<analytic_j[i+1]);
-            if((i==NUM_R_BINS-1) && analytic_j[i]<DiscBinEdge[N_BINS]) 
+            if((i==NUM_R_BINS-1) && analytic_j[i]<DiscBinEdge[N_BINS]) // Need to expand range for interpolation!
             {
-                fprintf(stderr, "analytic_r[i] \t analytic_j[i] = %12.6e \t %12.6e\n", analytic_r[i], analytic_j[i]);
-                fprintf(stderr,"Rvir = %14.8e   GasScale = %14.8e   StellarScale = %14.8e   MMWScale = %14.8e\n",
-                        Gal[p].Rvir, Gal[p].GasDiscScaleRadius, Gal[p].StellarDiscScaleRadius, Gal[p].DiskScaleRadius);
-                fprintf(stderr,"Mvir = %14.8e   StellarMass = %14.8e   ColdGasMass = %14.8e   BTT = %14.8e   fsupport = %14.8e\n",
-                        Gal[p].Mvir, Gal[p].StellarMass, Gal[p].ColdGas, BTT, f_support);
-                fprintf(stderr,"Vvir = %14.8e   v_from_j = %14.8e\n",
-                        Gal[p].Vvir, vrot);
+//                fprintf(stderr, "analytic_r[i] \t analytic_j[i] = %12.6e \t %12.6e\n", analytic_r[i], analytic_j[i]);
+//                fprintf(stderr,"Rvir = %14.8e   GasScale = %14.8e   StellarScale = %14.8e   MMWScale = %14.8e\n",
+//                        Gal[p].Rvir, Gal[p].GasDiscScaleRadius, Gal[p].StellarDiscScaleRadius, Gal[p].DiskScaleRadius);
+//                fprintf(stderr,"Mvir = %14.8e   StellarMass = %14.8e   ColdGasMass = %14.8e   BTT = %14.8e   fsupport = %14.8e\n",
+//                        Gal[p].Mvir, Gal[p].StellarMass, Gal[p].ColdGas, BTT, f_support);
+//                fprintf(stderr,"Vvir = %14.8e   v_from_j = %14.8e\n",
+//                        Gal[p].Vvir, vrot);
+                r *= 10.; 
+                i += 1;
             }
-            r *= inv_ExponentBin;
+            else
+                r *= inv_ExponentBin;
    
         }
         
@@ -621,66 +624,8 @@ void update_disc_radii(int p)
             gsl_interp_accel_free (acc);
 
         }
-        
-
-
-//        fprintf(stderr, "Min analyitc j = %12.6e \t Min DiscBinEdge %12.6e\n\n", analytic_j[0], DiscBinEdge[1]);
-//        fprintf(stderr, "Max analyitc j = %12.6e \t Max DiscBinEdge %12.6e\n\n", analytic_j[NUM_R_BINS-1], DiscBinEdge[N_BINS]);
-
-
-        
-//            printf("i, Radii = %i, %e\n", i, Gal[p].DiscRadii[i]);
-            
-//            right = DiscBinEdge[i] * two_inv_Vvir;
-//            if(right<Gal[p].Rvir) right = Gal[p].Rvir;
-//            if(right<8.0*left) right = 8.0*left;
-//            M_D += Gal[p].DiscStars[i-1] + Gal[p].DiscGas[i-1];
-//            
-//            double inv_DiscBinEdge = 1.0/DiscBinEdge[i];
-            
-//            for(j=0; j<j_max; j++)
-//            {
-//                r_try = (left+right)*0.5;
-//                
-//                if(Gal[p].Mvir>0.0)
-//                    M_DM = rho_const * (log((r_try+r_2)*inv_r_2) - r_try/(r_try+r_2));
-//                else
-//                    M_DM = 0.0;
-//                M_SB = M_SB_inf * sqr(r_try/(r_try + a_SB));
-//                M_CB = M_CB_inf * sqr(r_try/(r_try + a_CB));
-//                M_ICS = M_ICS_inf * sqr(r_try/(r_try + a_ICS));
-//                M_hot = hot_fraction * r_try;
-//                M_int = M_DM + M_D + M_CB + M_SB + M_ICS + M_hot + Gal[p].BlackHoleMass;
-//                
-//                
-//                f_support = 1.0 - exp_f(exponent_support*r_try); // Fraction of support in rotation
-//                v_try = sqrt(G*M_int*f_support/r_try);
-//                if(v_try<v_max || v_max <= 0)
-//                    j_try = r_try*v_try;
-//                else
-//                    j_try = r_try*v_max;
-//                dif = j_try*inv_DiscBinEdge - 1.0;
-//                
-//                if(j==j_max-1) printf("Iterations maxed out in update_disc_radii\n");
-//                
-//                // Found correct r (within tolerance)
-//                if(fabs(dif) <= tol || (right-left)/right <= tol)
-//                    break;
-//                
-//                // Reset boundaries for next guess
-//                if(dif>0)
-//                    right = r_try;
-//                else
-//                    left = r_try;
-//            }
-//            assert(r_try==r_try && r_try!=INFINITY);
-//            Gal[p].DiscRadii[i] = r_try;
-//            left = r_try;
-
     }
     
-        
-
     update_stellardisc_scaleradius(p);
     // if other functionality is added for gas disc scale radius, update it here too
 }
