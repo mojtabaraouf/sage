@@ -436,6 +436,7 @@ void update_disc_radii(int p)
     double f_support, BTT, v_max;
     double v2_spherical, v2_sdisc, v2_gdisc;
     
+    // should do a while loop to make sure these values are converged when output.  Will slow code but makes the disc potential more self-consistent.
     update_stellardisc_scaleradius(p); // need this at the start, as disc scale radii are part of this calculation
     update_gasdisc_scaleradius(p);
     
@@ -506,7 +507,7 @@ void update_disc_radii(int p)
         double analytic_j[NUM_R_BINS], analytic_r[NUM_R_BINS];
         analytic_j[0] = 0.0;
         analytic_r[0] = 0.0;
-        double r_jmax = 10.0*DiscBinEdge[N_BINS]/Gal[p].Vvir;
+        double r_jmax = 2.0*DiscBinEdge[N_BINS]/Gal[p].Vvir;
         if(baryon_fraction>1.0) r_jmax *= (100*baryon_fraction);
         double r = r_jmax;
         const double inv_ExponentBin = 1.0/ExponentBin;
@@ -516,6 +517,7 @@ void update_disc_radii(int p)
         const double GM_gdisc_r = G * Gal[p].ColdGas / Gal[p].Rvir;
         double vrot, rrat;
         M_DM = 1.0; // random initialisation for to trigger if statement
+        
         for(i=NUM_R_BINS-1; i>0; i--)
         {
             analytic_r[i] = r;
@@ -545,32 +547,10 @@ void update_disc_radii(int p)
             vrot = sqrt(f_support * (v2_spherical+v2_sdisc+v2_gdisc));
        
             analytic_j[i] = vrot * r;
-            if((i<NUM_R_BINS-1) && !(analytic_j[i]<analytic_j[i+1]))
-            {
-                printf("i, analytic_j[i], analytic_j[i+1] = %i, %e, %e\n", i, analytic_j[i], analytic_j[i+1]);
-                printf("BTT = %e,   M_DM = %e,  M_SB = %e,   M_ICS = %e,   M_hot = %e,   v2_spherical = %e,   f_support = %e\n", BTT, M_DM, M_SB, M_ICS, M_hot, v2_spherical, f_support);
-                double r_prev = r*ExponentBin;
-                printf("r[i], r[i+1] = %e, %e\n", r, r_prev);
-                printf("rho_const, r_2, Rvir = %e, %e, %e\n", rho_const, r_2, Gal[p].Rvir);
-                printf("M_DM[i], M_DM[i+1] = %e, %e\n", M_DM, rho_const * (log((r_prev+r_2)*inv_r_2) - r_prev/(r_prev+r_2)));
-                printf("M_SB[i], M_SB[i+1] = %e, %e\n", M_SB,  M_SB_inf * sqr(r_prev/(r_prev + a_SB)));
-                printf("M_CB[i], M_CB[i+1] = %e, %e\n", M_CB,  M_CB_inf * sqr(r_prev/(r_prev + a_CB)));
-                printf("M_ICS[i], M_ICS[i+1] = %e, %e\n", M_ICS,  M_ICS_inf * sqr(r_prev/(r_prev + a_ICS)));
-                printf("M_hot[i], M_hot[i+1] = %e, %e\n", M_hot, hot_fraction*r_prev);
-                printf("v2_sdisc[i], v2_sdisc[i+1] = %e, %e\n", v2_sdisc, GM_sdisc_r*v2_disc_cterm(r_prev, c_sdisc));
-                printf("v2_gdisc[i], v2_gdisc[i+1] = %e, %e\n", v2_gdisc, GM_gdisc_r*v2_disc_cterm(r_prev, c_gdisc));
-            } 
             if(i<NUM_R_BINS-1) assert(analytic_j[i]<analytic_j[i+1]);
             if((i==NUM_R_BINS-1) && analytic_j[i]<DiscBinEdge[N_BINS]) // Need to expand range for interpolation!
             {
-//                fprintf(stderr, "analytic_r[i] \t analytic_j[i] = %12.6e \t %12.6e\n", analytic_r[i], analytic_j[i]);
-//                fprintf(stderr,"Rvir = %14.8e   GasScale = %14.8e   StellarScale = %14.8e   MMWScale = %14.8e\n",
-//                        Gal[p].Rvir, Gal[p].GasDiscScaleRadius, Gal[p].StellarDiscScaleRadius, Gal[p].DiskScaleRadius);
-//                fprintf(stderr,"Mvir = %14.8e   StellarMass = %14.8e   ColdGasMass = %14.8e   BTT = %14.8e   fsupport = %14.8e\n",
-//                        Gal[p].Mvir, Gal[p].StellarMass, Gal[p].ColdGas, BTT, f_support);
-//                fprintf(stderr,"Vvir = %14.8e   v_from_j = %14.8e\n",
-//                        Gal[p].Vvir, vrot);
-                r *= 10.; 
+                r *= 2.0; 
                 i += 1;
             }
             else

@@ -32,7 +32,7 @@ def galdtype():
                     ('jY_Halo'                      , floattype), 
                     ('jZ_Halo'                      , floattype), 
                     ('Total_Particles'              , np.int32),
-                    ('Maximum_Number_of_Particles_over_History'                  , np.int32),
+                    ('Maximum_Number_of_Particles_over_History', np.int32),
                     ('Mvir'                         , floattype),
                     ('Rvir'                         , floattype),
                     ('Vvir'                         , floattype),
@@ -55,6 +55,7 @@ def galdtype():
                     ('X_Spin_of_Gas_Disk'           , floattype),
                     ('Y_Spin_of_Gas_Disk'           , floattype),
                     ('Z_Spin_of_Gas_Disk'           , floattype),
+                    ('SpinInstabilityBulge'         , (floattype, 3)), #
                     ('SpinMergerBulge'              , (floattype, 3)), #
                     ('StarsInSitu'                  , floattype), #
                     ('StarsInstability'             , floattype), #
