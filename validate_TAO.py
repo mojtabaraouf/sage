@@ -138,10 +138,10 @@ def tao_csv(fname, keylist=None):
 
 
 
-# Still need code to actually read multiple Dark Sage files and point to directory/file
+# This just needs to point to a Dark Sage output file.  In principle, if the fields in one file are validated, there's no reason there should be any problem with fields in other files.
 G = read_darksage()
 
-# Read specified TAO output
+# Read specified TAO output.  Currently set up for CSV.  The fields names in galdtype() would need to be different if dealing with HDF5 format.
 T = tao_csv()
 
 
