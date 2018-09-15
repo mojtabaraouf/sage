@@ -436,7 +436,6 @@ void update_disc_radii(int p)
     double f_support, BTT, v_max;
     double v2_spherical, v2_sdisc, v2_gdisc;
     
-    // should do a while loop to make sure these values are converged when output.  Will slow code but makes the disc potential more self-consistent.
     update_stellardisc_scaleradius(p); // need this at the start, as disc scale radii are part of this calculation
     update_gasdisc_scaleradius(p);
     
@@ -507,7 +506,7 @@ void update_disc_radii(int p)
         double analytic_j[NUM_R_BINS], analytic_r[NUM_R_BINS];
         analytic_j[0] = 0.0;
         analytic_r[0] = 0.0;
-        double r_jmax = 2.0*DiscBinEdge[N_BINS]/Gal[p].Vvir;
+        double r_jmax = 10.0*DiscBinEdge[N_BINS]/Gal[p].Vvir;
         if(baryon_fraction>1.0) r_jmax *= (100*baryon_fraction);
         double r = r_jmax;
         const double inv_ExponentBin = 1.0/ExponentBin;
@@ -550,7 +549,7 @@ void update_disc_radii(int p)
             if(i<NUM_R_BINS-1) assert(analytic_j[i]<analytic_j[i+1]);
             if((i==NUM_R_BINS-1) && analytic_j[i]<DiscBinEdge[N_BINS]) // Need to expand range for interpolation!
             {
-                r *= 2.0; 
+                r *= 10.0; 
                 i += 1;
             }
             else
