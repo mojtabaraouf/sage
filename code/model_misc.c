@@ -497,7 +497,6 @@ void update_disc_radii(int p)
     
     if(Gal[p].Mvir>0.0 && BTT<1.0)
     {
-        const double inv_r_2 = 1.0/r_2;
         const double hot_fraction = Gal[p].HotGas/Gal[p].Rvir;
         const double exponent_support = -3.0*(1.0-BTT)/Gal[p].StellarDiscScaleRadius;
         const int NUM_R_BINS=51;
@@ -507,7 +506,7 @@ void update_disc_radii(int p)
         analytic_j[0] = 0.0;
         analytic_r[0] = 0.0;
         double r_jmax = 10.0*DiscBinEdge[N_BINS]/Gal[p].Vvir;
-        if(baryon_fraction>1.0) r_jmax *= (100*baryon_fraction);
+//        if(baryon_fraction>1.0) r_jmax *= (100*baryon_fraction);
         double r = r_jmax;
         const double inv_ExponentBin = 1.0/ExponentBin;
         const double c_sdisc = Gal[p].Rvir / Gal[p].StellarDiscScaleRadius;
@@ -515,19 +514,21 @@ void update_disc_radii(int p)
         const double GM_sdisc_r = G * (Gal[p].StellarMass - Gal[p].ClassicalBulgeMass - Gal[p].SecularBulgeMass) / Gal[p].Rvir;
         const double GM_gdisc_r = G * Gal[p].ColdGas / Gal[p].Rvir;
         double vrot, rrat;
-        M_DM = 1.0; // random initialisation for to trigger if statement
+        M_DM = 1.0; // random initialisation to trigger if statement
         
         for(i=NUM_R_BINS-1; i>0; i--)
         {
             analytic_r[i] = r;
             
-            // M_DM profile can momentarily dip negative at centre. Just setting all DM to be zero from that point inward
+            // Numerical-resolution issues can arise if rrat is too small
             rrat = r/r_2;
-            if(rrat<1e-6)
+            if(rrat<1e-10)
             {
                 i += 1;
-                break; // numerical resolution isn't good enough for float operations here   
+                break;  
             }
+            
+            // M_DM profile can momentarily dip negative at centre. Just setting all DM to be zero from that point inward
             if(M_DM>0.0)
                 M_DM = rho_const * (log(rrat+1) - rrat/(rrat+1));
             else 
@@ -558,21 +559,37 @@ void update_disc_radii(int p)
         }
         
         gsl_interp_accel *acc = gsl_interp_accel_alloc();
-
+//        printf("i=%i\,", i);
         if(i>0) // reducing bins to avoid numerical issues with oversampling centre
         {
             const int NUM_R_BINS_REDUCED = NUM_R_BINS - i;
             double analytic_j_reduced[NUM_R_BINS_REDUCED], analytic_r_reduced[NUM_R_BINS_REDUCED];
             for(k=0; k<NUM_R_BINS_REDUCED; k++)
             {
-                analytic_j_reduced[k] = analytic_j[k+i];
-                analytic_r_reduced[k] = analytic_r[k+i];
+                analytic_j_reduced[k] = 1.0*analytic_j[k+i];
+                analytic_r_reduced[k] = 1.0*analytic_r[k+i];
             }
             gsl_spline *spline = gsl_spline_alloc(gsl_interp_cspline, NUM_R_BINS_REDUCED);
             gsl_spline_init(spline, analytic_j_reduced, analytic_r_reduced, NUM_R_BINS_REDUCED);
             
             for(k=1; k<N_BINS+1; k++)
             {
+
+                if(!(DiscBinEdge[k] >= analytic_j_reduced[0]))
+                {
+                    printf("i, k, DiscBinEdge[k], analytic_j_reduced[0] = %i, %i, %e, %e\n", i, k, DiscBinEdge[k], analytic_j_reduced[0]);
+                    printf("Mvir, StellarMass, StellarDiscMass, GasDiscMass = %e, %e, %e, %e\n", Gal[p].Mvir, Gal[p].StellarMass, (Gal[p].StellarMass - Gal[p].ClassicalBulgeMass - Gal[p].SecularBulgeMass), Gal[p].ColdGas);
+                    printf("Rvir, max(analytic_r), min(analytic_r), max(analytic_r_reduced), min(analytic_r_reduced) = %e, %e, %e, %e, %e\n", Gal[p].Rvir, analytic_r[NUM_R_BINS], analytic_r[1], analytic_r_reduced[NUM_R_BINS_REDUCED], analytic_r_reduced[0]);
+                }
+                else if(!(DiscBinEdge[k] <= analytic_j_reduced[NUM_R_BINS_REDUCED-1]))
+                {
+                    printf("i, k, DiscBinEdge[k], analytic_j_reduced[NUM_R_BINS_REDUCED-1] = $i, %i, %e, %e\n", i, k, DiscBinEdge[k], analytic_j_reduced[NUM_R_BINS_REDUCED-1]);
+                    printf("Mvir, StellarMass, StellarDiscMass, GasDiscMass = %e, %e, %e, %e\n", Gal[p].Mvir, Gal[p].StellarMass, (Gal[p].StellarMass - Gal[p].ClassicalBulgeMass - Gal[p].SecularBulgeMass), Gal[p].ColdGas);
+//                    analytic_j_reduced[NUM_R_BINS_REDUCED-1] = 1.0*DiscBinEdge[k];
+                    printf("Rvir, max(analytic_r), min(analytic_r), max(analytic_r_reduced), min(analytic_r_reduced) = %e, %e, %e, %e, %e\n", Gal[p].Rvir, analytic_r[NUM_R_BINS], analytic_r[1], analytic_r_reduced[NUM_R_BINS_REDUCED], analytic_r_reduced[0]);
+                }
+
+                // If this assert statement is triggered, it's probably because the analytic_r and analytic_j arrays don't go deep enough.  Changing the rrat threshold for the break statement in the previous loop or increasing NUM_R_BINS might help.
                 assert(DiscBinEdge[k] >= analytic_j_reduced[0]);
                 assert(DiscBinEdge[k] <= analytic_j_reduced[NUM_R_BINS_REDUCED-1]);
                 Gal[p].DiscRadii[k] = gsl_spline_eval(spline, DiscBinEdge[k], acc);
