@@ -522,7 +522,7 @@ void update_disc_radii(int p)
             
             // Numerical-resolution issues can arise if rrat is too small
             rrat = r/r_2;
-            if(rrat<1e-10)
+            if(rrat<1e-7)
             {
                 i += 1;
                 break;  
@@ -574,22 +574,7 @@ void update_disc_radii(int p)
             
             for(k=1; k<N_BINS+1; k++)
             {
-
-                if(!(DiscBinEdge[k] >= analytic_j_reduced[0]))
-                {
-                    printf("i, k, DiscBinEdge[k], analytic_j_reduced[0] = %i, %i, %e, %e\n", i, k, DiscBinEdge[k], analytic_j_reduced[0]);
-                    printf("Mvir, StellarMass, StellarDiscMass, GasDiscMass = %e, %e, %e, %e\n", Gal[p].Mvir, Gal[p].StellarMass, (Gal[p].StellarMass - Gal[p].ClassicalBulgeMass - Gal[p].SecularBulgeMass), Gal[p].ColdGas);
-                    printf("Rvir, max(analytic_r), min(analytic_r), max(analytic_r_reduced), min(analytic_r_reduced) = %e, %e, %e, %e, %e\n", Gal[p].Rvir, analytic_r[NUM_R_BINS], analytic_r[1], analytic_r_reduced[NUM_R_BINS_REDUCED], analytic_r_reduced[0]);
-                }
-                else if(!(DiscBinEdge[k] <= analytic_j_reduced[NUM_R_BINS_REDUCED-1]))
-                {
-                    printf("i, k, DiscBinEdge[k], analytic_j_reduced[NUM_R_BINS_REDUCED-1] = $i, %i, %e, %e\n", i, k, DiscBinEdge[k], analytic_j_reduced[NUM_R_BINS_REDUCED-1]);
-                    printf("Mvir, StellarMass, StellarDiscMass, GasDiscMass = %e, %e, %e, %e\n", Gal[p].Mvir, Gal[p].StellarMass, (Gal[p].StellarMass - Gal[p].ClassicalBulgeMass - Gal[p].SecularBulgeMass), Gal[p].ColdGas);
-//                    analytic_j_reduced[NUM_R_BINS_REDUCED-1] = 1.0*DiscBinEdge[k];
-                    printf("Rvir, max(analytic_r), min(analytic_r), max(analytic_r_reduced), min(analytic_r_reduced) = %e, %e, %e, %e, %e\n", Gal[p].Rvir, analytic_r[NUM_R_BINS], analytic_r[1], analytic_r_reduced[NUM_R_BINS_REDUCED], analytic_r_reduced[0]);
-                }
-
-                // If this assert statement is triggered, it's probably because the analytic_r and analytic_j arrays don't go deep enough.  Changing the rrat threshold for the break statement in the previous loop or increasing NUM_R_BINS might help.
+                // If this assert statement is triggered, it's probably because the analytic_r and analytic_j arrays don't go deep enough.  Changing the rrat threshold for the break statement in the previous loop or increasing NUM_R_BINS might help.  First, check that everything in the parameter file is accurate, especially quantities like particle mass.
                 assert(DiscBinEdge[k] >= analytic_j_reduced[0]);
                 assert(DiscBinEdge[k] <= analytic_j_reduced[NUM_R_BINS_REDUCED-1]);
                 Gal[p].DiscRadii[k] = gsl_spline_eval(spline, DiscBinEdge[k], acc);
