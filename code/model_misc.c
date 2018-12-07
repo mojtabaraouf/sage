@@ -63,9 +63,9 @@ void init_galaxy(int p, int halonr)
     Gal[p].Len = Halo[halonr].Len;
     Gal[p].LenMax = Halo[halonr].Len;
     Gal[p].Vmax = Halo[halonr].Vmax;
-    Gal[p].Vvir = get_virial_velocity(halonr);
-    Gal[p].Mvir = get_virial_mass(halonr);
-    Gal[p].Rvir = get_virial_radius(halonr);
+    Gal[p].Vvir = get_virial_velocity(halonr, p);
+    Gal[p].Mvir = get_virial_mass(halonr, p);
+    Gal[p].Rvir = get_virial_radius(halonr, p);
     
     Gal[p].deltaMvir = 0.0;
     
@@ -167,6 +167,8 @@ double get_disk_radius(int halonr, int p)
     if(radius <= 0.0 || radius!=radius || radius==INFINITY)
     {
         if(!(SpinMagnitude>0)) printf("ERROR: Halo with SpinMagntiude of 0\n");
+        printf("radius, SpinMagnitude, Vvir, Rvir = %e, %e, %e %e\n", radius, SpinMagnitude, Gal[p].Vvir, Gal[p].Rvir);
+        printf("halo Mvirs = %e, %e, %e, %i\n", Halo[halonr].Mvir1, Halo[halonr].Mvir2, Halo[halonr].Mvir3, Halo[halonr].Len);
         radius = 0.0;
     }
     assert(radius>0);
@@ -229,17 +231,17 @@ double exp_f(double x)
     return x;
 }
 
-double get_virial_mass(int halonr)
+double get_virial_mass(int halonr, int p)
 {
-    if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir1 >= 0.0 && MvirDefinition==1)
+    if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir1 > 0.0 && MvirDefinition==1)
     {
         return Halo[halonr].Mvir1;
     }
-    else if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir2 >= 0.0 && MvirDefinition==2)
+    else if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir2 > 0.0 && MvirDefinition==2)
     {
         return Halo[halonr].Mvir2;
     }
-    else if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir3 >= 0.0 && MvirDefinition==2)
+    else if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir3 > 0.0 && MvirDefinition==3)
     {
         return Halo[halonr].Mvir3;
     }
@@ -247,29 +249,31 @@ double get_virial_mass(int halonr)
     {
         return Halo[halonr].Len * PartMass;
     }
-    else
+    else if(p!=-1)
     {
         return Gal[p].StellarMass + Gal[p].ColdGas + Gal[p].HotGas + Gal[p].BlackHoleMass + Gal[p].ICS;
     }
-}
-
-
-
-double get_virial_velocity(int halonr)
-{
-    double Rvir;
-    
-    Rvir = get_virial_radius(halonr);
-    
-    if(Rvir > 0.0)
-        return sqrt(G * get_virial_mass(halonr) / Rvir);
     else
         return 0.0;
 }
 
 
 
-double get_virial_radius(int halonr)
+double get_virial_velocity(int halonr, int p)
+{
+    double Rvir;
+    
+    Rvir = get_virial_radius(halonr, p);
+    
+    if(Rvir > 0.0)
+        return sqrt(G * get_virial_mass(halonr, p) / Rvir);
+    else
+        return 0.0;
+}
+
+
+
+double get_virial_radius(int halonr, int p)
 {
     // return Halo[halonr].Rvir;  // Used for Bolshoi
     
@@ -283,7 +287,7 @@ double get_virial_radius(int halonr)
     rhocrit = 3 * hubble_of_z_sq / (8 * M_PI * G);
     fac = 1 / (200 * 4 * M_PI / 3.0 * rhocrit);
     
-    return cbrt(get_virial_mass(halonr) * fac);
+    return cbrt(get_virial_mass(halonr, p) * fac);
 }
 
 
@@ -656,7 +660,7 @@ void update_stellardisc_scaleradius(int p)
     
     if(Gal[p].StellarDiscScaleRadius<=0.0)
     {
-//        printf("BUG: StellarDiscScaleRadius reassigned from %e to DiskScale Radius\n", Gal[p].StellarDiscScaleRadius);
+        printf("BUG: StellarDiscScaleRadius reassigned from %e to DiskScale Radius\n", Gal[p].StellarDiscScaleRadius);
         Gal[p].StellarDiscScaleRadius = 1.0 * Gal[p].DiskScaleRadius; // Some functions still need a number for the scale radius even if there aren't any stars actually in the disc.
     }
 }
@@ -699,7 +703,7 @@ void update_gasdisc_scaleradius(int p)
     
     if(Gal[p].GasDiscScaleRadius<=0.0)
     {
-//        printf("BUG: GasDiscScaleRadius reassigned from %e to DiskScale Radius\n", Gal[p].GasDiscScaleRadius);
+        printf("BUG: GasDiscScaleRadius reassigned from %e to DiskScale Radius\n", Gal[p].GasDiscScaleRadius);
         Gal[p].GasDiscScaleRadius = 1.0 * Gal[p].DiskScaleRadius; // Some functions still need a number for the scale radius even if there isn't any gas actually in the disc.
     }
 }

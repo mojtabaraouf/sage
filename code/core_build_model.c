@@ -154,9 +154,9 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
           Gal[ngal].Vmax = Halo[halonr].Vmax;
           assert(Gal[ngal].LenMax>=Gal[ngal].Len);
 
-          Gal[ngal].deltaMvir = get_virial_mass(halonr) - Gal[ngal].Mvir;
-          Gal[ngal].Rvir = get_virial_radius(halonr);
-          Gal[ngal].Mvir = get_virial_mass(halonr);
+          Gal[ngal].deltaMvir = get_virial_mass(halonr, ngal) - Gal[ngal].Mvir;
+          Gal[ngal].Rvir = get_virial_radius(halonr, ngal);
+          Gal[ngal].Mvir = get_virial_mass(halonr, ngal);
 
           Gal[ngal].Cooling = 0.0;
           Gal[ngal].Heating = 0.0;
@@ -177,7 +177,7 @@ int join_galaxies_of_progenitors(int halonr, int ngalstart)
             Gal[ngal].mergeIntoID = -1;
             Gal[ngal].MergTime = 999.9;            
 
-            Gal[ngal].Vvir = get_virial_velocity(halonr); // Keeping Vvir fixed for subhaloes
+            Gal[ngal].Vvir = get_virial_velocity(halonr, ngal); // Keeping Vvir fixed for subhaloes
               
             Gal[ngal].DiskScaleRadius = get_disk_radius(halonr, ngal); // Only update the scale radius for centrals.  Satellites' spin will be too variable and untrustworthy for new cooling.
               
