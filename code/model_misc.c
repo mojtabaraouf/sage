@@ -243,8 +243,14 @@ double get_virial_mass(int halonr)
     {
         return Halo[halonr].Mvir3;
     }
-    else
+    else if(Halo[halonr].Len>0)
+    {
         return Halo[halonr].Len * PartMass;
+    }
+    else
+    {
+        return Gal[p].StellarMass + Gal[p].ColdGas + Gal[p].HotGas + Gal[p].BlackHoleMass + Gal[p].ICS;
+    }
 }
 
 
