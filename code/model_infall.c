@@ -174,8 +174,8 @@ double strip_from_satellite(int halonr, int centralgal, int gal, double max_stri
       rho_IGM = Gal[centralgal].HotGas/ (4 * M_PI * Gal[centralgal].Rvir * r_gal2);
       Pram = rho_IGM*v_gal2;
       
-      Gal[gal].Mvir = get_virial_mass(halonr, gal); // Do I need to be updating this here?  When else is it updated?
-      Gal[gal].Rvir = get_virial_radius(halonr, gal);
+      Gal[gal].Mvir = get_virial_mass(halonr); // Do this need to be updated here?  When else is it updated?
+      Gal[gal].Rvir = get_virial_radius(halonr);
       Pgrav = G * Gal[gal].Mvir * Gal[gal].HotGas / 8.0 / sqr(sqr(Gal[gal].Rvir)); // First calculate restoring force at the virial radius of the subhalo
       if(Pram >= Pgrav)
       {

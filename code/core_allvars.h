@@ -329,6 +329,7 @@ extern int    HotStripOn;
 extern int    HeatedToCentral;
 extern int    ReincorpotationModel;
 extern int    CoolingExponentialRadiusOn;
+extern int    MvirDefinition;
 
 // recipe parameters 
 extern double RecycleFraction;

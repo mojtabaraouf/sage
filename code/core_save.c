@@ -131,16 +131,15 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
     o->Spin[j] = Halo[g->HaloNr].Spin[j];
     o->SpinStars[j] = g->SpinStars[j];
     o->SpinGas[j] = g->SpinGas[j];
-//      o->SpinSecularBulge[j] = g->SpinSecularBulge[j];
-      o->SpinClassicalBulge[j] = g->SpinClassicalBulge[j];
+    o->SpinClassicalBulge[j] = g->SpinClassicalBulge[j];
   }
 
   o->Len = g->Len;
     o->LenMax = g->LenMax;
   o->Mvir = g->Mvir;
-  o->CentralMvir = get_virial_mass(Halo[g->HaloNr].FirstHaloInFOFgroup, -1);
-  o->Rvir = get_virial_radius(g->HaloNr, -1);  //output the actual Rvir, not the maximum Rvir
-  o->Vvir = get_virial_velocity(g->HaloNr, -1);  //output the actual Vvir, not the maximum Vvir
+  o->CentralMvir = get_virial_mass(Halo[g->HaloNr].FirstHaloInFOFgroup);
+  o->Rvir = get_virial_radius(g->HaloNr);
+  o->Vvir = get_virial_velocity(g->HaloNr); 
   o->Vmax = g->Vmax;
   o->VelDisp = Halo[g->HaloNr].VelDisp;
     
@@ -168,25 +167,6 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
   o->StarsInstability = g->StarsInstability;
   o->StarsMergeBurst = g->StarsMergeBurst;
     
-//    o->AccretedGasMass = g->AccretedGasMass;
-//    o->EjectedSNGasMass = g->EjectedSNGasMass;
-//    o->EjectedQuasarGasMass = g->EjectedQuasarGasMass;
-
-//    o->TotInstabEvents = g->TotInstabEvents;
-//    o->TotInstabEventsGas = g->TotInstabEventsGas;
-//    o->TotInstabEventsStar = g->TotInstabEventsStar;
-//    o->TotInstabAnnuliGas = g->TotInstabAnnuliGas;
-//    o->TotInstabAnnuliStar = g->TotInstabAnnuliStar;
-//    
-//    if(g->TotInstabEventsGas)
-//        o->FirstUnstableAvGas = (1.0*g->FirstUnstableGas) / (1.0*g->TotInstabEventsGas);
-//    else
-//        o->FirstUnstableAvGas = 0.0;
-//    
-//    if(g->TotInstabEventsStar)
-//        o->FirstUnstableAvStar = (1.0*g->FirstUnstableStar) / (1.0*g->TotInstabEventsStar);
-//    else
-//        o->FirstUnstableAvStar = 0.0;
   
   for(j=0; j<N_BINS; j++)
   {
@@ -197,8 +177,6 @@ void prepare_galaxy_for_output(int filenr, int tree, struct GALAXY *g, struct GA
       o->DiscHI[j] = g->DiscHI[j];
       o->DiscH2[j] = g->DiscH2[j];
       o->DiscSFR[j] = g->DiscSFR[j] * UnitMass_in_g / UnitTime_in_s * SEC_PER_YEAR / SOLAR_MASS / STEPS;
-//      o->TotSinkGas[j] = g->TotSinkGas[j];
-//      o->TotSinkStar[j] = g->TotSinkStar[j];
   }
 
   o->SfrFromH2 = 0.0;

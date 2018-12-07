@@ -64,6 +64,7 @@ int HotStripOn;
 int HeatedToCentral;
 int ReincorpotationModel;
 int CoolingExponentialRadiusOn;
+int MvirDefinition;
 
 // binning information
 double FirstBin;

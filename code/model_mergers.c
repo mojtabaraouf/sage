@@ -23,12 +23,12 @@ double estimate_merging_time(int sat_halo, int mother_halo, int ngal)
   
   coulomb = log(Halo[mother_halo].Len / ((double) Halo[sat_halo].Len) + 1);
 
-  SatelliteMass = get_virial_mass(sat_halo, ngal) + Gal[ngal].StellarMass + Gal[ngal].ColdGas;
-  SatelliteRadius = get_virial_radius(mother_halo, ngal); // Feeding ngal here is right, but it's better than nothing.  Frankly, why doesn't this use coords to get the satellite radius anyway?
+  SatelliteMass = get_virial_mass(sat_halo) + Gal[ngal].StellarMass + Gal[ngal].ColdGas; // In principle, should probably not sum subhalo mass with stellar and gas, but rather take maximum of either subhalo mass and summed baryons.
+  SatelliteRadius = get_virial_radius(mother_halo); // Presumably this takes the virial radius of the parent halo as the radius of infall
 
   if(SatelliteMass > 0.0 && coulomb > 0.0)
     mergtime = 2.0 *
-    1.17 * SatelliteRadius * SatelliteRadius * get_virial_velocity(mother_halo, ngal) / (coulomb * G * SatelliteMass);
+    1.17 * SatelliteRadius * SatelliteRadius * get_virial_velocity(mother_halo) / (coulomb * G * SatelliteMass);
   else
     mergtime = -1.0;
   

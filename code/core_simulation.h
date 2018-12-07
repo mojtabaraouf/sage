@@ -10,7 +10,7 @@ struct halo_data
 
   // properties of halo 
   int Len;
-  float M_Mean200, Mvir, M_TopHat;  // for Millennium, Mvir=M_Crit200
+  float Mvir1, Mvir2, Mvir3;  // For Millennium = M_Mean200, M_Crit200, M_TopHat.  For MultiDark = M_200b, M_BN98, M_200c
   float Pos[3];
   float Vel[3];
   float VelDisp;
