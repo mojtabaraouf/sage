@@ -116,7 +116,7 @@ EtaSN						5.0e-3	;supernova efficiency
 
 
 %------------------------------------------
-%----- Cosmological parameters and more ---
+%-------------- Units, son! ---------------
 %------------------------------------------
 
 UnitLength_in_cm			3.08568e+24		;WATCH OUT: Mpc/h
