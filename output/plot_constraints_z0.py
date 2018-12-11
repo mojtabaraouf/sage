@@ -196,24 +196,18 @@ plt.legend(loc='lower left', frameon=False, bbox_to_anchor=(-0.05,0.95), ncol=2)
 r.savepng(outdir+'3-BHBM', xsize=768, ysize=400)
 ##### ================================ #####
 
-quit()
-# Need to edit this further to get in right shape
-"""
 
-# Baryonic TF
+##### PLOT 4: BARYONIC TULLY-FISHER #####
 plt.clf()
 BaryM = (G['ColdGas']/1.3 + G['StellarMass']) * 1e10/h
 BaryM_med = np.log10(np.median(BaryM[G['LenMax']==NpartMed]))
 Vel_Profiles = DiscBinEdge[1:] / (G['DiscRadii'][:,1:]*1e3/h)
-#RotSupport = (1. - np.exp(-3*(1-(G['InstabilityBulgeMass']+G['MergerBulgeMass'])/G['StellarMass'])*G['DiscRadii'][:,1:].T / G['StellarDiscScaleRadius'])).T
-#RotSupport[~np.isfinite(RotSupport)] = 0.0
-#Vel_Profiles[RotSupport<0.95] = 0.0
 Vmax = np.max(Vel_Profiles, axis=1)
 filt = (G['ColdGas']/1.3 > G['StellarMass']) * (BaryM>=BaryM_med-0.11) # Stark data only had gas-dominated galaxies
-print 'Hitting slow part of code for BTF'
+## Code can get slow on these lines if doing a large simulation
 V3re = np.array([np.interp(3*G['StellarDiscScaleRadius'][i], G['DiscRadii'][i,:], DiscBinEdge/(G['DiscRadii'][i,:]*1e3/h)) for i in np.where(filt)[0]])
 V4re = np.array([np.interp(4*G['StellarDiscScaleRadius'][i], G['DiscRadii'][i,:], DiscBinEdge/(G['DiscRadii'][i,:]*1e3/h)) for i in np.where(filt)[0]])
-print 'Finished expected slow bit'
+##
 Vend = Vel_Profiles[:,-1][filt]
 cond = ((abs(np.log10(V3re/Vend))<=np.log10(1.15)) + (abs(np.log10(V4re/Vend))<=np.log10(1.1)))
 filt[np.where(filt)[0][~cond]] = False
@@ -235,17 +229,17 @@ y_obs_max = np.max(y_obs_arr, axis=0)[0] + 2*np.log10(0.75/h)
 plt.fill_between(x_obs, y_obs_max, y_obs_min, color='darkmagenta', alpha=0.3)
 plt.plot(x_obs, y_obs, '-', color='darkmagenta', lw=2)
 plt.plot([0,1], [0,1], '-', color='darkmagenta', lw=8, alpha=0.3, label=r'Stark et al.~(2009)')
-plt.legend(loc='best', frameon=False)
+plt.legend(loc='upper left', frameon=False)
 plt.xlabel(r'$\log_{10}\left(V_{\rm max}~[{\rm km\,s}^{-1}]\right)$')
 plt.ylabel(r'$\log_{10}\left(m_* + X^{-1}\,m_{\rm H\,{\LARGE{\textsc i}}+H_2}~[{\rm M}_{\odot}]\right)$')
 plt.xticks(np.arange(1.9,2.6,0.1))
-#plt.yticks(np.arange(9.5,12,0.5))
-print BaryM_med
 plt.axis([1.85, 2.65, BaryM_med, 11.7])
-gp.savepng(outdir+'BTF', xsize=768, ysize=400)
+r.savepng(outdir+'4-BTF', xsize=768, ysize=400)
+##### ============================= #####
 
 
-# HI and H2 profiles
+
+##### PLOT 4: HI and H2 PROFILES #####
 filt = (Vmax>=175) * (Vmax<=235) * (G['StellarMass']/h > 1.0) * (G['ColdGas']/h > 10**-0.8) * (G['Type']==0) * (BTT<0.5)
 area = np.pi*(G['DiscRadii'][:,1:]**2 - G['DiscRadii'][:,:-1]**2) * 1e12/h**2
 R_av = np.sqrt((G['DiscRadii'][:,1:]**2 + G['DiscRadii'][:,:-1]**2) / 2.) * 1e3/h # kpc
@@ -264,15 +258,16 @@ ax[0].set_yscale('log', nonposy='clip')
 ax[0].errorbar([0,0], [0,1], [1,1], ecolor='darkcyan', color='darkcyan', label=r'Leroy et al. (2008)')
 ax[0].set_ylabel(r'$\Sigma_{\rm H\,{\LARGE{\textsc i}}}$ [M$_{\bigodot}$ pc$^{-2}$]')
 ax[0].legend(loc='best', frameon=False)
-gp.Leroygals(HI=True, HighVvir=True, LowVvir=True, ax=ax[0], h=h, c='darkcyan', alpha=0.8)
+r.Leroygals(HI=True, HighVvir=True, LowVvir=True, ax=ax[0], h=h, c='darkcyan', alpha=0.8)
 
 ax[1].set_yscale('log', nonposy='clip')
 ax[1].set_ylabel(r'$\Sigma_{\rm H_2}$ [M$_{\bigodot}$ pc$^{-2}$]')
 ax[1].set_xlabel(r'$r$ [kpc]')
-gp.Leroygals(H2=True, HighVvir=True, LowVvir=True, ax=ax[1], h=h, c='darkcyan', alpha=0.8)
+r.Leroygals(H2=True, HighVvir=True, LowVvir=True, ax=ax[1], h=h, c='darkcyan', alpha=0.8)
 ax[1].axis([0,25,5e-1,1e3])
 
 
 fig.subplots_adjust(hspace=0, wspace=0, left=0, bottom=0, right=1.0, top=1.0)
-gp.savepng(outdir+'HIH2Surface', xsize=768, ysize=700)
-"""
+r.savepng(outdir+'5-HIH2Surface', xsize=768, ysize=700)
+##### ========================== #####
+
