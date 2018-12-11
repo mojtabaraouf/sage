@@ -122,6 +122,9 @@ r.savepng(outdir+'1-MassFunctions', xsize=1700, ysize=512, fig=fig)
 ##### ====================== #####
 
 
+
+##### PLOT 2: HI FRACTION and METALLICITY #####
+
 Nmin = 20
 # HI fraction
 fig, ax = plt.subplots(2, 1, sharex=True)
@@ -162,28 +165,25 @@ ax[1].legend(loc='lower right', frameon=False, ncol=2, bbox_to_anchor=(1.025,0))
 
 fig.subplots_adjust(hspace=0, wspace=0, left=0, bottom=0, right=1.0, top=1.0)
 r.savepng(outdir+'2-HIfrac_MassMet', xsize=768, ysize=700)
+##### =================================== #####
 
 
 
 
-quit()
-# Need to edit this further to get in right shape
-"""
-
-# Black hole -- bulge mass
+##### PLOT 3: BLACK HOLE -- BULGE MASS #####
 plt.clf()
 BM = (G['InstabilityBulgeMass'] + G['MergerBulgeMass']) * 1e10/h
 BM_med = np.log10(np.median(BM[(G['LenMax']==NpartMed)*(BM>0)]))
 BHM = G['BlackHoleMass'] * 1e10/h
 bins = 10**np.arange(BM_med, 12.5, 0.1)
-BM_mean, BHM_high, BHM_mid, BHM_low, BHM_mean = gc.percentiles(BM, BHM, bins=bins, addMean=True, Nmin=Nmin)
+BM_mean, BHM_high, BHM_mid, BHM_low, BHM_mean = r.percentiles(BM, BHM, bins=bins, addMean=True, Nmin=Nmin)
 floor = 1
 BHM_low[BHM_low<=floor] = floor
-gp.BH_bulge_obs(h)
+r.BH_bulge_obs(h)
 plt.plot(np.log10(BM_mean), np.log10(BHM_mid), 'k--', lw=3, label=r'{\sc Dark Sage} median, $N_{\rm p}\!\geq\!20$')
 plt.plot(np.log10(BM_mean), np.log10(BHM_high), 'k--', lw=1.5)
 plt.plot(np.log10(BM_mean), np.log10(BHM_low), 'k--', lw=1.5)
-BM_mean, BHM_high, BHM_mid, BHM_low, BHM_mean = gc.percentiles(BM[G['LenMax']>=100], BHM[G['LenMax']>=100], bins=bins, addMean=True, Nmin=Nmin)
+BM_mean, BHM_high, BHM_mid, BHM_low, BHM_mean = r.percentiles(BM[G['LenMax']>=100], BHM[G['LenMax']>=100], bins=bins, addMean=True, Nmin=Nmin)
 floor = 1
 BHM_low[BHM_low<=floor] = floor
 plt.plot(np.log10(BM_mean), np.log10(BHM_mid), 'k-', lw=3, label=r'Median, $N_{\rm p,max}\!\geq\!100$')
@@ -193,8 +193,12 @@ plt.xlabel(r'$\log_{10}(m_{\rm bulge}~[{\rm M}_{\odot}])$')
 plt.ylabel(r'$\log_{10}(m_{\rm BH}~[{\rm M}_{\odot}])$')
 plt.axis([BM_med, 12.2, 5.5, 9.8])
 plt.legend(loc='lower left', frameon=False, bbox_to_anchor=(-0.05,0.95), ncol=2)
-gp.savepng(outdir+'BHBM', xpixplot=768, ypixplot=400)
+r.savepng(outdir+'3-BHBM', xsize=768, ysize=400)
+##### ================================ #####
 
+quit()
+# Need to edit this further to get in right shape
+"""
 
 # Baryonic TF
 plt.clf()
@@ -213,12 +217,12 @@ print 'Finished expected slow bit'
 Vend = Vel_Profiles[:,-1][filt]
 cond = ((abs(np.log10(V3re/Vend))<=np.log10(1.15)) + (abs(np.log10(V4re/Vend))<=np.log10(1.1)))
 filt[np.where(filt)[0][~cond]] = False
-BaryM_mean, Vmax_high, Vmax_mid, Vmax_low, Vmax_mean  = gc.percentiles(BaryM[filt], Vmax[filt],  bins=10**np.arange(BaryM_med-0.1,12,0.1), addMean=True, Nmin=Nmin)
+BaryM_mean, Vmax_high, Vmax_mid, Vmax_low, Vmax_mean  = r.percentiles(BaryM[filt], Vmax[filt],  bins=10**np.arange(BaryM_med-0.1,12,0.1), addMean=True, Nmin=Nmin)
 plt.plot(np.log10(Vmax_mid), np.log10(BaryM_mean), 'k--', lw=3, label=r'{\sc Dark Sage} median, $N_{\rm p}\!\geq\!20$')
 plt.plot(np.log10(Vmax_high), np.log10(BaryM_mean), 'k--', lw=1.5)
 plt.plot(np.log10(Vmax_low), np.log10(BaryM_mean), 'k--', lw=1.5)
 filt = filt * (G['LenMax']>=100)
-BaryM_mean, Vmax_high, Vmax_mid, Vmax_low, Vmax_mean  = gc.percentiles(BaryM[filt], Vmax[filt],  bins=10**np.arange(BaryM_med-0.1,12,0.1), addMean=True, Nmin=Nmin)
+BaryM_mean, Vmax_high, Vmax_mid, Vmax_low, Vmax_mean  = r.percentiles(BaryM[filt], Vmax[filt],  bins=10**np.arange(BaryM_med-0.1,12,0.1), addMean=True, Nmin=Nmin)
 plt.plot(np.log10(Vmax_mid), np.log10(BaryM_mean), 'k-', lw=3, label=r'{\sc Dark Sage} median, $N_{\rm p,max}\!\geq\!100$')
 plt.plot(np.log10(Vmax_high), np.log10(BaryM_mean), 'k-', lw=1.5)
 plt.plot(np.log10(Vmax_low), np.log10(BaryM_mean), 'k-', lw=1.5, label=r'{\sc Dark Sage} 16$^{\rm th}$ \& 84$^{\rm th}$ \%iles')
@@ -238,7 +242,7 @@ plt.xticks(np.arange(1.9,2.6,0.1))
 #plt.yticks(np.arange(9.5,12,0.5))
 print BaryM_med
 plt.axis([1.85, 2.65, BaryM_med, 11.7])
-gp.savepng(outdir+'BTF', xpixplot=768, ypixplot=400)
+gp.savepng(outdir+'BTF', xsize=768, ysize=400)
 
 
 # HI and H2 profiles
@@ -270,5 +274,5 @@ ax[1].axis([0,25,5e-1,1e3])
 
 
 fig.subplots_adjust(hspace=0, wspace=0, left=0, bottom=0, right=1.0, top=1.0)
-gp.savepng(outdir+'HIH2Surface', xpixplot=768, ypixplot=700)
+gp.savepng(outdir+'HIH2Surface', xsize=768, ysize=700)
 """
