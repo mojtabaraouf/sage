@@ -120,21 +120,18 @@ ax[2].set_xticks(np.arange(8.8,10.8,0.4))
 fig.subplots_adjust(hspace=0, wspace=0, left=0, bottom=0, right=1.0, top=1.0)
 r.savepng(outdir+'1-MassFunctions', xsize=1700, ysize=512, fig=fig)
 ##### ====================== #####
-quit()
 
 
-# Need to edit this further to get in right shape
-"""
 Nmin = 20
 # HI fraction
 fig, ax = plt.subplots(2, 1, sharex=True)
-l1, l2, l3, l4, [logM_B15, logHIfrac_B15, err], l5 = gr.Brown_HI_fractions_satcen(h)
+logM_B15, logHIfrac_B15, err = r.Brown_HI_fractions(h)
 f = (SM>=10**8.93) * (G['LenMax']>=100)
-bins, mean_SM, mean_HIfrac = gc.meanbins(SM[f], (HIM/SM)[f], 10**logM_B15)
+bins, mean_SM, mean_HIfrac = r.meanbins(SM[f], (HIM/SM)[f], 10**logM_B15)
 bins=10**np.arange(SM_med-0.1,12.1,0.1)
-x_av, y_high, y_med, y_low, y_mean = gc.percentiles(SM, HIM/SM, bins=bins, addMean=True, Nmin=Nmin)
+x_av, y_high, y_med, y_low, y_mean = r.percentiles(SM, HIM/SM, bins=bins, addMean=True, Nmin=Nmin)
 ax[0].plot(np.log10(x_av), np.log10(y_mean), 'k--', lw=2, label=r'{\sc Dark Sage}, $N_{\rm p} \! \geq \! 20$')
-x_av, y_high, y_med, y_low, y_mean = gc.percentiles(SM[G['LenMax']>=100], (HIM/SM)[G['LenMax']>=100], bins=bins, addMean=True, Nmin=Nmin)
+x_av, y_high, y_med, y_low, y_mean = r.percentiles(SM[G['LenMax']>=100], (HIM/SM)[G['LenMax']>=100], bins=bins, addMean=True, Nmin=Nmin)
 ax[0].plot(np.log10(x_av), np.log10(y_mean), 'k-', lw=2, label=r'{\sc Dark Sage}, $N_{\rm p,max} \! \geq \! 100$')
 ax[0].plot(logM_B15, logHIfrac_B15, 's', color='purple', ms=10, label=r'Brown et al.~(2015)', alpha=0.5, zorder=3)
 ax[0].plot(np.log10(mean_SM), np.log10(mean_HIfrac), 'k*', ms=10, label=r'{\sc Dark Sage}, matched bins', zorder=2)
@@ -144,24 +141,19 @@ ax[0].set_ylabel(r'$\log_{10}\langle m_{\rm H\,{\LARGE {\textsc i}}} / m_* \rang
 ax[0].legend(loc='upper right', frameon=False)
 
 
-
 # Mass--metallicity
 lOH = 9 + np.log10(G['MetalsColdGas'] / G['ColdGas'] / 0.02)
-SM_mean, lOH_high, lOH_mid, lOH_low = gc.percentiles(SM, lOH, bins=bins, Nmin=Nmin)
+SM_mean, lOH_high, lOH_mid, lOH_low = r.percentiles(SM, lOH, bins=bins, Nmin=Nmin)
 ax[1].plot(np.log10(SM_mean), lOH_mid, 'k--', lw=3)
 ax[1].plot(np.log10(SM_mean), lOH_low, 'k--', lw=1.5)
 ax[1].plot(np.log10(SM_mean), lOH_high, 'k--', lw=1.5)
-SM_mean, lOH_high, lOH_mid, lOH_low = gc.percentiles(SM[G['LenMax']>=100], lOH[G['LenMax']>=100], bins=bins, Nmin=Nmin)
+SM_mean, lOH_high, lOH_mid, lOH_low = r.percentiles(SM[G['LenMax']>=100], lOH[G['LenMax']>=100], bins=bins, Nmin=Nmin)
 ax[1].plot(np.log10(SM_mean), lOH_mid, 'k-', lw=3, label=r'{\sc Dark Sage} median')
 ax[1].plot(np.log10(SM_mean), lOH_low, 'k-', lw=1.5)
 ax[1].plot(np.log10(SM_mean), lOH_high, 'k-', lw=1.5, label=r'16$^{\rm th}$ \& 84$^{\rm th}$ \%iles')
-x_obs, y_low, y_high = gr.Tremonti04(h)
+x_obs, y_low, y_high = r.Tremonti04(h)
 ax[1].fill_between(x_obs, y_high, y_low, color='orchid', alpha=0.4)
 ax[1].plot([0,1], [0,1], '-', color='orchid', alpha=0.4, lw=8, label=r'Tremonti et al.~(2004)')
-A13_data = np.loadtxt('MMAdrews13.dat', skiprows=6)
-ax[1].plot(A13_data[:,0]+2*np.log10(0.7/h), A13_data[:,1], '-', lw=2, color='olive')
-ax[1].fill_between(A13_data[:,0]+2*np.log10(0.7/h), A13_data[:,3], A13_data[:,2], color='olive', alpha=0.4)
-ax[1].plot([0,1], [0,1], '-', color='olive', alpha=0.4, lw=6, label=r'Andrews \& Martini (2013)')
 ax[1].axis([SM_med, 11.7, 8, 9.4])
 ax[1].set_xlabel(r'$\log_{10}(m_*~[{\rm M}_{\odot}])$')
 ax[1].set_ylabel(r'$12 + \log_{10}({\rm O/H})$')
@@ -169,10 +161,14 @@ ax[1].set_yticks(np.arange(8.25,9.5,0.25))
 ax[1].legend(loc='lower right', frameon=False, ncol=2, bbox_to_anchor=(1.025,0))
 
 fig.subplots_adjust(hspace=0, wspace=0, left=0, bottom=0, right=1.0, top=1.0)
-gp.savepng(outdir+'HIfrac_MassMet', xpixplot=768, ypixplot=700)
+r.savepng(outdir+'2-HIfrac_MassMet', xsize=768, ysize=700)
 
 
 
+
+quit()
+# Need to edit this further to get in right shape
+"""
 
 # Black hole -- bulge mass
 plt.clf()

@@ -327,3 +327,115 @@ def savepng(filename, xsize=1024, ysize=None, fig=None, transparent=False):
         filename = filename+'.png'
     fig.savefig(filename, dpi=mydpi, bbox_inches='tight', transparent=transparent)
 
+
+def Brown_HI_fractions(h):
+    
+    logM = np.array([[9.2209911, 9.6852989, 10.180009, 10.665453, 11.098589],
+         [9.2085762, 9.6402225, 10.141238, 10.599669, 11.026575],
+         [9.2121296, 9.6528578, 10.139588, 10.615245, 11.054683]]) + 2*np.log10(0.7/h) + np.log10(0.61/0.66)
+         
+    logHIfrac = np.array([[ 0.37694988,  0.0076254,  -0.45345795, -0.90604609, -1.39503932],
+           [ 0.15731917, -0.16941574, -0.6199488,  -0.99943721, -1.30476058],
+           [ 0.19498822, -0.27559358, -0.74410361, -1.12869251, -1.49363434]]) - np.log10(0.61/0.66)
+
+    Ngal = np.array([[120, 318, 675, 1132, 727],
+                      [3500, 4359, 3843, 2158, 268],
+                      [2203, 3325, 2899, 1784, 356]])
+
+    logM_all = np.log10((10**logM[0,:] * Ngal[0,:] + 10**logM[1,:] * Ngal[1,:] + 10**logM[2,:] * Ngal[2,:]) / (Ngal[0,:]+Ngal[1,:]+Ngal[2,:]))
+    
+    logHIfrac_all = np.log10((10**logHIfrac[0,:] * Ngal[0,:] + 10**logHIfrac[1,:] * Ngal[1,:] + 10**logHIfrac[2,:] * Ngal[2,:]) / (Ngal[0,:]+Ngal[1,:]+Ngal[2,:]))
+    
+    logHIfrac_all_err = np.array([np.log10(1.511+0.011)-np.log10(1.511),
+                                  np.log10(0.643+0.011)-np.log10(0.643),
+                                  np.log10(0.232+0.005)-np.log10(0.232),
+                                  np.log10(0.096+0.002)-np.log10(0.096),
+                                  np.log10(0.039+0.001)-np.log10(0.039)]) # taken straight from Table 1 of Brown+15
+
+    return logM_all, logHIfrac_all, logHIfrac_all_err
+
+def hist_Nmin(x, bins, Nmin, hard_bins=np.array([])):
+    Nhist, bins = np.histogram(x, bins)
+    while len(Nhist[Nhist<Nmin])>0:
+        ii = np.where(Nhist<Nmin)[0][0]
+        if (ii==0 or (ii!=len(Nhist)-1 and Nhist[ii+1]<Nhist[ii-1])) and np.all(~((bins[ii+1] <= 1.01*hard_bins) * (bins[ii+1] >= 0.99*hard_bins))):
+            bins = np.delete(bins,ii+1)
+        elif np.all(~((bins[ii] <= 1.01*hard_bins) * (bins[ii] >= 0.99*hard_bins))):
+            bins = np.delete(bins,ii)
+        else:
+            print 'hard_bins prevented routines.hist_Nmin() from enforcing Nmin.  Try using wider input bins.'
+            Nhist, bins = np.histogram(x, bins)
+            break
+        Nhist, bins = np.histogram(x, bins)
+    if bins[0]<np.min(x): bins[0] = np.min(x)
+    if bins[-1]>np.max(x): bins[-1] = np.max(x)
+    return Nhist, bins
+
+
+def meanbins(x, y, xmeans, tol=0.02, itmax=100):
+    # Find bins in some dataset (x,y) which will have mean values of x matching xmeans
+    fnan = np.isfinite(x)*np.isfinite(y)
+    x, y = x[fnan], y[fnan]
+    N = len(xmeans)
+    bins = np.zeros(N+1)
+    mean_x, mean_y = np.zeros(N), np.zeros(N)
+    bins[0] = np.min(x)
+    bins[-1] = np.max(x)
+    for i in range(1,N+1):
+        xleft = np.sort(x[x>=bins[i-1]])
+        cumav = np.cumsum(xleft) / np.arange(1,len(xleft)+1)
+        diff = abs(xmeans[i-1]-cumav)
+        arg = np.where(diff==np.min(diff))[0][0]
+        if i!=N and arg<len(diff)-1: arg += 1
+        bins[i] = xleft[arg]
+        m = cumav[arg]
+        mean_x[i-1] = m
+        f = (xleft<bins[i]) if i!=N else (xleft<=bins[i])
+        mean_y[i-1] = np.mean(y[np.in1d(x,xleft[f])])
+    return bins, mean_x, mean_y
+
+
+def percentiles(x, y, low=0.16, med=0.5, high=0.84, bins=20, addMean=False, xrange=None, yrange=None, Nmin=10, weights=None, hard_bins=np.array([]), outBins=False):
+    # Given some values to go on x and y axes, bin them along x and return the percentile ranges
+    f = np.isfinite(x)*np.isfinite(y)
+    if xrange is not None: f = (x>=xrange[0])*(x<=xrange[1])*f
+    if yrange is not None: f = (y>=yrange[0])*(y<=yrange[1])*f
+    x, y = x[f], y[f]
+    if type(bins)==int:
+        if len(x)/bins < Nmin: bins = len(x)/Nmin
+        indices = np.array(np.linspace(0,len(x)-1,bins+1), dtype=int)
+        bins = np.sort(x)[indices]
+    elif Nmin>0: # Ensure a minimum number of data in each bin
+        Nhist, bins = hist_Nmin(x, bins, Nmin, hard_bins)
+    Nbins = len(bins)-1
+    y_low, y_med, y_high = np.zeros(Nbins), np.zeros(Nbins), np.zeros(Nbins)
+    x_av, N = np.zeros(Nbins), np.zeros(Nbins)
+    if addMean: y_mean = np.zeros(Nbins)
+    for i in range(Nbins):
+        f = (x>=bins[i])*(x<bins[i+1])
+        if len(f[f])>2:
+            if weights is None:
+                [y_low[i], y_med[i], y_high[i]] = np.percentile(y[f], [100*low, 100*med, 100*high], interpolation='linear')
+            else:
+                [y_low[i], y_med[i], y_high[i]] = weighted_percentile(y[f], [low, med, high], weights[f])
+            x_av[i] = np.mean(x[f])
+            N[i] = len(x[f])
+            if addMean: y_mean[i] = np.mean(y[f])
+    fN = (N>0) if Nmin>0 else np.array([True]*Nbins)
+    if not addMean and not outBins:
+        return x_av[fN], y_high[fN], y_med[fN], y_low[fN]
+    elif not addMean and outBins:
+        return x_av[fN], y_high[fN], y_med[fN], y_low[fN], bins
+    elif addMean and  not outBins:
+        return x_av[fN], y_high[fN], y_med[fN], y_low[fN], y_mean[fN]
+    else:
+        return x_av[fN], y_high[fN], y_med[fN], y_low[fN], y_mean[fN], bins
+
+
+
+def Tremonti04(h):
+    x_obs = np.array([8.52, 8.57, 8.67, 8.76, 8.86, 8.96, 9.06, 9.16, 9.26, 9.36, 9.46, 9.57, 9.66, 9.76, 9.86, 9.96, 10.06, 10.16, 10.26, 10.36, 10.46, 10.56, 10.66, 10.76, 10.86, 10.95, 11.05, 11.15, 11.25, 11.30])
+    y_low = np.array([8.25, 8.25, 8.28, 8.32, 8.37, 8.46, 8.56, 8.59, 8.60, 8.63, 8.66, 8.69, 8.72, 8.76, 8.80, 8.83, 8.85, 8.88, 8.92, 8.94, 8.96, 8.98, 9.00, 9.01, 9.02, 9.03, 9.03, 9.04, 9.03, 9.03])
+    y_high= np.array([8.64, 8.64, 8.65, 8.70, 8.73, 8.75, 8.82, 8.82, 8.86, 8.88, 8.92, 8.94, 8.96, 8.99, 9.01, 9.05, 9.06, 9.09, 9.10, 9.11, 9.12, 9.14, 9.15, 9.15, 9.16, 9.17, 9.17, 9.18, 9.18, 9.18])
+    x_obs += np.log10(1.5/1.8) + 2*np.log10(0.7/h) # Accounts for difference in Kroupa & Chabrier IMFs and the difference in h
+    return x_obs, y_low, y_high
