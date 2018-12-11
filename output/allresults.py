@@ -3,7 +3,6 @@
 import matplotlib
 matplotlib.use('Agg')
 
-import h5py as h5
 import numpy as np
 import pylab as plt
 from random import sample, seed
@@ -21,21 +20,21 @@ dilute = 7500       # Number of galaxies to plot in scatter plots
 sSFRcut = -11.0     # Divide quiescent from star forming galaxies (when plotmags=0)
 
 
-matplotlib.rcdefaults()
-plt.rc('axes', color_cycle=[
-    'k',
-    'b',
-    'r',
-    'g',
-    'm',
-    '0.5',
-    ], labelsize='x-large')
-plt.rc('xtick', labelsize='x-large')
-plt.rc('ytick', labelsize='x-large')
-plt.rc('lines', linewidth='2.0')
-# plt.rc('font', variant='monospace')
-plt.rc('legend', numpoints=1, fontsize='x-large')
-plt.rc('text', usetex=True)
+#matplotlib.rcdefaults()
+#plt.rc('axes', color_cycle=[
+#    'k',
+#    'b',
+#    'r',
+#    'g',
+#    'm',
+#    '0.5',
+#    ], labelsize='x-large')
+#plt.rc('xtick', labelsize='x-large')
+#plt.rc('ytick', labelsize='x-large')
+#plt.rc('lines', linewidth='2.0')
+## plt.rc('font', variant='monospace')
+#plt.rc('legend', numpoints=1, fontsize='x-large')
+#plt.rc('text', usetex=True)
 
 OutputDir = '' # set in main below
 
@@ -260,7 +259,7 @@ class Results:
         # calculate all
         w = np.where(G.StellarMass > 0.0)[0]
         mass = np.log10(G.StellarMass[w] * 1.0e10 / self.Hubble_h)
-        sSFR = (G.SfrDisk[w] + G.SfrBulge[w]) / (G.StellarMass[w] * 1.0e10 / self.Hubble_h)
+        sSFR = (G.SfrFromH2[w] + G.SfrMergeBurst[w] + G.SfrInstab[w]) / (G.StellarMass[w] * 1.0e10 / self.Hubble_h)
 
         mi = np.floor(min(mass)) - 2
         ma = np.floor(max(mass)) + 2
@@ -477,7 +476,7 @@ class Results:
         # calculate all
         w = np.where(G.ColdGas > 0.0)[0]
         mass = np.log10(G.ColdGas[w] * 1.0e10 / self.Hubble_h)
-        sSFR = (G.SfrDisk[w] + G.SfrBulge[w]) / (G.StellarMass[w] * 1.0e10 / self.Hubble_h)
+        sSFR = (G.SfrFromH2[w] + G.SfrInstab[w] + G.SfrMergeBurst[w]) / (G.StellarMass[w] * 1.0e10 / self.Hubble_h)
         mi = np.floor(min(mass)) - 2
         ma = np.floor(max(mass)) + 2
         NB = (ma - mi) / binwidth
@@ -656,7 +655,7 @@ class Results:
         if(len(w) > dilute): w = sample(w, dilute)
         
         mass = np.log10(G.StellarMass[w] * 1.0e10 / self.Hubble_h)
-        sSFR = np.log10( (G.SfrDisk[w] + G.SfrBulge[w]) / (G.StellarMass[w] * 1.0e10 / self.Hubble_h) )
+        sSFR = np.log10( (G.SfrFromH2[w] + G.SfrInstab[w] + G.SfrMergeBurst[w]) / (G.StellarMass[w] * 1.0e10 / self.Hubble_h) )
         plt.scatter(mass, sSFR, marker='o', s=1, c='k', alpha=0.5, label='Model galaxies')
                 
         # overplot dividing line between SF and passive
