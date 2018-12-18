@@ -5,17 +5,15 @@ import os
 import routines as r
 import random
 
+# Warnings are annoying
 import warnings
 warnings.filterwarnings("ignore")
-
-fsize = 26
-matplotlib.rcParams.update({'font.size': fsize, 'xtick.major.size': 10, 'ytick.major.size': 10, 'xtick.major.width': 1, 'ytick.major.width': 1, 'ytick.minor.size': 5, 'xtick.minor.size': 5, 'xtick.direction': 'in', 'ytick.direction': 'in', 'axes.linewidth': 1, 'text.usetex': True, 'font.family': 'serif', 'font.serif': 'Times New Roman', 'legend.numpoints': 1, 'legend.columnspacing': 1, 'legend.fontsize': fsize-4, 'xtick.top': True, 'ytick.right': True})
 
 
 ###### USER NEEDS TO SET THESE THINGS ######
 indir = '/Users/adam/DarkSage_runs/558/' # directory where the Dark Sage data are
 sim = 0 # which simulation Dark Sage has been run on -- if it's new, you will need to set its defaults below.
-#   0 = Mini Millennium, 1 = Full Millennium
+#   0 = Mini Millennium, 1 = Full Millennium, 2 = SMDPL
 
 fpre = 'model_z0.000' # what is the prefix name of the z=0 files
 files = range(8) # list of file numbers you want to read
@@ -29,12 +27,15 @@ ExponentBin = 1.4
 
 ##### SIMULATION DEFAULTS #####
 if sim==0:
-    h = 0.73;
+    h = 0.73
     Lbox = 62.5/h * (len(files)/8.)**(1./3)
 elif sim==1:
     h = 0.73
     Lbox = 500.0/h * (len(files)/512.)**(1./3)
-# add here 'elif sim==2:' etc for a new simulation
+elif sim==2:
+    h = 0.6777
+    Lbox = 400.0/h * (len(files)/1000.)**(1./3)
+# add here 'elif sim==3:' etc for a new simulation
 else:
     print 'Please specify a valid simulation.  You may need to add its defaults to this code.'
     quit()
@@ -42,16 +43,22 @@ else:
 
 
 
+##### READ DARK SAGE DATA #####
 DiscBinEdge = np.append(0, np.array([FirstBin*ExponentBin**i for i in range(Nannuli)])) / h
-
-
-outdir = indir+'plots/'
-if not os.path.exists(outdir): os.makedirs(outdir)
-
-
 G = r.darksage_snap(indir+fpre, files, Nannuli=Nannuli)
+######  ================= #####
+
+
+
+##### SET PLOTTING DEFAULTS #####
+fsize = 26
+matplotlib.rcParams.update({'font.size': fsize, 'xtick.major.size': 10, 'ytick.major.size': 10, 'xtick.major.width': 1, 'ytick.major.width': 1, 'ytick.minor.size': 5, 'xtick.minor.size': 5, 'xtick.direction': 'in', 'ytick.direction': 'in', 'axes.linewidth': 1, 'text.usetex': True, 'font.family': 'serif', 'font.serif': 'Times New Roman', 'legend.numpoints': 1, 'legend.columnspacing': 1, 'legend.fontsize': fsize-4, 'xtick.top': True, 'ytick.right': True})
 
 NpartMed = 100 # minimum number of particles for finding relevant medians for minima on plots
+
+outdir = indir+'plots/' # where the plots will be saved
+if not os.path.exists(outdir): os.makedirs(outdir)
+######  =================== #####
 
 
 

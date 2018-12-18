@@ -68,7 +68,7 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
       
     area = M_PI * (r_outer*r_outer - r_inner*r_inner);
 		
-	if(Gal[p].Vvir>0) // These galaxies (which aren't useful for science) won't have H2 to form stars
+	if(Gal[p].Vvir>0)
 	{
         if(SFprescription==1 && Gal[p].DiscH2[i]<0.5*Gal[p].DiscHI[i])
         {
@@ -88,7 +88,7 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
         else
             strdot = SfrEfficiency * SFE_H2 * Gal[p].DiscH2[i];
     }
-    else
+    else // These galaxies (which aren't useful for science) won't have H2 to form stars
         strdot = 0.0;
 
     stars = strdot * dt;
@@ -127,7 +127,7 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
 	    }
         
         if(reheated_mass < MIN_STARFORMATION)
-        reheated_mass = 0.0; // Limit doesn't have to be the same as MIN_STARFORMATION, but needs to be something reasonable
+            reheated_mass = 0.0; // Limit doesn't have to be the same as MIN_STARFORMATION, but needs to be something reasonable
 	
 	    ejected_mass = (FeedbackEjectionEfficiency * (EtaSNcode * EnergySNcode) / (Gal[centralgal].Vvir * Gal[centralgal].Vvir) - FeedbackReheatingEpsilon) * stars;
 	    if(ejected_mass < MIN_STARFORMATION)
@@ -161,11 +161,11 @@ void starformation_and_feedback(int p, int centralgal, double dt, int step)
         NewStars[i] = stars;
         NewStarsMetals[i] = metallicity * stars;
     }
-      if(!(NewStarsMetals[i] <= NewStars[i]))
-      {
-          printf("NewStars, metals = %e, %e\n", NewStars[i], NewStarsMetals[i]);
-          printf("Gas, metals = %e, %e\n", Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
-      }
+    if(!(NewStarsMetals[i] <= NewStars[i]))
+    {
+      printf("NewStars, metals = %e, %e\n", NewStars[i], NewStarsMetals[i]);
+      printf("Gas, metals = %e, %e\n", Gal[p].DiscGas[i], Gal[p].DiscGasMetals[i]);
+    }
 	assert(NewStarsMetals[i] <= NewStars[i]);
     update_from_star_formation(p, stars, metallicity, i);
 
