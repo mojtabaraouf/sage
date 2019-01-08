@@ -73,6 +73,9 @@ BTT = (G['InstabilityBulgeMass'] + G['MergerBulgeMass']) / G['StellarMass']
 f_SM = (G['LenMax']==NpartMed)*(SM>0)*np.isfinite(SM)
 SM_med = round(np.median(np.log10(SM[f_SM])), 3) if len(f_SM[f_SM])>0 else 8.9
 
+ymax = 3e-2
+if SM_med < 8.5: ymax *= 10**(0.5*(8.5-SM_med))
+
 r.massfunction(SM, Lbox, range=[SM_med-0.1, 12.1], ls='--', ax=ax[0], label=r'{\sc Dark Sage}, $N_{\rm p}\!\geq\!20$')
 r.massfunction(SM[G['LenMax']>=100], Lbox, range=[SM_med-0.1, 12.1], ax=ax[0], label=r'{\sc Dark Sage}, $N_{\rm p,max}\!\geq\!100$')
 r.massfunction(SM[(BTT<=0.5)*(G['LenMax']>=100)], Lbox, range=[SM_med-0.1, 12.1], c='b', lw=1, ax=ax[0])
@@ -88,7 +91,7 @@ ax[0].legend(loc='lower left', frameon=False, bbox_to_anchor=(-0.025, -0.03))
 ax[0].set_xlim(SM_med, 12)
 ax[0].set_xlabel(r'$\log_{10}(m_*~[{\rm M}_{\odot}])$')
 ax[0].set_ylabel(r'$\Phi~[{\rm Mpc}^{-3}~{\rm dex}^{-1}]$')
-ax[0].set_xticks([9,9.5,10,10.5,11,11.5])
+ax[0].set_xticks(np.arange(SM_med-SM_med%0.5+0.5,12,0.5))
 ax[0].set_yscale('log')
 
 
@@ -104,9 +107,9 @@ ax[1].legend(loc='lower left', frameon=False, bbox_to_anchor=(-0.025, -0.03))
 r.massfunction(HIM, Lbox, range=[HIM_med-0.1, 11.5], ls='--', ax=ax[1])
 r.massfunction(HIM[G['LenMax']>=100], Lbox, range=[HIM_med-0.1, 11.5], ax=ax[1])
 ax[1].set_xlabel(r'$\log_{10}(m_{\rm H\,{\LARGE {\textsc i}}}~[{\rm M}_{\odot}])$')
-ax[1].set_xlim(HIM_med, 10.85)
+ax[1].set_xlim(HIM_med, 11)
 ax[1].set_ylabel('')
-ax[1].set_xticks(np.arange(9.2,10.85,0.3))
+ax[1].set_xticks(np.arange(HIM_med-HIM_med%0.3+0.3,11,0.3))
 
 
 # H2 mass function
@@ -120,9 +123,9 @@ r.massfunction(H2M, Lbox, range=[H2M_med-0.1, 11.5], ls='--', ax=ax[2])
 r.massfunction(H2M[G['LenMax']>=100], Lbox, range=[H2M_med-0.1, 11.5], ax=ax[2])
 ax[2].set_xlabel(r'$\log_{10}(m_{\rm H_2}~[{\rm M}_{\odot}])$')
 ax[2].set_xlim(H2M_med, 10.8)
-ax[2].set_ylim(1e-6,3e-2)
+ax[2].set_ylim(1e-6,ymax)
 ax[2].set_ylabel('')
-ax[2].set_xticks(np.arange(8.8,10.8,0.4))
+ax[2].set_xticks(np.arange(H2M_med-H2M_med%0.4+0.4,10.8,0.4))
 
 fig.subplots_adjust(hspace=0, wspace=0, left=0, bottom=0, right=1.0, top=1.0)
 r.savepng(outdir+'1-MassFunctions', xsize=1700, ysize=512, fig=fig)
@@ -148,7 +151,7 @@ ax[0].plot(np.log10(mean_SM), np.log10(mean_HIfrac), 'k*', ms=10, label=r'{\sc D
 ax[0].set_ylim(-1.75,0.5)
 ax[0].set_yticks(np.arange(-1.6,0.5,0.4))
 ax[0].set_ylabel(r'$\log_{10}\langle m_{\rm H\,{\LARGE {\textsc i}}} / m_* \rangle$')
-ax[0].legend(loc='upper right', frameon=False)
+ax[0].legend(loc='best', frameon=False)
 
 
 # Mass--metallicity
@@ -164,11 +167,11 @@ ax[1].plot(np.log10(SM_mean), lOH_high, 'k-', lw=1.5, label=r'16$^{\rm th}$ \& 8
 x_obs, y_low, y_high = r.Tremonti04(h)
 ax[1].fill_between(x_obs, y_high, y_low, color='orchid', alpha=0.4)
 ax[1].plot([0,1], [0,1], '-', color='orchid', alpha=0.4, lw=8, label=r'Tremonti et al.~(2004)')
-ax[1].axis([SM_med, 11.7, 8, 9.4])
+ax[1].axis([max(8.4,SM_med), 11.7, 8, 9.4])
 ax[1].set_xlabel(r'$\log_{10}(m_*~[{\rm M}_{\odot}])$')
 ax[1].set_ylabel(r'$12 + \log_{10}({\rm O/H})$')
 ax[1].set_yticks(np.arange(8.25,9.5,0.25))
-ax[1].legend(loc='lower right', frameon=False, ncol=2, bbox_to_anchor=(1.025,0))
+ax[1].legend(loc='lower right', frameon=False, ncol=1, bbox_to_anchor=(1.02,0))
 
 fig.subplots_adjust(hspace=0, wspace=0, left=0, bottom=0, right=1.0, top=1.0)
 r.savepng(outdir+'2-HIfrac_MassMet', xsize=768, ysize=700)
@@ -198,7 +201,7 @@ plt.plot(np.log10(BM_mean), np.log10(BHM_high), 'k-', lw=1.5)
 plt.plot(np.log10(BM_mean), np.log10(BHM_low), 'k-', lw=1.5, label=r'16$^{\rm th}$ \& 84$^{\rm th}$ \%iles')
 plt.xlabel(r'$\log_{10}(m_{\rm bulge}~[{\rm M}_{\odot}])$')
 plt.ylabel(r'$\log_{10}(m_{\rm BH}~[{\rm M}_{\odot}])$')
-plt.axis([BM_med, 12.2, 5.5, 9.8])
+plt.axis([max(8,BM_med), 12.2, 5.5, 9.8])
 plt.legend(loc='lower left', frameon=False, bbox_to_anchor=(-0.05,0.95), ncol=2)
 r.savepng(outdir+'3-BHBM', xsize=768, ysize=400)
 ##### ================================ #####
@@ -236,11 +239,11 @@ y_obs_max = np.max(y_obs_arr, axis=0)[0] + 2*np.log10(0.75/h)
 plt.fill_between(x_obs, y_obs_max, y_obs_min, color='darkmagenta', alpha=0.3)
 plt.plot(x_obs, y_obs, '-', color='darkmagenta', lw=2)
 plt.plot([0,1], [0,1], '-', color='darkmagenta', lw=8, alpha=0.3, label=r'Stark et al.~(2009)')
-plt.legend(loc='upper left', frameon=False)
+plt.legend(loc='best', frameon=False)
 plt.xlabel(r'$\log_{10}\left(V_{\rm max}~[{\rm km\,s}^{-1}]\right)$')
 plt.ylabel(r'$\log_{10}\left(m_* + X^{-1}\,m_{\rm H\,{\LARGE{\textsc i}}+H_2}~[{\rm M}_{\odot}]\right)$')
 plt.xticks(np.arange(1.9,2.6,0.1))
-plt.axis([1.85, 2.65, BaryM_med, 11.7])
+plt.axis([1.85, 2.65, BaryM_med, 11.5])
 r.savepng(outdir+'4-BTF', xsize=768, ysize=400)
 ##### ============================= #####
 

@@ -640,11 +640,11 @@ void collisional_starburst_recipe(double disc_mass_ratio[N_BINS], int merger_cen
  // The coefficients in eburst are taken from TJ Cox's PhD thesis and should be more 
  // accurate then previous. The recipe has been modified to function for each annulus.
     
-    double ejected_sum = 0.0;
-    double metals_stars_sum = 0.0;
+ double ejected_sum = 0.0;
+ double metals_stars_sum = 0.0;
 
  stars_sum = 0.0;
-    stars_angmom = 0.0;
+ stars_angmom = 0.0;
  assert(Gal[centralgal].HotGas >= Gal[centralgal].MetalsHotGas);
 
  if(Gal[merger_centralgal].ColdGas>0)
