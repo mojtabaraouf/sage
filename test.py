@@ -184,9 +184,8 @@ for field in halo_fields:
         print('The properties that don\'t match should not be affected by your compiler.')
         print('This error was sprung by the property {0}, but is likely not limited to it.'.format(field))
         print('Please report this issue if you cannot find a fast solution.')
-        sys.exit(1)
+        break
 
-#== Travis test should pass if this point is reached ==#
 
 # Build a histogram of stellar masses as a sanity check
 fig = plt.figure()
@@ -204,6 +203,9 @@ plt.ylabel('Number of galaxies')
 plt.axis([mmin, mmax, 1, 1e3])
 plt.legend(loc='best', frameon=False)
 plt.savefig(SMfigname, bbox_inches='tight')
+
+if not success: sys.exit(1)
+#== Travis test should pass if this point is reached ==#
 
 # Compare galaxy properties from installed Dark Sage to fetched data
 great_success = True

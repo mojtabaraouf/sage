@@ -444,7 +444,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 			ejected_mass = 0.0;
 		}
 				
-        ejected_sum += ejected_mass;
+        ejected_sum += ejected_mass; // this is pointless with the way it's coded right now -- annuli are not being summed over
         
 	    update_from_star_formation(p, stars, metallicity, i);
 	

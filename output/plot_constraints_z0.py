@@ -11,7 +11,7 @@ warnings.filterwarnings("ignore")
 
 
 ###### USER NEEDS TO SET THESE THINGS ######
-indir = '/Users/adam/DarkSage_runs/558/' # directory where the Dark Sage data are
+indir = '/Users/adam/DarkSage_runs/561/' # directory where the Dark Sage data are
 sim = 0 # which simulation Dark Sage has been run on -- if it's new, you will need to set its defaults below.
 #   0 = Mini Millennium, 1 = Full Millennium, 2 = SMDPL
 
@@ -107,9 +107,9 @@ ax[1].legend(loc='lower left', frameon=False, bbox_to_anchor=(-0.025, -0.03))
 r.massfunction(HIM, Lbox, range=[HIM_med-0.1, 11.5], ls='--', ax=ax[1])
 r.massfunction(HIM[G['LenMax']>=100], Lbox, range=[HIM_med-0.1, 11.5], ax=ax[1])
 ax[1].set_xlabel(r'$\log_{10}(m_{\rm H\,{\LARGE {\textsc i}}}~[{\rm M}_{\odot}])$')
-ax[1].set_xlim(HIM_med, 11)
 ax[1].set_ylabel('')
-ax[1].set_xticks(np.arange(HIM_med-HIM_med%0.3+0.3,11,0.3))
+ax[1].set_xticks(np.arange(HIM_med-HIM_med%0.3+0.3,10.99,0.3))
+ax[1].set_xlim(HIM_med, 11)
 
 
 # H2 mass function
@@ -125,7 +125,7 @@ ax[2].set_xlabel(r'$\log_{10}(m_{\rm H_2}~[{\rm M}_{\odot}])$')
 ax[2].set_xlim(H2M_med, 10.8)
 ax[2].set_ylim(1e-6,ymax)
 ax[2].set_ylabel('')
-ax[2].set_xticks(np.arange(H2M_med-H2M_med%0.4+0.4,10.8,0.4))
+ax[2].set_xticks(np.arange(H2M_med-H2M_med%0.4+0.4,10.79,0.4))
 
 fig.subplots_adjust(hspace=0, wspace=0, left=0, bottom=0, right=1.0, top=1.0)
 r.savepng(outdir+'1-MassFunctions', xsize=1700, ysize=512, fig=fig)

@@ -233,28 +233,38 @@ double exp_f(double x)
 
 double get_virial_mass(int halonr, int p)
 {
+    double Mvir, Mlen, Mbary;
     if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir1 > 0.0 && MvirDefinition==1)
     {
-        return Halo[halonr].Mvir1;
+        Mvir = Halo[halonr].Mvir1;
     }
     else if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir2 > 0.0 && MvirDefinition==2)
     {
-        return Halo[halonr].Mvir2;
+        Mvir = Halo[halonr].Mvir2;
     }
     else if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir3 > 0.0 && MvirDefinition==3)
     {
-        return Halo[halonr].Mvir3;
-    }
-    else if(Halo[halonr].Len>0)
-    {
-        return Halo[halonr].Len * PartMass;
-    }
-    else if(p!=-1)
-    {
-        return Gal[p].StellarMass + Gal[p].ColdGas + Gal[p].HotGas + Gal[p].BlackHoleMass + Gal[p].ICS;
+        Mvir = Halo[halonr].Mvir3;
     }
     else
-        return 0.0;
+    {
+        Mvir = 0.0; // Satellites initially have this set to zero, so will use a different field.
+    }
+    
+    Mlen = Halo[halonr].Len * PartMass;
+    Mbary = Gal[p].StellarMass + Gal[p].ColdGas + Gal[p].HotGas + Gal[p].BlackHoleMass + Gal[p].ICS;
+    
+    if(Mvir > 0.0)
+    {
+        return Mvir;
+    }
+    else
+    {
+        if((Mlen > Mbary) || (p==-1))
+            return Mlen;
+        else
+            return Mbary;
+    }
 }
 
 
@@ -660,7 +670,7 @@ void update_stellardisc_scaleradius(int p)
     
     if(Gal[p].StellarDiscScaleRadius<=0.0)
     {
-        printf("BUG: StellarDiscScaleRadius reassigned from %e to DiskScale Radius\n", Gal[p].StellarDiscScaleRadius);
+//        printf("BUG: StellarDiscScaleRadius reassigned from %e to DiskScale Radius -- %e, %e\n", Gal[p].StellarDiscScaleRadius, DiscStarSum, Gal[p].DiskScaleRadius);
         Gal[p].StellarDiscScaleRadius = 1.0 * Gal[p].DiskScaleRadius; // Some functions still need a number for the scale radius even if there aren't any stars actually in the disc.
     }
 }
@@ -703,7 +713,7 @@ void update_gasdisc_scaleradius(int p)
     
     if(Gal[p].GasDiscScaleRadius<=0.0)
     {
-        printf("BUG: GasDiscScaleRadius reassigned from %e to DiskScale Radius\n", Gal[p].GasDiscScaleRadius);
+//        printf("BUG: GasDiscScaleRadius reassigned from %e to DiskScale Radius\n", Gal[p].GasDiscScaleRadius);
         Gal[p].GasDiscScaleRadius = 1.0 * Gal[p].DiskScaleRadius; // Some functions still need a number for the scale radius even if there isn't any gas actually in the disc.
     }
 }
