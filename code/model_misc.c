@@ -258,13 +258,15 @@ double get_virial_mass(int halonr, int p)
     {
         return Mvir;
     }
-    else
+    else if((Mbary>0) || (Mlen>0))
     {
         if((Mlen > Mbary) || (p==-1))
             return Mlen;
         else
             return Mbary;
     }
+    else
+        return 1e-10; // Randomly assigning 1 solar mass here.
 }
 
 
