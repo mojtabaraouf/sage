@@ -233,40 +233,28 @@ double exp_f(double x)
 
 double get_virial_mass(int halonr, int p)
 {
-    double Mvir, Mlen, Mbary;
     if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir1 > 0.0 && MvirDefinition==1)
     {
-        Mvir = Halo[halonr].Mvir1;
+        return Halo[halonr].Mvir1;
     }
     else if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir2 > 0.0 && MvirDefinition==2)
     {
-        Mvir = Halo[halonr].Mvir2;
+        return Halo[halonr].Mvir2;
     }
     else if(halonr == Halo[halonr].FirstHaloInFOFgroup && Halo[halonr].Mvir3 > 0.0 && MvirDefinition==3)
     {
-        Mvir = Halo[halonr].Mvir3;
+        return Halo[halonr].Mvir3;
+    }
+    else if(Halo[halonr].Len>0)
+    {
+        return Halo[halonr].Len * PartMass;
+    }
+    else if(p!=-1)
+    {
+        return Gal[p].StellarMass + Gal[p].ColdGas + Gal[p].HotGas + Gal[p].BlackHoleMass + Gal[p].ICS;
     }
     else
-    {
-        Mvir = 0.0; // Satellites initially have this set to zero, so will use a different field.
-    }
-    
-    Mlen = Halo[halonr].Len * PartMass;
-    Mbary = Gal[p].StellarMass + Gal[p].ColdGas + Gal[p].HotGas + Gal[p].BlackHoleMass + Gal[p].ICS;
-    
-    if(Mvir > 0.0)
-    {
-        return Mvir;
-    }
-    else if((Mbary>0) || (Mlen>0))
-    {
-        if((Mlen > Mbary) || (p==-1))
-            return Mlen;
-        else
-            return Mbary;
-    }
-    else
-        return 1e-10; // Randomly assigning 1 solar mass here.
+        return 0.0;
 }
 
 
