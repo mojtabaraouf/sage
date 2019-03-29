@@ -336,7 +336,7 @@ double deal_with_unstable_gas(double unstable_gas, int p, int i, double V_rot, d
 
     double ejected_sum = 0.0;
     double j_lose, j_gain, m_up, m_down;
-    
+        
 	// Let gas sink -- one may well want to change this formula
     gas_sink = GasSinkRate * unstable_gas;
     

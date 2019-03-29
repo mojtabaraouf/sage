@@ -100,5 +100,3 @@ double Z_dependent_SF(float lower_limit, float upper_limit, float Sigma_c0, floa
 double integrand_Z_dependent_SF(double q, void *p);
 
 
-
-

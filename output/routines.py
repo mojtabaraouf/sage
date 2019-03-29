@@ -108,9 +108,11 @@ def darksage_snap(fpre, filelist, fields=[], Nannuli=30):
     Galdesc = galdtype_darksage()
     Glist = []
     Ngal = np.array([],dtype=np.int32)
+    print 'reading file', filelist[0]
     G = darksage_out_single(fpre+'_'+str(filelist[0]), fields, Nannuli)
     
     for i in filelist[1:]:
+        print 'reading file', i
         G1 = darksage_out_single(fpre+'_'+str(i), fields)
         G = np.append(G, G1)
     return G

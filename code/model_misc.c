@@ -538,7 +538,7 @@ void update_disc_radii(int p)
             
             // Numerical-resolution issues can arise if rrat is too small
             rrat = r/r_2;
-            if(rrat<1e-7)
+            if(rrat<1e-8)
             {
                 i += 1;
                 break;  
@@ -590,7 +590,7 @@ void update_disc_radii(int p)
             
             for(k=1; k<N_BINS+1; k++)
             {
-                // If this assert statement is triggered, it's probably because the analytic_r and analytic_j arrays don't go deep enough.  Changing the rrat threshold for the break statement in the previous loop or increasing NUM_R_BINS might help.  First, check that everything in the parameter file is accurate, especially quantities like particle mass.
+                if(DiscBinEdge[k]<analytic_j_reduced[0]) printf("If this assert statement is triggered, it's probably because the analytic_r and analytic_j arrays don't go deep enough.  Changing the rrat threshold for the break statement in the previous loop or increasing NUM_R_BINS might help.  First, check that everything in the parameter file is accurate, especially quantities like particle mass.");
                 assert(DiscBinEdge[k] >= analytic_j_reduced[0]);
                 assert(DiscBinEdge[k] <= analytic_j_reduced[NUM_R_BINS_REDUCED-1]);
                 Gal[p].DiscRadii[k] = gsl_spline_eval(spline, DiscBinEdge[k], acc);
