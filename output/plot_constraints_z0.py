@@ -11,12 +11,13 @@ warnings.filterwarnings("ignore")
 
 
 ###### USER NEEDS TO SET THESE THINGS ######
-indir = '/Users/adam/DarkSage_runs/561/' # directory where the Dark Sage data are
-sim = 0 # which simulation Dark Sage has been run on -- if it's new, you will need to set its defaults below.
-#   0 = Mini Millennium, 1 = Full Millennium, 2 = SMDPL
+indir = '/Volumes/AdamDrive/Research/SAGE_disc_runs/Genesis/L500n2160/13/' # directory where the Dark Sage data are
+#indir = '/Users/adam/DarkSage_runs/562_full/'
+sim = 3 # which simulation Dark Sage has been run on -- if it's new, you will need to set its defaults below.
+#   0 = Mini Millennium, 1 = Full Millennium, 2 = SMDPL, 3 = Genesis-Millennium, 4=Genesis-Calibration
 
 fpre = 'model_z0.000' # what is the prefix name of the z=0 files
-files = range(8) # list of file numbers you want to read
+files = range(128) # list of file numbers you want to read
 
 Nannuli = 30 # number of annuli used for discs in Dark Sage
 FirstBin = 1.0 # copy from parameter file -- sets the annuli's sizes
@@ -35,7 +36,14 @@ elif sim==1:
 elif sim==2:
     h = 0.6777
     Lbox = 400.0/h * (len(files)/1000.)**(1./3)
-# add here 'elif sim==3:' etc for a new simulation
+elif sim==3:
+    h = 0.6751
+    Lbox = 500.0/h * (len(files)/128.)**(1./3)
+elif sim==4:
+    h = 0.6751
+    Lbox = 75.0/h * (len(files)/8.)**(1./3)
+
+# add here 'elif sim==4:' etc for a new simulation
 else:
     print 'Please specify a valid simulation.  You may need to add its defaults to this code.'
     quit()
@@ -85,8 +93,8 @@ r.massfunction(SM[BTT>0.5], Lbox, range=[SM_med-0.1, 12], c='r', lw=1, ls='--', 
 r.stellar_massfunction_obsdata(h, ax[0])
 SMF_bd, logM_bd = r.schechter(3.67e-3*(h/0.7)**3, 10**(10.74)/(h/0.7)**2, -0.525, logM=np.arange(SM_med-0.1, 12.1,0.1))
 SMF_dd, logM_dd = r.schechter(0.855e-3*(h/0.7)**3, 10**(10.70)/(h/0.7)**2, -1.39, logM=np.arange(SM_med-0.1, 12.1,0.1))
-ax[0].plot(logM_dd, SMF_dd, 'b-', lw=8, alpha=0.2, label=r'Moffett et al.~(2016) disc-dominated')
-ax[0].plot(logM_bd, SMF_bd, 'r-', lw=8, alpha=0.2, label=r'Moffett et al.~(2016) bulge-dominated')
+ax[0].plot(logM_dd, SMF_dd, 'b-', lw=8, alpha=0.2, label=r'Moffett et al.~(2016) disc-dominated', zorder=0)
+ax[0].plot(logM_bd, SMF_bd, 'r-', lw=8, alpha=0.2, label=r'Moffett et al.~(2016) bulge-dominated', zorder=0)
 ax[0].legend(loc='lower left', frameon=False, bbox_to_anchor=(-0.025, -0.03))
 ax[0].set_xlim(SM_med, 12)
 ax[0].set_xlabel(r'$\log_{10}(m_*~[{\rm M}_{\odot}])$')

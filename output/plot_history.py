@@ -11,8 +11,8 @@ warnings.filterwarnings("ignore")
 
 
 ###### USER NEEDS TO SET THESE THINGS ######
-indir = '/Users/adam/DarkSage_runs/558/' # directory where the Dark Sage data are
-sim = 0 # which simulation Dark Sage has been run on -- if it's new, you will need to set its defaults below.
+indir = '/Volumes/AdamDrive/Research/SAGE_disc_runs/SMDPL/3_newtrees/' # directory where the Dark Sage data are
+sim = 2 # which simulation Dark Sage has been run on -- if it's new, you will need to set its defaults below.
 #   0 = Mini Millennium, 1 = Full Millennium, 2 = SMDPL
 
 Nannuli = 30 # number of annuli used for discs in Dark Sage
