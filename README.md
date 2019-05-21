@@ -1,9 +1,9 @@
 <a href="http://ascl.net/1706.004"><img src="https://img.shields.io/badge/ascl-1706.004-blue.svg?colorB=262255" alt="ascl:1706.004" /></a>
 [![Build Status](https://travis-ci.org/arhstevens/DarkSage.svg?branch=astevens-disc)](https://travis-ci.org/arhstevens/DarkSage)
 
-# Dark Sage
+![](LogoDark.png)
 
-DARK SAGE is a semi-analytic model of galaxy formation, focussed on detailing the structure and evolution of galaxies' discs.  The code-base is an extension of [SAGE](https://github.com/darrencroton/sage/) (Semi-Analytic Galaxy Evolution).  The model is described in full in the paper by [Stevens, Croton & Mutch (2016)](http://adsabs.harvard.edu/abs/2016MNRAS.461..859S).  Please cite this paper whenever using this model (or an adaptation of it).  Updates to the model have been presented in [Stevens & Brown (2017)](http://adsabs.harvard.edu/abs/2017MNRAS.471..447S) and [Stevens et al. (2018)](https://arxiv.org/abs/1806.07402).  DARK SAGE is also listed on the [Astrophysics Source Code Library](http://ascl.net/1706.004).
+DARK SAGE is a semi-analytic model of galaxy formation, focussed on detailing the structure and evolution of galaxies' discs.  The code-base is an extension of [SAGE](https://github.com/darrencroton/sage/) (Semi-Analytic Galaxy Evolution).  The model is described in full in the paper by [Stevens, Croton & Mutch (2016)](http://adsabs.harvard.edu/abs/2016MNRAS.461..859S).  Please cite this paper whenever using this model (or an adaptation of it).  Updates to the model have been presented in [Stevens & Brown (2017)](http://adsabs.harvard.edu/abs/2017MNRAS.471..447S) and [Stevens et al. (2018)](https://arxiv.org/abs/1806.07402).  DARK SAGE is also listed on the [Astrophysics Source Code Library](http://ascl.net/1706.004).  Please use the official logo in talks when presenting results from the model.
 
 DARK SAGE will run on any N-body simulation whose trees are organised in a supported format and contain a minimum set of basic halo properties.  Galaxy formation models built using DARK SAGE on the Millennium simulation can be downloaded at the [Theoretical Astrophysical Observatory (TAO)](https://tao.asvo.org.au/).
 
