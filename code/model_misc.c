@@ -560,10 +560,12 @@ void update_disc_radii(int p)
             v2_gdisc = GM_gdisc_r * v2_disc_cterm(r, c_gdisc);
             
             f_support = 1.0 - exp(exponent_support*r); // Fraction of support in rotation
+            if(f_support<1e-5) f_support = 1e-5; // Minimum safety net
             vrot = sqrt(f_support * (v2_spherical+v2_sdisc+v2_gdisc));
        
             analytic_j[i] = vrot * r;
             if(i<NUM_R_BINS-1) assert(analytic_j[i]<analytic_j[i+1]);
+            
             if((i==NUM_R_BINS-1) && analytic_j[i]<DiscBinEdge[N_BINS]) // Need to expand range for interpolation!
             {
                 r *= 10.0; 

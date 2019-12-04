@@ -11,13 +11,13 @@ warnings.filterwarnings("ignore")
 
 
 ###### USER NEEDS TO SET THESE THINGS ######
-indir = '/Volumes/AdamDrive/Research/SAGE_disc_runs/Genesis/L500n2160/13/' # directory where the Dark Sage data are
-#indir = '/Users/adam/DarkSage_runs/562_full/'
-sim = 3 # which simulation Dark Sage has been run on -- if it's new, you will need to set its defaults below.
-#   0 = Mini Millennium, 1 = Full Millennium, 2 = SMDPL, 3 = Genesis-Millennium, 4=Genesis-Calibration
+#indir = '/Volumes/AdamDrive/Research/SAGE_disc_runs/Genesis/L500n2160/13/' # directory where the Dark Sage data are
+indir = '/Users/adam/DarkSage_runs/MDPL/8c_MasterBranch/'
+sim = 5 # which simulation Dark Sage has been run on -- if it's new, you will need to set its defaults below.
+#   0 = Mini Millennium, 1 = Full Millennium, 2 = SMDPL, 3 = Genesis-Millennium, 4=Genesis-Calibration, 5 = MDPL2
 
 fpre = 'model_z0.000' # what is the prefix name of the z=0 files
-files = range(128) # list of file numbers you want to read
+files = range(8) # list of file numbers you want to read
 
 Nannuli = 30 # number of annuli used for discs in Dark Sage
 FirstBin = 1.0 # copy from parameter file -- sets the annuli's sizes
@@ -42,6 +42,10 @@ elif sim==3:
 elif sim==4:
     h = 0.6751
     Lbox = 75.0/h * (len(files)/8.)**(1./3)
+elif sim==5:
+    h = 0.6777
+    Lbox = 1000.0/h * (len(files)/1000.)**(1./3)
+
 
 # add here 'elif sim==4:' etc for a new simulation
 else:

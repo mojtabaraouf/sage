@@ -7,6 +7,8 @@ cmd_file
 output/extraresults.py
 output/growth.py
 output/discplots.py
+output/*.pyc
+autocalibration/
 
 chi2.dat
 chi2_H2.png
@@ -34,3 +36,4 @@ code/core_build_model_REMOTE_92425.c
 code/core_save.c.orig
 code/model_misc_old.c
 test
+Screen Shot 2019-01-31 at 4.10.58 pm.png

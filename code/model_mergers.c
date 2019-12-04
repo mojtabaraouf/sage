@@ -344,34 +344,42 @@ void add_galaxies_together(int t, int p, double mass_ratio, double *disc_mass_ra
 	//if(CentralGasOrig > 0.0 && Gal[p].ColdGas > 0.0)
 	if(Gal[p].ColdGas > 0.0)
 	{
-		cos_angle_sat_disc = (Gal[t].SpinGas[0]*sat_sam[0] + Gal[t].SpinGas[1]*sat_sam[1] + Gal[t].SpinGas[2]*sat_sam[2]) / sat_sam_mag; // Angle between ang mom of satellite and central's disc
-		sat_sam_mag *= fabs(cos_angle_sat_disc); // Project satellite's (gas) angular momentum onto central's disc
-	
-		// Consider that the satellite will have rotation and hence it will have a distribution of angular momentum to contribute
-		sat_sam_max =  sat_sam_mag  +  Gal[p].Vvir * fabs(cos_angle_sat_disc) * sqrt(sqr(Gal[p].Pos[0]-Gal[t].Pos[0]) + sqr(Gal[p].Pos[1]-Gal[t].Pos[1]) + sqr(Gal[p].Pos[2]-Gal[t].Pos[2]));
-		sat_sam_min = 2.0*sat_sam_mag - sat_sam_max;
-		if(sat_sam_min<0.0)
-			sat_sam_min = 0.0;
-		
-        if(cos_angle_sat_disc < 0.0)
+        if(sat_sam_mag>0.0) // Incredibly rare to have this exactly equal to zero, but it has happened!
+        {
+            cos_angle_sat_disc = (Gal[t].SpinGas[0]*sat_sam[0] + Gal[t].SpinGas[1]*sat_sam[1] + Gal[t].SpinGas[2]*sat_sam[2]) / sat_sam_mag; // Angle between ang mom of satellite and central's disc
+            sat_sam_mag *= fabs(cos_angle_sat_disc); // Project satellite's (gas) angular momentum onto central's disc
+            
+            // Consider that the satellite will have rotation and hence it will have a distribution of angular momentum to contribute
+            sat_sam_max =  sat_sam_mag  +  Gal[p].Vvir * fabs(cos_angle_sat_disc) * sqrt(sqr(Gal[p].Pos[0]-Gal[t].Pos[0]) + sqr(Gal[p].Pos[1]-Gal[t].Pos[1]) + sqr(Gal[p].Pos[2]-Gal[t].Pos[2]));
+            sat_sam_min = 2.0*sat_sam_mag - sat_sam_max;
+            if(sat_sam_min<0.0)
+            sat_sam_min = 0.0;
+            
+            if(cos_angle_sat_disc < 0.0)
             RetroCount += 1;
-        else
+            else
             ProCount += 1;
-        
-		i_min=0;
-		while(DiscBinEdge[i_min]<=sat_sam_min)
-		{
-			i_min++;
-			if(i_min==N_BINS) break;
-		}
-		i_min -= 1;
-        
-		i_max=i_min;
-		while(DiscBinEdge[i_max]<=sat_sam_max)
-		{
-			i_max++;
-			if(i_max==N_BINS) break;
-		}
+            
+            i_min=0;
+            while(DiscBinEdge[i_min]<=sat_sam_min)
+            {
+                i_min++;
+                if(i_min==N_BINS) break;
+            }
+            i_min -= 1;
+            
+            i_max=i_min;
+            while(DiscBinEdge[i_max]<=sat_sam_max)
+            {
+                i_max++;
+                if(i_max==N_BINS) break;
+            }
+        }
+        else
+        {
+            i_min = 0;
+            i_max = 1;
+        }
 	
 		bin_num = i_max - i_min; // How many bins the satellite's gas will be added to in the main disc
 	
