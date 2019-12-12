@@ -96,8 +96,8 @@ def darksage_out_single(fname, fields=[], Nannuli=30):
     GalsPerTree = np.fromfile(fin, np.dtype((np.int32, Ntrees)),1) # Read the number of gals in each tree
     G = np.fromfile(fin, Galdesc, NtotGals) # Read all the galaxy data
     G = G[fields]
+    fin.close()
     return G 
-
 
 
 def darksage_snap(fpre, filelist, fields=[], Nannuli=30):
@@ -106,17 +106,33 @@ def darksage_snap(fpre, filelist, fields=[], Nannuli=30):
     # filelist contains all the file numbers you want to read in
     
     Galdesc = galdtype_darksage()
-    Glist = []
-    Ngal = np.array([],dtype=np.int32)
-    print 'reading file', filelist[0]
-    G = darksage_out_single(fpre+'_'+str(filelist[0]), fields, Nannuli)
+    if len(fields)==0: fields=list(Galdesc.names)
+    NtotGalsSum = 0
     
-    for i in filelist[1:]:
-        print 'reading file', i
-        G1 = darksage_out_single(fpre+'_'+str(i), fields)
-        G = np.append(G, G1)
-    return G
+    # First calculate the total number of galaxies that will fill the array
+    for i in filelist:
+        fin = open(fpre+'_'+str(i), 'rb')
+        Ntrees = np.fromfile(fin,np.dtype(np.int32),1)  # Read number of trees in file
+        NtotGals = np.fromfile(fin,np.dtype(np.int32),1)[0]
+        NtotGalsSum += NtotGals
+        fin.close()
 
+    G = np.empty(NtotGalsSum, dtype=Galdesc)[fields] # Intialise the galaxy array
+    NtotGalsSum = 0 # reset for next loop
+
+    # Loop through files to fill in galaxy array
+    for i in filelist:
+        print 'reading file', i
+        fin = open(fpre+'_'+str(i), 'rb')
+        Ntrees = np.fromfile(fin,np.dtype(np.int32),1)  # Read number of trees in file
+        NtotGals = np.fromfile(fin,np.dtype(np.int32),1)[0]  # Read number of gals in file.
+        GalsPerTree = np.fromfile(fin, np.dtype((np.int32, Ntrees)),1) # Read the number of gals in each tree
+        G1 = np.fromfile(fin, Galdesc, NtotGals) # Read all the galaxy data
+        fin.close()
+        G[NtotGalsSum:NtotGalsSum+NtotGals] = G1[fields]
+        NtotGalsSum += NtotGals
+
+    return G
 
 
 def massfunction(mass, Lbox, range=[8,12.5], c='k', lw=2, ls='-', label='', ax=None, zo=2):

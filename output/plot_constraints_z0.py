@@ -4,6 +4,7 @@ from pylab import *
 import os
 import routines as r
 import random
+import time
 
 # Warnings are annoying
 import warnings
@@ -12,7 +13,7 @@ warnings.filterwarnings("ignore")
 
 ###### USER NEEDS TO SET THESE THINGS ######
 #indir = '/Volumes/AdamDrive/Research/SAGE_disc_runs/Genesis/L500n2160/13/' # directory where the Dark Sage data are
-indir = '/Users/adam/DarkSage_runs/MDPL/8c_MasterBranch/'
+indir = '/Users/adam/DarkSage_runs/MDPL/8_cali/'
 sim = 5 # which simulation Dark Sage has been run on -- if it's new, you will need to set its defaults below.
 #   0 = Mini Millennium, 1 = Full Millennium, 2 = SMDPL, 3 = Genesis-Millennium, 4=Genesis-Calibration, 5 = MDPL2
 
@@ -56,8 +57,10 @@ else:
 
 
 ##### READ DARK SAGE DATA #####
+start = time.time()
 DiscBinEdge = np.append(0, np.array([FirstBin*ExponentBin**i for i in range(Nannuli)])) / h
 G = r.darksage_snap(indir+fpre, files, Nannuli=Nannuli)
+print 'Time taken to read =', round(time.time()-start, 2), 's'
 ######  ================= #####
 
 
