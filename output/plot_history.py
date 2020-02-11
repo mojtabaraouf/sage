@@ -11,8 +11,8 @@ warnings.filterwarnings("ignore")
 
 
 ###### USER NEEDS TO SET THESE THINGS ######
-indir = '/Volumes/AdamDrive/Research/SAGE_disc_runs/SMDPL/3_newtrees/' # directory where the Dark Sage data are
-sim = 2 # which simulation Dark Sage has been run on -- if it's new, you will need to set its defaults below.
+indir = 'results/millennium/' # directory where the Dark Sage data are
+sim = 0 # which simulation Dark Sage has been run on -- if it's new, you will need to set its defaults below.
 #   0 = Mini Millennium, 1 = Full Millennium, 2 = SMDPL
 
 Nannuli = 30 # number of annuli used for discs in Dark Sage
@@ -87,18 +87,22 @@ for i in range(Nsnap):
 
 
 ##### PLOT 1: MADAU-LILLY DIAGRAM (UNIVERSAL STAR FORMATION RATE DENSITY HISTORY) #####
-fig, ax  = plt.subplots(1, 1)
-plt.plot(1+redshifts, np.log10(SFRD), 'k--', lw=2, label=r'{\sc Dark Sage}, $N_{\rm p}\!\geq\!20$')
-plt.plot(1+redshifts, np.log10(SFRD_resolved), 'k.-', lw=2, label=r'{\sc Dark Sage}, $N_{\rm p,max}\!\geq\!100$')
-r.SFRD_obs(h, plus=1)
-plt.xlabel(r'Redshift')
-plt.ylabel(r'$\log_{10}\left( \bar{\rho}_{\rm SFR}~[{\rm M}_{\odot}\, {\rm yr}^{-1}\, {\rm cMpc}^{-3}] \right)$')
-plt.xscale('log')
-plt.axis([1,9,-2.8,0.5])
-plt.minorticks_off()
-plt.xticks(range(1,10), (str(i) for i in range(9)))
-plt.legend(loc='best', frameon=False, ncol=2)
-fig.subplots_adjust(hspace=0, wspace=0, left=0, bottom=0, right=1.0, top=1.0)
-r.savepng(outdir+'H1-SFRDH', xsize=768, ysize=400)
+try:
+    fig, ax  = plt.subplots(1, 1)
+    plt.plot(1+redshifts, np.log10(SFRD), 'k--', lw=2, label=r'{\sc Dark Sage}, $N_{\rm p}\!\geq\!20$')
+    plt.plot(1+redshifts, np.log10(SFRD_resolved), 'k.-', lw=2, label=r'{\sc Dark Sage}, $N_{\rm p,max}\!\geq\!100$')
+    r.SFRD_obs(h, plus=1)
+    plt.xlabel(r'Redshift')
+    plt.ylabel(r'$\log_{10}\left( \bar{\rho}_{\rm SFR}~[{\rm M}_{\odot}\, {\rm yr}^{-1}\, {\rm cMpc}^{-3}] \right)$')
+    plt.xscale('log')
+    plt.axis([1,9,-2.8,0.5])
+    plt.minorticks_off()
+    plt.xticks(range(1,10), (str(i) for i in range(9)))
+    plt.legend(loc='best', frameon=False, ncol=2)
+    fig.subplots_adjust(hspace=0, wspace=0, left=0, bottom=0, right=1.0, top=1.0)
+    r.savepng(outdir+'H1-SFRDH', xsize=768, ysize=400)
+except Exception as excptn:
+    print('Unexpected issue with plot H1: {0}'.format(excptn))
+
 ##### =========================================================================== #####
 
