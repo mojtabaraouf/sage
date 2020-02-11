@@ -66,7 +66,7 @@ elif sim==2:
     vol = (400.0/h)**3 * len(filenumbers)/1000.
 # add here 'elif sim==3:' etc for a new simulation
 else:
-    print 'Please specify a valid simulation.  You may need to add its defaults to this code.'
+    print('Please specify a valid simulation.  You may need to add its defaults to this code.')
     quit()
 ######  ================= #####
 
@@ -77,7 +77,7 @@ Nsnap = len(redshifts)
 SFRD = np.zeros(Nsnap)
 SFRD_resolved = np.zeros(Nsnap)
 
-for i in xrange(Nsnap):
+for i in range(Nsnap):
     G = r.darksage_snap(indir+fpre+redshiftstr[i], filenumbers, Nannuli=Nannuli)
     SFRD[i] = np.sum(G['SfrFromH2']+G['SfrInstab']+G['SfrMergeBurst']) / vol
     SFRD_resolved[i] = np.sum((G['SfrFromH2']+G['SfrInstab']+G['SfrMergeBurst'])[G['LenMax']>=100]) / vol

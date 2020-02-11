@@ -75,8 +75,8 @@ def galdtype_darksage(Nannuli=30):
                     ('infallVvir'                   , floattype),
                     ('infallVmax'                   , floattype)
                     ]
-    names = [Galdesc_full[i][0] for i in xrange(len(Galdesc_full))]
-    formats = [Galdesc_full[i][1] for i in xrange(len(Galdesc_full))]
+    names = [Galdesc_full[i][0] for i in range(len(Galdesc_full))]
+    formats = [Galdesc_full[i][1] for i in range(len(Galdesc_full))]
     Galdesc = np.dtype({'names':names, 'formats':formats}, align=True)
     return Galdesc
 
@@ -122,7 +122,7 @@ def darksage_snap(fpre, filelist, fields=[], Nannuli=30):
 
     # Loop through files to fill in galaxy array
     for i in filelist:
-        print 'reading file', i
+        print('reading file {0}'.format(i))
         fin = open(fpre+'_'+str(i), 'rb')
         Ntrees = np.fromfile(fin,np.dtype(np.int32),1)  # Read number of trees in file
         NtotGals = np.fromfile(fin,np.dtype(np.int32),1)[0]  # Read number of gals in file.
@@ -431,7 +431,7 @@ def hist_Nmin(x, bins, Nmin, hard_bins=np.array([])):
         elif np.all(~((bins[ii] <= 1.01*hard_bins) * (bins[ii] >= 0.99*hard_bins))):
             bins = np.delete(bins,ii)
         else:
-            print 'hard_bins prevented routines.hist_Nmin() from enforcing Nmin.  Try using wider input bins.'
+            print('hard_bins prevented routines.hist_Nmin() from enforcing Nmin.  Try using wider input bins.')
             Nhist, bins = np.histogram(x, bins)
             break
         Nhist, bins = np.histogram(x, bins)
@@ -463,7 +463,7 @@ def meanbins(x, y, xmeans, tol=0.02, itmax=100):
     return bins, mean_x, mean_y
 
 
-def percentiles(x, y, low=0.16, med=0.5, high=0.84, bins=20, addMean=False, xrange=None, yrange=None, Nmin=10, weights=None, hard_bins=np.array([]), outBins=False):
+def percentiles(x, y, low=0.16, med=0.5, high=0.84, bins=20, addMean=False, xrange=None, yrange=None, Nmin=10, hard_bins=np.array([]), outBins=False):
     # Given some values to go on x and y axes, bin them along x and return the percentile ranges
     f = np.isfinite(x)*np.isfinite(y)
     if xrange is not None: f = (x>=xrange[0])*(x<=xrange[1])*f
@@ -482,10 +482,7 @@ def percentiles(x, y, low=0.16, med=0.5, high=0.84, bins=20, addMean=False, xran
     for i in range(Nbins):
         f = (x>=bins[i])*(x<bins[i+1])
         if len(f[f])>2:
-            if weights is None:
-                [y_low[i], y_med[i], y_high[i]] = np.percentile(y[f], [100*low, 100*med, 100*high], interpolation='linear')
-            else:
-                [y_low[i], y_med[i], y_high[i]] = weighted_percentile(y[f], [low, med, high], weights[f])
+            [y_low[i], y_med[i], y_high[i]] = np.percentile(y[f], [100*low, 100*med, 100*high], interpolation='linear')
             x_av[i] = np.mean(x[f])
             N[i] = len(x[f])
             if addMean: y_mean[i] = np.mean(y[f])

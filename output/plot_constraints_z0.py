@@ -50,7 +50,7 @@ elif sim==5:
 
 # add here 'elif sim==4:' etc for a new simulation
 else:
-    print 'Please specify a valid simulation.  You may need to add its defaults to this code.'
+    print('Please specify a valid simulation.  You may need to add its defaults to this code.')
     quit()
 ######  ================= #####
 
@@ -60,7 +60,7 @@ else:
 start = time.time()
 DiscBinEdge = np.append(0, np.array([FirstBin*ExponentBin**i for i in range(Nannuli)])) / h
 G = r.darksage_snap(indir+fpre, files, Nannuli=Nannuli)
-print 'Time taken to read =', round(time.time()-start, 2), 's'
+print('Time taken to read = {0} s'.format(round(time.time()-start, 2)))
 ######  ================= #####
 
 
@@ -272,7 +272,7 @@ Sigma_HI = (G['DiscHI']*1e10/h) / area
 Sigma_H2 = (G['DiscH2']*1e10/h) / area
 
 Nprof = 100 # Number of profiles to plot
-args = random.sample(np.where(filt)[0], Nprof) if len(filt[filt])>Nprof else np.where(filt)[0]
+args = random.sample(list(np.where(filt)[0]), Nprof) if len(filt[filt])>Nprof else np.where(filt)[0]
 
 fig, ax = plt.subplots(2, 1, sharex=True, sharey=True)
 for a in args:
