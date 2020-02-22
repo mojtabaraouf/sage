@@ -1,5 +1,5 @@
 
-<img src="https://github.com/mojtabaraouf/sage/edit/master/Radio-SAGE-LOGO.jpg" width="100">
+<img src="https://github.com/mojtabaraouf/sage/edit/master/Radio-SAGE-LOGO.png" width="100">
 
 ## Jet model - Radio Semi-Analytic Galaxy Evolution (Radio-SAGE)
 
