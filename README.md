@@ -1,4 +1,4 @@
-## Jet model - Radio Semi-Analytic Galaxy Evolution (Radio-SAGE)
+## Radio Semi-Analytic Galaxy Evolution (Radio-SAGE)
 
 <img src="Radio-SAGE-LOGO_1.png" width="200">
 
